@@ -1,0 +1,17 @@
+{
+  "flags": [
+    "RC_FLAG_STARTER_CHOSEN",
+    "RC_FLAG_RIVAL_INTRO_DONE",
+    "RC_FLAG_WILD_TUTORIAL_DONE",
+    "RC_FLAG_RIVAL_BATTLE_DONE",
+    "RC_FLAG_DEPLOY_TEASER_SEEN"
+  ],
+  "flow": [
+    {"id": "RC_EVENT_OPENING", "map": "RC_DELIVERY_HUB", "sets": []},
+    {"id": "RC_EVENT_STARTER_ASSIGNMENT", "map": "RC_DELIVERY_HUB", "sets": ["RC_FLAG_STARTER_CHOSEN"]},
+    {"id": "RC_EVENT_RIVAL_INTRO", "map": "RC_DELIVERY_HUB", "requires": ["RC_FLAG_STARTER_CHOSEN"], "sets": ["RC_FLAG_RIVAL_INTRO_DONE"]},
+    {"id": "RC_EVENT_FIRST_WILD", "map": "RC_PORT_CONNECTION", "requires": ["RC_FLAG_RIVAL_INTRO_DONE"], "sets": ["RC_FLAG_WILD_TUTORIAL_DONE"]},
+    {"id": "RC_EVENT_RIVAL_BATTLE", "map": "RC_PORT_CONNECTION", "requires": ["RC_FLAG_WILD_TUTORIAL_DONE"], "sets": ["RC_FLAG_RIVAL_BATTLE_DONE"]},
+    {"id": "RC_EVENT_DEPLOY_TEASER", "map": "RC_CAGLIARI_MARINA", "requires": ["RC_FLAG_RIVAL_BATTLE_DONE"], "sets": ["RC_FLAG_DEPLOY_TEASER_SEEN"]}
+  ]
+}
