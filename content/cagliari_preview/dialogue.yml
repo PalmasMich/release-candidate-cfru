@@ -1,0 +1,36 @@
+{
+  "scenes": [
+    {
+      "id": "RC_DIALOGUE_OPENING",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato.",
+        "Non abbiamo molto tempo per l'onboarding, quindi andiamo al punto."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Queste sono le risorse attualmente disponibili.",
+        "Scegline una per l'assegnazione. Le altre due andranno su attività parallele."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_INTRO",
+      "speaker": "Rivale",
+      "lines": [
+        "Io tengo traccia di tutto: KPI, velocity, story point e tempi di chiusura.",
+        "Non è una gara, ovviamente. Però ho già preparato la classifica."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_TEASER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Piccolo aggiornamento: il Deploy è bloccato.",
+        "Dicono che sia una cosa semplice. È sempre così che comincia."
+      ]
+    }
+  ]
+}
