@@ -1,0 +1,22 @@
+{
+  "rival": {
+    "id": "RC_RIVAL_KPI",
+    "display_name": "Rivale KPI",
+    "theme": "competitive_colleague_metrics_obsessed",
+    "starter_matrix": {
+      "SPECIES_RC_TURTLE_01": "SPECIES_RC_FIREFOX_01",
+      "SPECIES_RC_FROG_01": "SPECIES_RC_TURTLE_01",
+      "SPECIES_RC_FIREFOX_01": "SPECIES_RC_FROG_01"
+    },
+    "preview_level": 5,
+    "intro_dialogue": "RC_DIALOGUE_RIVAL_INTRO"
+  },
+  "route_trainer": {
+    "id": "RC_TRAINER_PORT_01",
+    "display_name": "Consulente Junior",
+    "role": "short_battle_before_deploy_teaser",
+    "party": [
+      {"species": "SPECIES_MEOWTH", "level": 4}
+    ]
+  }
+}
