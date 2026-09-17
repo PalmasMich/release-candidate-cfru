@@ -60,6 +60,28 @@ The validator checks source paths and reports one of:
 
 `BLOCKED_LOCAL_ROM` is expected while working only from GitHub/cloud tooling and is not considered a repository defect.
 
+## GitHub Codespaces
+
+The branch `feature/cagliari-preview-0.1` contains `.devcontainer/` configuration built on the official `devkitpro/devkitarm` image.
+
+When a Codespace is created from this branch, `.devcontainer/bootstrap.sh`:
+
+- verifies Python, Git, `arm-none-eabi-gcc` and `grit`;
+- clones `PalmasMich/release-candidate-dpe` on `feature/cagliari-preview-0.1` beside the CFRU workspace if it is not already present;
+- runs `scripts/validate_release_candidate_workspace.py`;
+- checks for `BPRE0.gba` in the CFRU root;
+- verifies its SHA-1 against FireRed USA v1.0: `41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc`.
+
+The ROM is uploaded manually into the Codespace and renamed to `BPRE0.gba`. It remains ignored by Git and must never be staged or committed.
+
+After uploading the ROM, rerun:
+
+```bash
+bash .devcontainer/bootstrap.sh
+```
+
+A valid base ROM prints `ROM_OK`.
+
 ## Source control strategy for binary ROM edits
 
 CFRU/DPE are binary-insertion projects rather than a full FireRed decomp. Therefore GitHub stores the reproducible intent of binary edits rather than a ROM image:
