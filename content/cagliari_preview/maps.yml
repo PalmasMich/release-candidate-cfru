@@ -1,0 +1,25 @@
+{
+  "maps": [
+    {
+      "id": "RC_DELIVERY_HUB",
+      "display_name": "Delivery Hub",
+      "role": "opening_and_starter_selection",
+      "connects_to": ["RC_CAGLIARI_MARINA"],
+      "visual_cues": ["warm_limestone", "delivery_signage", "compact_office_lab"]
+    },
+    {
+      "id": "RC_CAGLIARI_MARINA",
+      "display_name": "Marina / Porto",
+      "role": "main_cagliari_identity",
+      "connects_to": ["RC_DELIVERY_HUB", "RC_PORT_CONNECTION"],
+      "visual_cues": ["sea", "port_edge", "palms", "warm_facades", "skyline_hint"]
+    },
+    {
+      "id": "RC_PORT_CONNECTION",
+      "display_name": "Collegamento del Porto",
+      "role": "wild_and_trainer_route",
+      "connects_to": ["RC_CAGLIARI_MARINA"],
+      "visual_cues": ["urban_greenery", "limestone", "port_service_lane"]
+    }
+  ]
+}
