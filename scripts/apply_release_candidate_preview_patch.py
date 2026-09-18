@@ -56,6 +56,11 @@ MAP_NAME_REPLACEMENT = (
     encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("VIRIDIAN CITY") + b"\xFF",
 )
 
+LAB_SIGN_REPLACEMENT = (
+    b"\xCA\xC9\xC5\x1B\xC7\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC",
+    encode_text("DELIVERY HUB"),
+)
+
 
 def patch_tartrek_starter(data: bytearray) -> tuple[bytearray, int]:
     occurrences = []
@@ -110,6 +115,23 @@ def patch_visible_preview_text(data: bytearray) -> bytearray:
     if len(old_city) != len(new_city):
         raise ValueError("Map-name replacement must preserve byte length.")
     _replace_size_preserving(data, old_city, new_city, expected=1)
+
+    old_lab, new_lab = LAB_SIGN_REPLACEMENT
+    # The phrase appears in a few places; only the first occurrence is the
+    # exterior lab sign in the base FireRed text block.
+    positions = []
+    start = 0
+    while True:
+        pos = data.find(old_lab, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + 1
+    if not positions:
+        raise ValueError("Delivery Hub source label not found.")
+    pos = positions[0]
+    replacement = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
+    data[pos:pos + len(old_lab)] = replacement
     return data
 
 
