@@ -86,6 +86,7 @@ def run_pipeline(
     output_path: Path,
     run_build=default_run_build,
     verify_rom=verify_pristine_rom,
+    sync_dpe=sync_dpe_checkout,
     apply_preview_patch=default_apply_preview_patch,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
@@ -107,7 +108,7 @@ def run_pipeline(
     original = cfru_rom.read_bytes()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    sync_dpe_checkout(dpe_root)
+    sync_dpe(dpe_root)
 
     try:
         for path in (dpe_rom, dpe_output, cfru_output):
