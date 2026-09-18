@@ -128,7 +128,8 @@
       "sets": [
         "RC_FLAG_RELEASE_MANAGER_DEFEATED"
       ],
-      "scope": "chapter_01"
+      "scope": "chapter_01",
+      "implementation_status": "custom_deploy_room_pending_smoke"
     },
     {
       "id": "RC_EVENT_DEPLOY_01_COMPLETE",
@@ -139,7 +140,8 @@
       "sets": [
         "RC_FLAG_DEPLOY_01_COMPLETE"
       ],
-      "scope": "chapter_01"
+      "scope": "chapter_01",
+      "implementation_status": "custom_deploy_room_pending_smoke"
     }
   ]
 }
