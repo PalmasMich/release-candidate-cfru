@@ -113,5 +113,41 @@ class RcEventScriptCompilerTest(unittest.TestCase):
             self.compiler.link_script(ir, 0x08900000, {})
 
 
+    def test_trainerbattle_single_compiles_fire_red_structure(self):
+        script = {
+            "id": "RC_TEST_TRAINER",
+            "ops": [
+                {
+                    "op": "trainerbattle_single",
+                    "trainer_id": 37,
+                    "local_id": 0,
+                    "intro_dialogue": "RC_DIALOGUE_PORT_TRAINER_INTRO",
+                    "defeat_dialogue": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+                },
+                {"op": "end"},
+            ],
+        }
+        ir = self.compiler.compile_script(
+            script,
+            self.compiler.load_flag_ids(),
+            self.compiler.load_species_ids(),
+        )
+        raw = bytes.fromhex(ir["bytes_hex"])
+        self.assertEqual(raw[0:2], bytes([0x5C, 0x00]))
+        self.assertEqual(int.from_bytes(raw[2:4], "little"), 37)
+        self.assertEqual(int.from_bytes(raw[4:6], "little"), 0)
+        self.assertEqual(raw[-1], 0x02)
+        dialogue_relocs = [
+            rel for rel in ir["relocations"] if rel["kind"] == "dialogue"
+        ]
+        self.assertEqual(
+            [rel["symbol"] for rel in dialogue_relocs],
+            [
+                "RC_DIALOGUE_PORT_TRAINER_INTRO",
+                "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+            ],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
