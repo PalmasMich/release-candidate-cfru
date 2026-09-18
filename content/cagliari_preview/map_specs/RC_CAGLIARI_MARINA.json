@@ -71,6 +71,10 @@
     "port_link_gate": {
       "x": 21,
       "y": 10
+    },
+    "castello_access": {
+      "x": 18,
+      "y": 5
     }
   },
   "objects": [
@@ -92,7 +96,18 @@
       }
     }
   ],
-  "interactions": [],
+  "interactions": [
+    {
+      "id": "RC_INTERACT_CASTELLO_GATE",
+      "anchor": "castello_access",
+      "script": "RC_SCRIPT_CASTELLO_GATE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    }
+  ],
   "warps": [
     {
       "id": "RC_WARP_MARINA_TO_DELIVERY",
