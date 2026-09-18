@@ -17,6 +17,21 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
 
+PATCHED_SPECIES = (
+    0x0511, 0x0511, 0x0511, 0x0511,
+    0x0135, 0x0135, 0x0135,
+    0x0034, 0x0034, 0x0034, 0x0034, 0x0034,
+)
+
+def build_patched_signature() -> bytes:
+    out=bytearray(ROUTE1_WILD_SIGNATURE)
+    for record,species in enumerate(PATCHED_SPECIES):
+        pos=record*4+2
+        out[pos:pos+2]=species.to_bytes(2,"little")
+    return bytes(out)
+
+ROUTE1_PATCHED_WILD_SIGNATURE = build_patched_signature()
+
 def find_all(data: bytes, needle: bytes) -> list[int]:
     out=[]
     start=0
@@ -31,12 +46,17 @@ def gba_ptr(offset:int)->bytes:
     return (GBA_ROM_BASE+offset).to_bytes(4,"little")
 
 def discover(data:bytes)->dict:
-    mon_offsets=find_all(data,ROUTE1_WILD_SIGNATURE)
+    mon_offsets=find_all(data,ROUTE1_PATCHED_WILD_SIGNATURE)
+    signature_state="patched"
+    if len(mon_offsets)==0:
+        mon_offsets=find_all(data,ROUTE1_WILD_SIGNATURE)
+        signature_state="vanilla"
     if len(mon_offsets)!=1:
         return {
             "safe":False,
             "reason":f"expected one Route 1 land-mon array, found {len(mon_offsets)}",
             "mon_offsets":mon_offsets,
+            "signature_state":signature_state,
         }
 
     mon_offset=mon_offsets[0]
@@ -91,6 +111,7 @@ def discover(data:bytes)->dict:
     header_offset=header_candidates[0]
     return {
         "safe":True,
+        "signature_state":signature_state,
         "mon_offset":mon_offset,
         "info_offset":info_offset,
         "header_offset":header_offset,
