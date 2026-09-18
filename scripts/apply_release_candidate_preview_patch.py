@@ -96,6 +96,14 @@ VISIBLE_TEXT_REPLACEMENTS = (
         encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"),
         encode_text("PORT LINK\nCAGLIARI - MARINA PORTO"),
     ),
+    (
+        encode_text("There are three POKéMON here."),
+        encode_text("Three resources are ready."),
+    ),
+    (
+        encode_text("You can have one.\nGo on, choose!"),
+        encode_text("Pick one now.\nFirst task starts!"),
+    ),
 )
 
 MAP_NAME_REPLACEMENT = (
