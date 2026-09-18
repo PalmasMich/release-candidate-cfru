@@ -10,7 +10,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAP_COMPILER_PATH = ROOT / "scripts" / "compile_rc_map.py"
 SLOT_DISCOVERY_PATH = ROOT / "scripts" / "discover_delivery_hub_map_slot.py"
+EVENT_COMPILER_PATH = ROOT / "scripts" / "compile_rc_event_scripts.py"
+DIALOGUE_COMPILER_PATH = ROOT / "scripts" / "compile_rc_dialogue.py"
 DELIVERY_HUB_SPEC = ROOT / "content" / "cagliari_preview" / "map_specs" / "RC_DELIVERY_HUB.json"
+DELIVERY_HUB_SCRIPT_SPEC = ROOT / "content" / "cagliari_preview" / "script_specs" / "RC_DELIVERY_HUB.json"
 
 
 def load_module(path: Path, name: str):
@@ -23,9 +26,13 @@ def load_module(path: Path, name: str):
 def build_plan(rom_data: bytes) -> dict:
     compiler = load_module(MAP_COMPILER_PATH, "rc_map_compiler")
     discovery = load_module(SLOT_DISCOVERY_PATH, "delivery_hub_slot_discovery")
+    event_compiler = load_module(EVENT_COMPILER_PATH, "rc_event_compiler")
+    dialogue_compiler = load_module(DIALOGUE_COMPILER_PATH, "rc_dialogue_compiler")
 
     map_spec = compiler.load_json(DELIVERY_HUB_SPEC)
     ir = compiler.compile_spec(map_spec)
+    event_ir = event_compiler.compile_file(DELIVERY_HUB_SCRIPT_SPEC)
+    dialogue_ir = dialogue_compiler.compile_file()
     slot = discovery.analyze_rom(rom_data)
 
     if not slot["safe_to_repoint"]:
@@ -35,6 +42,22 @@ def build_plan(rom_data: bytes) -> dict:
         )
 
     header = slot["candidates"][0]
+
+    dialogue_by_id = {scene["id"]: scene for scene in dialogue_ir["scenes"]}
+    referenced_dialogues = sorted({
+        relocation["symbol"]
+        for script in event_ir["scripts"]
+        for relocation in script["relocations"]
+        if relocation["kind"] == "dialogue"
+    })
+    missing_dialogues = [dialogue_id for dialogue_id in referenced_dialogues if dialogue_id not in dialogue_by_id]
+    if missing_dialogues:
+        raise ValueError(f"Delivery Hub scripts reference missing dialogue: {missing_dialogues}")
+
+    map_cell_bytes = ir["dimensions"]["width"] * ir["dimensions"]["height"] * 2
+    script_bytes = sum(script["size"] for script in event_ir["scripts"])
+    dialogue_bytes = sum(dialogue_by_id[dialogue_id]["size"] for dialogue_id in referenced_dialogues)
+
     return {
         "format": "RC_MAP_PATCH_PLAN_V1",
         "map_id": ir["id"],
@@ -58,12 +81,24 @@ def build_plan(rom_data: bytes) -> dict:
             "warps": ir["warps"],
             "tileset_contract": ir["tileset_contract"],
         },
+        "compiled_content": {
+            "event_script_format": event_ir["format"],
+            "event_script_count": len(event_ir["scripts"]),
+            "event_script_bytes": script_bytes,
+            "event_relocation_count": sum(len(script["relocations"]) for script in event_ir["scripts"]),
+            "dialogue_format": dialogue_ir["format"],
+            "referenced_dialogues": referenced_dialogues,
+            "dialogue_bytes": dialogue_bytes,
+            "map_cell_bytes": map_cell_bytes,
+            "minimum_payload_bytes": map_cell_bytes + script_bytes + dialogue_bytes,
+        },
         "mutation_allowed": False,
         "required_before_mutation": [
             "resolve custom RC_TILESET_CAGLIARI_INTERIORS_01 asset insertion or explicitly approve temporary House2 bootstrap tilesets",
             "resolve metatile ids for every semantic Delivery Hub role against the selected tileset pair",
-            "allocate aligned free space for layout, map data, MapEvents and event scripts",
-            "compile starter and rival event scripts to exact FireRed bytecode",
+            "allocate aligned free space for MapLayout, map cells, MapEvents, scripts and dialogue blobs",
+            "link compiled event-script relocations after final ROM addresses are allocated",
+            "compile ObjectEventTemplate / BgEvent / WarpEvent records from the Delivery Hub anchors",
             "verify destination Marina map slot and warp target",
             "write all new data first, then repoint the unused MapHeader last",
         ],
