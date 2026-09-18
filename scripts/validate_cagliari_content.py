@@ -65,31 +65,19 @@ def validate() -> None:
     if missing_maps:
         raise ValueError(f"missing required maps: {sorted(missing_maps)}")
 
-    events = load("events.yml")
-    flags = list(events["flags"])
-    require_unique(flags, "story flag")
-    missing_flags = REQUIRED_FLAGS - set(flags)
-    if missing_flags:
-        raise ValueError(f"missing required story flags: {sorted(missing_flags)}")
-
-    event_ids = [event["id"] for event in events["flow"]]
-    require_unique(event_ids, "event id")
-    for event in events["flow"]:
-        if event["map"] not in map_ids:
-            raise ValueError(f"event {event['id']} references unknown map {event['map']}")
-        for flag in event.get("requires", []) + event.get("sets", []):
-            if flag not in flags:
-                raise ValueError(f"event {event['id']} references unknown flag {flag}")
-
     dialogue = load("dialogue.yml")
     dialogue_ids = [scene["id"] for scene in dialogue["scenes"]]
     require_unique(dialogue_ids, "dialogue id")
+    dialogue_id_set = set(dialogue_ids)
     all_lines = [line for scene in dialogue["scenes"] for line in scene["lines"]]
     opening = "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato."
     if opening not in all_lines:
         raise ValueError("approved opening line is missing")
 
     encounters = load("encounters.yml")
+    encounter_ids = [table["id"] for table in encounters["tables"]]
+    require_unique(encounter_ids, "encounter table id")
+    encounter_id_set = set(encounter_ids)
     for table in encounters["tables"]:
         if table["map"] not in map_ids:
             raise ValueError(f"encounter table {table['id']} references unknown map {table['map']}")
@@ -117,6 +105,69 @@ def validate() -> None:
     for player_starter, rival_starter in matrix.items():
         if player_starter == rival_starter:
             raise ValueError("rival cannot use the player's chosen starter")
+
+    trainer_ids = [trainers["rival"]["id"], trainers["route_trainer"]["id"]]
+    require_unique(trainer_ids, "trainer id")
+    trainer_id_set = set(trainer_ids)
+
+    rival_intro = trainers["rival"].get("intro_dialogue")
+    if rival_intro not in dialogue_id_set:
+        raise ValueError(f"rival references unknown dialogue {rival_intro}")
+
+    route_trainer = trainers["route_trainer"]
+    if not route_trainer.get("party"):
+        raise ValueError("route trainer must have a non-empty party")
+    for mon in route_trainer["party"]:
+        if not 1 <= mon["level"] <= 100:
+            raise ValueError(f"invalid trainer level for {mon['species']}: {mon['level']}")
+    for key in ("intro_dialogue", "outro_dialogue"):
+        dialogue_id = route_trainer.get(key)
+        if dialogue_id not in dialogue_id_set:
+            raise ValueError(f"route trainer references unknown dialogue {dialogue_id}")
+
+    events = load("events.yml")
+    flags = list(events["flags"])
+    require_unique(flags, "story flag")
+    missing_flags = REQUIRED_FLAGS - set(flags)
+    if missing_flags:
+        raise ValueError(f"missing required story flags: {sorted(missing_flags)}")
+
+    event_ids = [event["id"] for event in events["flow"]]
+    require_unique(event_ids, "event id")
+
+    produced_flags = set()
+    for event in events["flow"]:
+        if event["map"] not in map_ids:
+            raise ValueError(f"event {event['id']} references unknown map {event['map']}")
+
+        for flag in event.get("requires", []) + event.get("sets", []):
+            if flag not in flags:
+                raise ValueError(f"event {event['id']} references unknown flag {flag}")
+
+        missing_prereqs = set(event.get("requires", [])) - produced_flags
+        if missing_prereqs:
+            raise ValueError(
+                f"event {event['id']} requires flags not produced earlier in flow: "
+                f"{sorted(missing_prereqs)}"
+            )
+
+        dialogue_id = event.get("dialogue")
+        if dialogue_id is not None and dialogue_id not in dialogue_id_set:
+            raise ValueError(f"event {event['id']} references unknown dialogue {dialogue_id}")
+
+        encounter_id = event.get("encounter_table")
+        if encounter_id is not None and encounter_id not in encounter_id_set:
+            raise ValueError(f"event {event['id']} references unknown encounter table {encounter_id}")
+
+        trainer_id = event.get("trainer")
+        if trainer_id is not None and trainer_id not in trainer_id_set:
+            raise ValueError(f"event {event['id']} references unknown trainer {trainer_id}")
+
+        produced_flags.update(event.get("sets", []))
+
+    missing_producers = REQUIRED_FLAGS - produced_flags
+    if missing_producers:
+        raise ValueError(f"required story flags are never produced: {sorted(missing_producers)}")
 
 
 if __name__ == "__main__":
