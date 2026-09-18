@@ -144,3 +144,38 @@ A successful bootstrap should emit:
 - the exact Port Link script, intro-text and defeat-text ROM offsets.
 
 Only after that device smoke test should the bootstrap party/name be promoted to the final Consulente Junior implementation.
+
+
+## Custom-map pipeline checkpoint
+
+The Chapter 1 implementation now has a guarded binary path for two permanent custom-map slots:
+
+- `RC_DELIVERY_HUB` -> reserved unused `MAP_ROUTE19_UNUSED_HOUSE` (group 27 / map 0);
+- `RC_CAGLIARI_MARINA` -> reserved prototype `MAP_PROTOTYPE_SEVII_ISLE_8` (group 3 / map 52).
+
+Source-controlled map compilers now cover:
+
+- semantic map layouts and collision/elevation cells;
+- bootstrap metatile profiles with explicit retirement conditions;
+- FireRed `MapLayout`, `MapEvents`, `ObjectEventTemplate`, `BgEvent` and `WarpEvent` structures;
+- relocatable event scripts and Italian dialogue blobs;
+- Chapter 1 flags in the upstream-unused 0x0AF..0x0B9 range;
+- cross-map warp linking Hub <-> Marina;
+- guarded trailing-ROM free-space allocation;
+- atomic map installation: payloads first, map-header repoints second, Pallet/Oak-Lab entry warp repoint last.
+
+The private build pipeline now includes `RC_CUSTOM_MAPS_PATCH`. It writes through a temporary ROM and only replaces the prior preview artifact after the complete custom-map installer succeeds.
+
+### Next private-ROM verification gate
+
+A real DPE -> CFRU private build must still confirm:
+
+1. unique discovery of both reserved map headers in the current expanded ROM;
+2. sufficient terminal 0xFF free space for both linked payloads plus guard bytes;
+3. exactly two guarded Pallet -> Oak Lab coordinate-warp signatures;
+4. successful launch into the new 18x12 Delivery Hub;
+5. starter interaction and KPI-rival dialogue inside the new map;
+6. Hub -> Marina (24x16) and Marina -> Hub warp round trip;
+7. save/reload on the custom-map path.
+
+Until that smoke test passes, Route 1 and the current preview remain the fallback bootstrap and no bootstrap map is retired.
