@@ -34,6 +34,10 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         builder = load_builder()
         self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH"))
 
+    def test_dpe_sync_targets_preview_branch(self):
+        builder = load_builder()
+        self.assertEqual(builder.DPE_BRANCH, "feature/cagliari-preview-0.1")
+
     def test_default_output_is_git_ignored_gba(self):
         builder = load_builder()
         self.assertEqual(builder.DEFAULT_OUTPUT_NAME, "release_candidate_test.gba")
