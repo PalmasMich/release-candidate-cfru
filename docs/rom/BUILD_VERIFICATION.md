@@ -179,3 +179,41 @@ A real DPE -> CFRU private build must still confirm:
 7. save/reload on the custom-map path.
 
 Until that smoke test passes, Route 1 and the current preview remain the fallback bootstrap and no bootstrap map is retired.
+
+
+## Custom Port Link checkpoint
+
+The permanent Cagliari path now extends beyond the Delivery Hub and Marina into a third custom map:
+
+- `RC_PORT_CONNECTION` -> reserved prototype `MAP_PROTOTYPE_SEVII_ISLE_9` (group 3 / map 53);
+- custom layout: 28x12;
+- semantic grass uses the verified FireRed General tileset grass metatile;
+- Marina -> Port Link and Port Link -> Marina warps resolve through reserved RC map slots;
+- a real FireRed `CoordEvent` on `VAR_TEMP_1 == 0` drives the one-shot wild tutorial;
+- the tutorial sets `RC_FLAG_WILD_TUTORIAL_DONE`;
+- the Consulente Junior lives as an ObjectEventTemplate on the custom Port Link;
+- its script uses FireRed `trainerbattle_single` bytecode with trainer 37 as the current bootstrap trainer;
+- after battle, the script sets `RC_FLAG_PORT_TRAINER_DONE`;
+- the patched Route 1 WildPokemonHeader is deterministically moved from map 3/19 to Port Link map 3/53, preserving the already-patched Mistrillo/Wingull/Meowth encounter table;
+- Route 1 remains a fallback only when the custom-map installer does not apply.
+
+The atomic installer now treats Delivery Hub, Marina and Port Link as one unit. It writes all three payloads first, repoints all three headers second, moves the wild encounter header third, and redirects the Pallet/Oak-Lab story entry into the Delivery Hub last.
+
+### Next private-ROM smoke path
+
+Expected playable sequence after a successful custom-map install:
+
+1. Pallet bootstrap transition -> `RC_DELIVERY_HUB`;
+2. choose Tartrek / Frobyte / Emberfox;
+3. KPI Rival dialogue;
+4. Delivery Hub -> `RC_CAGLIARI_MARINA`;
+5. Marina Delivery Lead sends the player toward Port Link;
+6. Marina -> `RC_PORT_CONNECTION`;
+7. automatic wild tutorial trigger;
+8. Mistrillo / Wingull / Meowth encounters in custom Port Link grass;
+9. Consulente Junior trainer battle;
+10. return to Marina;
+11. Deploy-blocked dialogue;
+12. scope-change dialogue sets `RC_FLAG_SCOPE_CHANGE_REVEALED` and `RC_FLAG_CASTELLO_UNLOCKED`.
+
+Until this full loop is smoke-tested on the private built ROM, all three custom map statuses remain pending verification and the legacy preview/bootstrap path remains available.
