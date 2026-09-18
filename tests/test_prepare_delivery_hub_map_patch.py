@@ -21,6 +21,17 @@ class PrepareDeliveryHubMapPatchTest(unittest.TestCase):
         def ptr(file_offset):
             return (discovery.GBA_ROM_BASE + file_offset).to_bytes(4, "little")
 
+        layout = bytearray(b"\x00" * 0x1C)
+        layout[0x00:0x04] = (11).to_bytes(4, "little", signed=True)
+        layout[0x04:0x08] = (9).to_bytes(4, "little", signed=True)
+        layout[0x08:0x0C] = ptr(0xB00)
+        layout[0x0C:0x10] = ptr(0xC00)
+        layout[0x10:0x14] = ptr(0xD00)
+        layout[0x14:0x18] = ptr(0xE00)
+        layout[0x18] = 2
+        layout[0x19] = 2
+        rom[0x800:0x800 + len(layout)] = layout
+
         offset = 0x180
         header = bytearray(b"\x00" * discovery.MAP_HEADER_SIZE)
         header[0x00:0x04] = ptr(0x800)
