@@ -29,6 +29,14 @@ def build_preview_fixture(patcher):
     return b"".join(chunks)
 
 
+def build_patched_fixture(patcher):
+    payload = bytearray(build_preview_fixture(patcher))
+    payload = patcher.patch_preview_starters(payload)
+    payload = patcher.patch_oak_lab_rival_parties(payload)
+    payload = patcher.patch_visible_preview_text(payload)
+    return patcher.patch_route1_wild_encounters(payload)
+
+
 class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_wires_all_three_original_starters(self):
         patcher = load_patcher()
@@ -70,9 +78,7 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
 
     def test_visible_preview_labels_are_patched(self):
         patcher = load_patcher()
-        payload = bytearray(build_preview_fixture(patcher))
-        patched = patcher.patch_preview_starters(payload)
-        patched = patcher.patch_visible_preview_text(patched)
+        patched = build_patched_fixture(patcher)
         for old_text, new_text in patcher.VISIBLE_TEXT_REPLACEMENTS:
             self.assertIn(new_text, patched)
             self.assertNotIn(old_text, patched)
@@ -91,6 +97,38 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.WINGULL_SPECIES_ID), 3)
         self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.MEOWTH_SPECIES_ID), 5)
 
+    def test_validator_accepts_complete_playable_contract(self):
+        patcher = load_patcher()
+        patcher.validate_preview_patch(build_patched_fixture(patcher))
+
+    def test_validator_rejects_corrupted_starter_wiring(self):
+        patcher = load_patcher()
+        patched = build_patched_fixture(patcher)
+        pos = patched.find(patcher.BULBASAUR_STARTER_SIGNATURE[:5])
+        patched[pos + patcher.PLAYER_SPECIES_VALUE_OFFSET:pos + patcher.PLAYER_SPECIES_VALUE_OFFSET + 2] = b"\x01\x00"
+        with self.assertRaisesRegex(RuntimeError, "Player starter species wiring"):
+            patcher.validate_preview_patch(patched)
+
+    def test_validator_rejects_corrupted_rival_party(self):
+        patcher = load_patcher()
+        patched = build_patched_fixture(patcher)
+        party = b"".join(b"\x00\x00\x05\x00" + s.to_bytes(2, "little") for s in (patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID))
+        pos = patched.find(party)
+        patched[pos + 4:pos + 6] = b"\x07\x00"
+        with self.assertRaisesRegex(RuntimeError, "KPI-rival party"):
+            patcher.validate_preview_patch(patched)
+
+    def test_validator_rejects_corrupted_port_link_encounter(self):
+        patcher = load_patcher()
+        patched = build_patched_fixture(patcher)
+        expected = bytearray(patcher.ROUTE1_WILD_SIGNATURE)
+        for record, species in enumerate(patcher.ROUTE1_PREVIEW_SPECIES):
+            expected[record * 4 + 2:record * 4 + 4] = species.to_bytes(2, "little")
+        pos = patched.find(expected)
+        patched[pos + 2:pos + 4] = b"\x10\x00"
+        with self.assertRaisesRegex(RuntimeError, "Port Link custom encounter"):
+            patcher.validate_preview_patch(patched)
+
     def test_file_patch_preserves_input_and_writes_complete_preview(self):
         patcher = load_patcher()
         with tempfile.TemporaryDirectory() as tmp:
@@ -103,10 +141,7 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
             self.assertEqual(source.read_bytes(), original)
             self.assertNotEqual(patched, original)
             self.assertEqual(len(patched), len(original))
-            for species in (patcher.TARTREK_SPECIES_ID, patcher.FROBYTE_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID, patcher.MISTRILLO_SPECIES_ID):
-                self.assertIn(species.to_bytes(2, "little"), patched)
-            self.assertIn(patcher.MAP_NAME_REPLACEMENT[1], patched)
-            self.assertIn(patcher.LAB_SIGN_REPLACEMENT[1], patched)
+            patcher.validate_preview_patch(bytearray(patched))
 
 
 if __name__ == "__main__":
