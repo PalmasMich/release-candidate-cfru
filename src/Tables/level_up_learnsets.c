@@ -18958,6 +18958,22 @@ static const struct LevelUpMove sRCMistrilloLevelUpLearnset[] = {
 	LEVEL_UP_END,
 };
 
+static const struct LevelUpMove sRCFrobyteLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_POUND),
+	LEVEL_UP_MOVE( 1, MOVE_GROWL),
+	LEVEL_UP_MOVE( 5, MOVE_WATERGUN),
+	LEVEL_UP_MOVE( 7, MOVE_THUNDERSHOCK),
+	LEVEL_UP_END,
+};
+
+static const struct LevelUpMove sRCEmberfoxLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_SCRATCH),
+	LEVEL_UP_MOVE( 1, MOVE_TAILWHIP),
+	LEVEL_UP_MOVE( 5, MOVE_EMBER),
+	LEVEL_UP_MOVE( 7, MOVE_BITE),
+	LEVEL_UP_END,
+};
+
 const struct LevelUpMove* const gLevelUpLearnsets[] =
 {
 	[SPECIES_NONE] = sEmptyMoveset,
@@ -20229,6 +20245,8 @@ const struct LevelUpMove* const gLevelUpLearnsets[] =
 };
 */
 	[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,
+	[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,
+	[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,
 };
 
 #endif
