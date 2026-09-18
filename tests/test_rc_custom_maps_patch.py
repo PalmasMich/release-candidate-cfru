@@ -7,6 +7,7 @@ HUB_DISC=ROOT/"scripts"/"discover_delivery_hub_map_slot.py"
 MARINA_DISC=ROOT/"scripts"/"discover_marina_map_slot.py"
 PORT_DISC=ROOT/"scripts"/"discover_port_link_map_slot.py"
 CASTELLO_DISC=ROOT/"scripts"/"discover_castello_map_slot.py"
+DEPLOY_DISC=ROOT/"scripts"/"discover_deploy_district_map_slot.py"
 ENTRY=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
 WILD=ROOT/"scripts"/"patch_port_link_wild_header.py"
 
@@ -20,6 +21,7 @@ class TestCustomMapsPatch(unittest.TestCase):
         marina=load(MARINA_DISC,"marina")
         port=load(PORT_DISC,"port")
         castello=load(CASTELLO_DISC,"castello")
+        deploy=load(DEPLOY_DISC,"deploy")
         entry=load(ENTRY,"entry")
         wild=load(WILD,"wild")
         rom=bytearray(b"\x00"*0x10000)
@@ -112,10 +114,27 @@ class TestCustomMapsPatch(unittest.TestCase):
         ch[24]=1;ch[25]=castello.HEADER_FLAGS;ch[26]=0;ch[27]=0
         rom[0x1300:0x131C]=ch
 
+        # Deploy District reserved source slot: second 1x1 prototype with connection.
+        dl=bytearray(b"\x00"*0x1C)
+        dl[0:4]=(1).to_bytes(4,"little",signed=True)
+        dl[4:8]=(1).to_bytes(4,"little",signed=True)
+        dl[8:12]=ptr(0x4880);dl[12:16]=ptr(0x48A0)
+        dl[16:20]=ptr(0x48C0);dl[20:24]=ptr(0x48E0)
+        dl[24]=2;dl[25]=2
+        rom[0x3000:0x301C]=dl
+
+        dh=bytearray(b"\x00"*0x1C)
+        dh[0:4]=ptr(0x3000);dh[4:8]=ptr(0x3100);dh[8:12]=ptr(0x3200);dh[12:16]=ptr(0x3300)
+        dh[16:18]=deploy.MUSIC_SEVII_ROUTE.to_bytes(2,"little")
+        dh[18:20]=(0x5555).to_bytes(2,"little")
+        dh[20]=deploy.MAPSEC_SEVII_ISLE_7;dh[21]=0;dh[22]=deploy.WEATHER_SUNNY;dh[23]=deploy.MAP_TYPE_ROUTE
+        dh[24]=1;dh[25]=deploy.HEADER_FLAGS;dh[26]=0;dh[27]=0
+        rom[0x1400:0x141C]=dh
+
         rom[0xC000:]=b"\xFF"*(len(rom)-0xC000)
         return bytes(rom)
 
-    def test_installs_four_maps_and_repoints_entry_atomically(self):
+    def test_installs_five_maps_and_repoints_entry_atomically(self):
         patcher=load(PATCHER,"patcher")
         entry=load(ENTRY,"entry")
         original=self.fixture()
@@ -136,11 +155,15 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertEqual(int.from_bytes(patched[0x1300:0x1304],"little"),e["castello_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1304:0x1308],"little"),e["castello_events_ptr"])
         self.assertEqual(patched[0x130C:0x1310],b"\x00\x00\x00\x00")
+        self.assertEqual(int.from_bytes(patched[0x1400:0x1404],"little"),e["deploy_layout_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1404:0x1408],"little"),e["deploy_events_ptr"])
+        self.assertEqual(patched[0x140C:0x1410],b"\x00\x00\x00\x00")
 
         self.assertGreaterEqual(e["hub_payload_offset"],0xC000)
         self.assertGreater(e["marina_payload_offset"],e["hub_payload_offset"])
         self.assertGreater(e["port_payload_offset"],e["marina_payload_offset"])
         self.assertGreater(e["castello_payload_offset"],e["port_payload_offset"])
+        self.assertGreater(e["deploy_payload_offset"],e["castello_payload_offset"])
 
     def test_blocks_without_guarded_tail_space(self):
         patcher=load(PATCHER,"patcher")
