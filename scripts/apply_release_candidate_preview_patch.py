@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-TARTREK_SPECIES_ID = 0x04F4
+TARTREK_SPECIES_ID = 0x050E
 
 # FireRed USA 1.0 Oak's Lab starter script sequence:
 # setvar 0x4001, 0x0000          (starter choice index)
