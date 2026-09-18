@@ -100,7 +100,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
 
 MAP_NAME_REPLACEMENT = (
     encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF",
-    encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("VIRIDIAN CITY") + b"\xFF",
+    encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF",
 )
 
 LAB_SIGN_REPLACEMENT = (
