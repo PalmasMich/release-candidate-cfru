@@ -118,6 +118,7 @@ def compile_payload(
                 script,
                 script_addresses[script["id"]],
                 dialogue_addresses,
+                map_ids,
             )
             off=offsets[f"script:{script['id']}"]
             blob[off:off+len(linked)]=linked
