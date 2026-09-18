@@ -13,6 +13,7 @@ MARINA_DISCOVERY=ROOT/"scripts"/"discover_marina_map_slot.py"
 PORT_LINK_DISCOVERY=ROOT/"scripts"/"discover_port_link_map_slot.py"
 CASTELLO_DISCOVERY=ROOT/"scripts"/"discover_castello_map_slot.py"
 DEPLOY_DISTRICT_DISCOVERY=ROOT/"scripts"/"discover_deploy_district_map_slot.py"
+DEPLOY_ROOM_DISCOVERY=ROOT/"scripts"/"discover_deploy_room_map_slot.py"
 FREE_DISCOVERY=ROOT/"scripts"/"discover_rc_tail_free_space.py"
 PAYLOAD_COMPILER=ROOT/"scripts"/"compile_rc_map_payload.py"
 ENTRY_PATCHER=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
@@ -28,6 +29,8 @@ CASTELLO_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_CASTELLO_ASCENT.
 CASTELLO_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CASTELLO_ASCENT.json"
 DEPLOY_DISTRICT_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DEPLOY_DISTRICT.json"
 DEPLOY_DISTRICT_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DEPLOY_DISTRICT.json"
+DEPLOY_ROOM_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DEPLOY_ROOM.json"
+DEPLOY_ROOM_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DEPLOY_ROOM.json"
 
 def load(path:Path,name:str):
     s=importlib.util.spec_from_file_location(name,path)
@@ -72,6 +75,7 @@ def build_payloads(data:bytes)->dict:
     port_discovery=load(PORT_LINK_DISCOVERY,"port_link_slot")
     castello_discovery=load(CASTELLO_DISCOVERY,"castello_slot")
     deploy_discovery=load(DEPLOY_DISTRICT_DISCOVERY,"deploy_district_slot")
+    room_discovery=load(DEPLOY_ROOM_DISCOVERY,"deploy_room_slot")
     free=load(FREE_DISCOVERY,"tail_free")
     payload_comp=load(PAYLOAD_COMPILER,"payload_compiler")
 
@@ -80,6 +84,7 @@ def build_payloads(data:bytes)->dict:
     port_report=port_discovery.analyze_rom(data)
     castello_report=castello_discovery.analyze_rom(data)
     deploy_report=deploy_discovery.analyze_rom(data)
+    room_report=room_discovery.analyze_rom(data)
     if not hub_report["safe_to_repoint"]:
         raise ValueError(f"Delivery Hub slot not uniquely safe: {hub_report['candidate_count']}")
     if not marina_report["safe_to_repoint"]:
@@ -90,12 +95,15 @@ def build_payloads(data:bytes)->dict:
         raise ValueError(f"Castello slot not uniquely safe: {castello_report['candidate_count']}")
     if not deploy_report["safe_to_repoint"]:
         raise ValueError(f"Deploy District slot not uniquely safe: {deploy_report['candidate_count']}")
+    if not room_report["safe_to_repoint"]:
+        raise ValueError(f"Deploy Room slot not uniquely safe: {room_report['candidate_count']}")
 
     hub_header=hub_report["candidates"][0]
     marina_header=marina_report["candidates"][0]
     port_header=port_report["candidates"][0]
     castello_header=castello_report["candidates"][0]
     deploy_header=deploy_report["candidates"][0]
+    room_header=room_report["candidates"][0]
 
     # Compile once with dummy but valid ROM addresses to obtain stable sizes.
     hub_probe=payload_comp.compile_payload(
@@ -133,8 +141,15 @@ def build_payloads(data:bytes)->dict:
         primary_tileset_ptr=deploy_header["layout"]["primary_tileset_ptr"],
         secondary_tileset_ptr=deploy_header["layout"]["secondary_tileset_ptr"],
     )
+    room_probe=payload_comp.compile_payload(
+        map_spec_path=DEPLOY_ROOM_SPEC,
+        script_spec_path=DEPLOY_ROOM_SCRIPTS,
+        base_address=GBA_ROM_BASE,
+        primary_tileset_ptr=room_header["layout"]["primary_tileset_ptr"],
+        secondary_tileset_ptr=room_header["layout"]["secondary_tileset_ptr"],
+    )
 
-    required=hub_probe["size"]+3+marina_probe["size"]+3+port_probe["size"]+3+castello_probe["size"]+3+deploy_probe["size"]
+    required=hub_probe["size"]+3+marina_probe["size"]+3+port_probe["size"]+3+castello_probe["size"]+3+deploy_probe["size"]+3+room_probe["size"]
     space=free.discover_tail(data,required)
     if not space["safe_to_allocate"]:
         raise ValueError(
@@ -192,7 +207,17 @@ def build_payloads(data:bytes)->dict:
         secondary_tileset_ptr=deploy_header["layout"]["secondary_tileset_ptr"],
     )
 
-    allocation_end=deploy_file_offset+deploy["size"]
+    room_file_offset=align(deploy_file_offset+deploy["size"],4)
+    room_base=GBA_ROM_BASE+room_file_offset
+    room=payload_comp.compile_payload(
+        map_spec_path=DEPLOY_ROOM_SPEC,
+        script_spec_path=DEPLOY_ROOM_SCRIPTS,
+        base_address=room_base,
+        primary_tileset_ptr=room_header["layout"]["primary_tileset_ptr"],
+        secondary_tileset_ptr=room_header["layout"]["secondary_tileset_ptr"],
+    )
+
+    allocation_end=room_file_offset+room["size"]
     if allocation_end+free.MIN_GUARD>len(data):
         raise ValueError("linked map payloads exceed guarded trailing ROM allocation")
 
@@ -202,16 +227,19 @@ def build_payloads(data:bytes)->dict:
       "port_header":port_header,
       "castello_header":castello_header,
       "deploy_header":deploy_header,
+      "room_header":room_header,
       "hub":hub,
       "marina":marina,
       "port":port,
       "castello":castello,
       "deploy":deploy,
+      "room":room,
       "hub_file_offset":hub_file_offset,
       "marina_file_offset":marina_file_offset,
       "port_file_offset":port_file_offset,
       "castello_file_offset":castello_file_offset,
       "deploy_file_offset":deploy_file_offset,
+      "room_file_offset":room_file_offset,
       "allocation_end":allocation_end,
       "space":space,
     }
@@ -228,6 +256,7 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
     p=plan["port"]; po=plan["port_file_offset"]
     cst=plan["castello"]; co=plan["castello_file_offset"]
     dep=plan["deploy"]; do=plan["deploy_file_offset"]
+    room=plan["room"]; ro=plan["room_file_offset"]
 
     # Data first.
     out[ho:ho+h["size"]]=h["bytes"]
@@ -235,6 +264,7 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
     out[po:po+p["size"]]=p["bytes"]
     out[co:co+cst["size"]]=cst["bytes"]
     out[do:do+dep["size"]]=dep["bytes"]
+    out[ro:ro+room["size"]]=room["bytes"]
 
     # Repoint headers only after all pointed-to payload bytes are present.
     repoint_header(
@@ -264,6 +294,11 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
         events_ptr=dep["map_events_address"],
         clear_connections=True,
     )
+    repoint_header(
+        out,plan["room_header"],
+        layout_ptr=room["map_layout_address"],
+        events_ptr=room["map_events_address"],
+    )
 
     # Move the already-patched Route 1 wild header to the custom Port Link.
     out_wild,wild_report=wild.patch_bytes(bytes(out))
@@ -279,6 +314,7 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
       "port_header_offset":plan["port_header"]["offset"],
       "castello_header_offset":plan["castello_header"]["offset"],
       "deploy_header_offset":plan["deploy_header"]["offset"],
+      "room_header_offset":plan["room_header"]["offset"],
       "hub_payload_offset":ho,
       "hub_payload_size":h["size"],
       "marina_payload_offset":mo,
@@ -289,6 +325,8 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
       "castello_payload_size":cst["size"],
       "deploy_payload_offset":do,
       "deploy_payload_size":dep["size"],
+      "room_payload_offset":ro,
+      "room_payload_size":room["size"],
       "allocation_end":plan["allocation_end"],
       "entry_warp_offsets":entry_offsets,
       "wild_header_offset":wild_report["header_offset"],
@@ -304,6 +342,8 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
       "castello_events_ptr":cst["map_events_address"],
       "deploy_layout_ptr":dep["map_layout_address"],
       "deploy_events_ptr":dep["map_events_address"],
+      "room_layout_ptr":room["map_layout_address"],
+      "room_events_ptr":room["map_events_address"],
     }
     return out2,evidence
 
@@ -315,24 +355,26 @@ def patch_rom(source:Path,output:Path)->Path:
     output.write_bytes(patched)
     if output.stat().st_size!=source.stat().st_size:
         raise RuntimeError("custom-map output size mismatch")
-    print("RC_CUSTOM_MAPS=DELIVERY_HUB+MARINA+PORT_LINK+CASTELLO+DEPLOY_DISTRICT")
+    print("RC_CUSTOM_MAPS=DELIVERY_HUB+MARINA+PORT_LINK+CASTELLO+DEPLOY_DISTRICT+DEPLOY_ROOM")
     print(f"RC_HUB_HEADER_OFFSET=0x{e['hub_header_offset']:X}")
     print(f"RC_MARINA_HEADER_OFFSET=0x{e['marina_header_offset']:X}")
     print(f"RC_PORT_LINK_HEADER_OFFSET=0x{e['port_header_offset']:X}")
     print(f"RC_CASTELLO_HEADER_OFFSET=0x{e['castello_header_offset']:X}")
     print(f"RC_DEPLOY_DISTRICT_HEADER_OFFSET=0x{e['deploy_header_offset']:X}")
+    print(f"RC_DEPLOY_ROOM_HEADER_OFFSET=0x{e['room_header_offset']:X}")
     print(f"RC_HUB_PAYLOAD_OFFSET=0x{e['hub_payload_offset']:X}")
     print(f"RC_MARINA_PAYLOAD_OFFSET=0x{e['marina_payload_offset']:X}")
     print(f"RC_PORT_LINK_PAYLOAD_OFFSET=0x{e['port_payload_offset']:X}")
     print(f"RC_CASTELLO_PAYLOAD_OFFSET=0x{e['castello_payload_offset']:X}")
     print(f"RC_DEPLOY_DISTRICT_PAYLOAD_OFFSET=0x{e['deploy_payload_offset']:X}")
+    print(f"RC_DEPLOY_ROOM_PAYLOAD_OFFSET=0x{e['room_payload_offset']:X}")
     print("RC_ENTRY_WARP_OFFSETS="+",".join(f"0x{x:X}" for x in e["entry_warp_offsets"]))
     print(f"RC_PORT_LINK_WILD_HEADER_OFFSET=0x{e['wild_header_offset']:X}")
     print(f"RC_CUSTOM_MAPS_OUTPUT={output}")
     return output
 
 def main():
-    p=argparse.ArgumentParser(description="Atomically install Release Candidate Delivery Hub, Marina, Port Link, Castello and Deploy District custom maps.")
+    p=argparse.ArgumentParser(description="Atomically install Release Candidate Delivery Hub, Marina, Port Link, Castello, Deploy District and Deploy Room custom maps.")
     p.add_argument("source",type=Path);p.add_argument("output",type=Path)
     a=p.parse_args()
     try: patch_rom(a.source,a.output)
