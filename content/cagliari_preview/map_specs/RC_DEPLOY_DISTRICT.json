@@ -68,7 +68,18 @@
     }
   },
   "objects": [],
-  "interactions": [],
+  "interactions": [
+    {
+      "id": "RC_INTERACT_RELEASE_GATE",
+      "anchor": "release_gate",
+      "script": "RC_SCRIPT_RELEASE_GATE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    }
+  ],
   "coord_events": [
     {
       "id": "RC_COORD_GO_NO_GO_START",
