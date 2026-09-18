@@ -40,6 +40,7 @@ if [ -f "$ROM" ]; then
     exit 1
   fi
   echo "ROM_OK: FireRed USA v1.0 SHA-1 verified."
+  echo "NEXT: python scripts/build_release_candidate.py"
 else
   echo
   echo "BLOCKED_LOCAL_ROM: upload your verified FireRed USA v1.0 file to:"
