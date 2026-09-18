@@ -17,6 +17,7 @@ ENTRY_PATCHER=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
 HUB_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DELIVERY_HUB.json"
 HUB_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DELIVERY_HUB.json"
 MARINA_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_CAGLIARI_MARINA.json"
+MARINA_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CAGLIARI_MARINA.json"
 
 def load(path:Path,name:str):
     s=importlib.util.spec_from_file_location(name,path)
@@ -72,7 +73,7 @@ def build_payloads(data:bytes)->dict:
     )
     marina_probe=payload_comp.compile_payload(
         map_spec_path=MARINA_SPEC,
-        script_spec_path=None,
+        script_spec_path=MARINA_SCRIPTS,
         base_address=GBA_ROM_BASE,
         primary_tileset_ptr=marina_header["layout"]["primary_tileset_ptr"],
         secondary_tileset_ptr=marina_header["layout"]["secondary_tileset_ptr"],
@@ -100,7 +101,7 @@ def build_payloads(data:bytes)->dict:
     marina_base=GBA_ROM_BASE+marina_file_offset
     marina=payload_comp.compile_payload(
         map_spec_path=MARINA_SPEC,
-        script_spec_path=None,
+        script_spec_path=MARINA_SCRIPTS,
         base_address=marina_base,
         primary_tileset_ptr=marina_header["layout"]["primary_tileset_ptr"],
         secondary_tileset_ptr=marina_header["layout"]["secondary_tileset_ptr"],
