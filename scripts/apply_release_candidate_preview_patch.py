@@ -6,6 +6,8 @@ import argparse
 from pathlib import Path
 
 TARTREK_SPECIES_ID = 0x050E
+FROBYTE_SPECIES_ID = 0x050F
+EMBERFOX_SPECIES_ID = 0x0510
 MISTRILLO_SPECIES_ID = 0x0511
 
 # FireRed USA 1.0 Oak's Lab starter script sequence:
@@ -21,7 +23,27 @@ BULBASAUR_STARTER_SIGNATURE = bytes.fromhex(
     "16 03 40 04 00 "
     "16 04 40 07 00"
 )
+SQUIRTLE_STARTER_SIGNATURE = bytes.fromhex(
+    "16 01 40 01 00 "
+    "16 02 40 07 00 "
+    "16 03 40 01 00"
+)
+CHARMANDER_STARTER_SIGNATURE = bytes.fromhex(
+    "16 01 40 02 00 "
+    "16 02 40 04 00 "
+    "16 03 40 07 00"
+)
 PLAYER_SPECIES_VALUE_OFFSET = 8
+RIVAL_SPECIES_VALUE_OFFSET = 13
+
+# Vanilla Oak's Lab rival parties are three consecutive
+# TrainerMonNoItemDefaultMoves structs: iv(u16), lvl(u8), pad(u8), species(u16).
+OAK_LAB_RIVAL_PARTIES_SIGNATURE = bytes.fromhex(
+    "00 00 05 00 07 00 "
+    "00 00 05 00 01 00 "
+    "00 00 05 00 04 00"
+)
+RIVAL_PARTY_SPECIES_OFFSETS = (4, 10, 16)
 
 ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "03 03 10 00 "
@@ -115,6 +137,42 @@ LAB_SIGN_REPLACEMENT = (
     b"\xCA\xC9\xC5\x1B\xC7\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC",
     encode_text("DELIVERY HUB"),
 )
+
+
+def _find_exactly_one(data: bytearray, signature: bytes, label: str) -> int:
+    positions = []
+    start = 0
+    while True:
+        pos = data.find(signature, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + 1
+    if len(positions) != 1:
+        raise ValueError(f"Expected exactly one {label} signature, found {len(positions)}.")
+    return positions[0]
+
+
+def patch_preview_starters(data: bytearray) -> bytearray:
+    starter_specs = (
+        (BULBASAUR_STARTER_SIGNATURE, "Bulbasaur starter", TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
+        (SQUIRTLE_STARTER_SIGNATURE, "Squirtle starter", FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
+        (CHARMANDER_STARTER_SIGNATURE, "Charmander starter", EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
+    )
+    for signature, label, player_species, rival_species in starter_specs:
+        pos = _find_exactly_one(data, signature, label)
+        data[pos + PLAYER_SPECIES_VALUE_OFFSET:pos + PLAYER_SPECIES_VALUE_OFFSET + 2] = player_species.to_bytes(2, "little")
+        data[pos + RIVAL_SPECIES_VALUE_OFFSET:pos + RIVAL_SPECIES_VALUE_OFFSET + 2] = rival_species.to_bytes(2, "little")
+    return data
+
+
+def patch_oak_lab_rival_parties(data: bytearray) -> bytearray:
+    pos = _find_exactly_one(data, OAK_LAB_RIVAL_PARTIES_SIGNATURE, "Oak Lab rival party")
+    # Party order in vanilla: Squirtle, Bulbasaur, Charmander.
+    replacement_species = (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)
+    for rel, species in zip(RIVAL_PARTY_SPECIES_OFFSETS, replacement_species):
+        data[pos + rel:pos + rel + 2] = species.to_bytes(2, "little")
+    return data
 
 
 def patch_tartrek_starter(data: bytearray) -> tuple[bytearray, int]:
@@ -222,9 +280,8 @@ def patch_rom(source: Path, output: Path) -> Path:
         raise FileNotFoundError(f"Input ROM not found: {source}")
 
     original = source.read_bytes()
-    patched, count = patch_tartrek_starter(bytearray(original))
-    if count != 1:
-        raise RuntimeError("Tartrek starter patch was not applied exactly once.")
+    patched = patch_preview_starters(bytearray(original))
+    patched = patch_oak_lab_rival_parties(patched)
     patched = patch_visible_preview_text(patched)
     patched = patch_route1_wild_encounters(patched)
 
@@ -234,8 +291,8 @@ def patch_rom(source: Path, output: Path) -> Path:
     if output.stat().st_size != source.stat().st_size:
         raise RuntimeError("Preview patch changed ROM size unexpectedly.")
 
-    print("RC_PREVIEW_PATCH=TARTREK_STARTER+CAGLIARI_LABELS+MISTRILLO_ROUTE1")
-    print(f"RC_PREVIEW_SPECIES_ID=0x{TARTREK_SPECIES_ID:04X}")
+    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+MISTRILLO_ROUTE1")
+    print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_OUTPUT={output}")
     return output
