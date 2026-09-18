@@ -117,6 +117,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                     sync_dpe=lambda _path: None,
                     verify_dpe_symbols=lambda _path: None,
                     apply_preview_patch=lambda source, output: output.write_bytes(source.read_bytes()),
+                    discover_port_link=lambda _output: 2,
                 )
 
             self.assertEqual(base.read_bytes(), pristine)
@@ -155,10 +156,48 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 sync_dpe=lambda _path: None,
                 verify_dpe_symbols=lambda _path: None,
                 apply_preview_patch=fake_preview_patch,
+                discover_port_link=lambda _output: 0,
             )
 
             self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-tartrek")
             self.assertEqual(base.read_bytes(), b"pristine")
+
+
+    def test_pipeline_runs_port_link_discovery_on_final_output(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root, dpe = make_fake_workspace(tmp)
+            base = root / "BPRE0.gba"
+            base.write_bytes(b"pristine")
+            output = root / "release_candidate_test.gba"
+            discovered = []
+
+            def fake_run(label, cwd):
+                if label == "DPE":
+                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
+                else:
+                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+
+            def fake_patch(source, destination):
+                destination.write_bytes(source.read_bytes() + b"-preview")
+
+            def fake_discover(path):
+                discovered.append(Path(path))
+                return 0
+
+            builder.run_pipeline(
+                cfru_root=root,
+                dpe_root=dpe,
+                output_path=output,
+                run_build=fake_run,
+                verify_rom=lambda _path: "test",
+                sync_dpe=lambda _path: None,
+                verify_dpe_symbols=lambda _path: None,
+                apply_preview_patch=fake_patch,
+                discover_port_link=fake_discover,
+            )
+
+            self.assertEqual(discovered, [output.resolve()])
 
 
 if __name__ == "__main__":
