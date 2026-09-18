@@ -76,6 +76,18 @@ def validate_spec(spec: dict) -> None:
             f"{map_id}: interaction {interaction.get('id')} has no compiled script binding",
         )
 
+    for coord in spec.get("coord_events", []):
+        anchor = coord.get("anchor")
+        require(anchor in anchors, f"{map_id}: coord event {coord.get('id')} has unknown anchor {anchor}")
+        require(
+            str(coord.get("script", "")).startswith("RC_SCRIPT_"),
+            f"{map_id}: coord event {coord.get('id')} has no compiled script binding",
+        )
+        var_id = coord.get("var_id")
+        if isinstance(var_id, str):
+            var_id = int(var_id, 0)
+        require(isinstance(var_id, int) and 0 <= var_id <= 0xFFFF, f"{map_id}: invalid coord-event var id")
+
     for warp in spec.get("warps", []):
         anchor = warp.get("anchor")
         require(anchor in anchors, f"{map_id}: warp {warp.get('id')} has unknown anchor {anchor}")
