@@ -63,9 +63,35 @@
     "player_spawn": {
       "x": 11,
       "y": 13
+    },
+    "delivery_lead_marina": {
+      "x": 16,
+      "y": 10
+    },
+    "port_link_gate": {
+      "x": 21,
+      "y": 10
     }
   },
-  "objects": [],
+  "objects": [
+    {
+      "id": "RC_NPC_DELIVERY_LEAD_MARINA",
+      "role": "story_npc",
+      "anchor": "delivery_lead_marina",
+      "script": "RC_SCRIPT_MARINA_DELIVERY_LEAD",
+      "local_id": 1,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
+    }
+  ],
   "interactions": [],
   "warps": [
     {
@@ -76,6 +102,17 @@
       "elevation": 3,
       "warp_id": 0,
       "requires": []
+    },
+    {
+      "id": "RC_WARP_MARINA_TO_PORT_LINK",
+      "anchor": "port_link_gate",
+      "target_map": "RC_PORT_CONNECTION",
+      "target_anchor": "marina_entrance",
+      "elevation": 3,
+      "warp_id": 0,
+      "requires": [
+        "RC_FLAG_RIVAL_INTRO_DONE"
+      ]
     }
   ],
   "art_contract": {
