@@ -104,7 +104,8 @@
         "RC_FLAG_CASTELLO_UNLOCKED"
       ],
       "sets": [],
-      "scope": "chapter_01"
+      "scope": "chapter_01",
+      "implementation_status": "custom_path_pending_smoke"
     },
     {
       "id": "RC_EVENT_GO_NO_GO",
@@ -115,7 +116,8 @@
       "sets": [
         "RC_FLAG_GO_NO_GO_STARTED"
       ],
-      "scope": "chapter_01"
+      "scope": "chapter_01",
+      "implementation_status": "custom_path_pending_smoke"
     },
     {
       "id": "RC_EVENT_RELEASE_MANAGER",
