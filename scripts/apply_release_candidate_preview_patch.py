@@ -9,6 +9,8 @@ TARTREK_SPECIES_ID = 0x050E
 FROBYTE_SPECIES_ID = 0x050F
 EMBERFOX_SPECIES_ID = 0x0510
 MISTRILLO_SPECIES_ID = 0x0511
+WINGULL_SPECIES_ID = 0x0135
+MEOWTH_SPECIES_ID = 0x0034
 
 # FireRed USA 1.0 Oak's Lab starter script sequence:
 # setvar 0x4001, 0x0000          (starter choice index)
@@ -59,7 +61,11 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "05 05 10 00 "
     "04 04 13 00"
 )
-ROUTE1_PIDGEY_RECORDS = (0, 2, 4, 6, 8, 10)
+ROUTE1_PREVIEW_SPECIES = (
+    MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
+    WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
+    MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID,
+)
 
 CHARMAP = {
     **{chr(ord("A") + i): 0xBB + i for i in range(26)},
@@ -285,10 +291,9 @@ def patch_route1_wild_encounters(data: bytearray) -> bytearray:
         )
 
     base = positions[0]
-    species_bytes = MISTRILLO_SPECIES_ID.to_bytes(2, "little")
-    for record in ROUTE1_PIDGEY_RECORDS:
+    for record, species in enumerate(ROUTE1_PREVIEW_SPECIES):
         species_pos = base + (record * 4) + 2
-        data[species_pos:species_pos + 2] = species_bytes
+        data[species_pos:species_pos + 2] = species.to_bytes(2, "little")
     return data
 
 
