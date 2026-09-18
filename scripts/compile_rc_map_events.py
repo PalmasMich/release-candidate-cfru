@@ -65,6 +65,41 @@ def compile_object_events(spec: dict) -> dict:
     }
 
 
+def compile_coord_events(spec: dict) -> dict:
+    data = bytearray()
+    relocations = []
+
+    for coord in spec.get("coord_events", []):
+        anchor = spec["anchors"][coord["anchor"]]
+        elevation = int(coord.get("elevation", 3))
+        var_id_raw = coord.get("var_id", "0x4001")
+        var_id = int(var_id_raw, 0) if isinstance(var_id_raw, str) else int(var_id_raw)
+        var_value = int(coord.get("var_value", 0))
+
+        data.extend(u16(anchor["x"]))
+        data.extend(u16(anchor["y"]))
+        data.extend(bytes([elevation, 0x00]))
+        data.extend(u16(var_id))
+        data.extend(u16(var_value))
+        data.extend(b"\x00\x00")
+        placeholder(
+            data,
+            relocations,
+            {
+                "kind": "script_pointer",
+                "symbol": coord["script"],
+                "owner": coord["id"],
+            },
+        )
+
+    return {
+        "count": len(spec.get("coord_events", [])),
+        "size": len(data),
+        "bytes_hex": data.hex(" "),
+        "relocations": relocations,
+    }
+
+
 def compile_bg_events(spec: dict) -> dict:
     data = bytearray()
     relocations = []
@@ -153,13 +188,8 @@ def link_map_id_relocations(block: dict, map_ids: dict[str, tuple[int, int]]) ->
 def compile_map_events(spec: dict) -> dict:
     objects = compile_object_events(spec)
     warps = compile_warps(spec)
+    coord = compile_coord_events(spec)
     bg = compile_bg_events(spec)
-    coord = {
-        "count": 0,
-        "size": 0,
-        "bytes_hex": "",
-        "relocations": [],
-    }
 
     header = bytearray([
         objects["count"],
@@ -199,7 +229,7 @@ def compile_map_events(spec: dict) -> dict:
         "warp_events": warps,
         "coord_events": coord,
         "bg_events": bg,
-        "total_bytes": len(header) + objects["size"] + warps["size"] + bg["size"],
+        "total_bytes": len(header) + objects["size"] + warps["size"] + coord["size"] + bg["size"],
     }
 
 
