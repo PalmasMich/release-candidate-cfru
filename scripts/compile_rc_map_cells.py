@@ -47,7 +47,11 @@ def compile_cells(map_spec: dict, profile: dict) -> dict:
 def compile_file(source: Path, output: Path|None=None) -> dict:
     spec=load_json(source)
     profiles=load_json(PROFILE_PATH)["profiles"]
-    ir=compile_cells(spec, profiles["RC_DELIVERY_HUB_HOUSE2_BOOTSTRAP"])
+    profile_id=spec.get("metatile_profile")
+    if profile_id not in profiles:
+        raise ValueError(f"unknown metatile profile {profile_id}")
+    ir=compile_cells(spec, profiles[profile_id])
+    ir["profile"]=profile_id
     if output:
         output.parent.mkdir(parents=True,exist_ok=True)
         output.write_text(json.dumps(ir,indent=2)+"\n",encoding="utf-8")
