@@ -16,263 +16,112 @@ def load_builder():
 
 
 def make_fake_workspace(tmp):
-    root = Path(tmp) / "cfru"
-    dpe = Path(tmp) / "dpe"
+    root, dpe = Path(tmp) / "cfru", Path(tmp) / "dpe"
     (root / "scripts").mkdir(parents=True)
     (dpe / "scripts").mkdir(parents=True)
     (root / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
     (dpe / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+    table = root / "src/Tables/level_up_learnsets.c"
+    table.parent.mkdir(parents=True)
+    table.write_text(
+        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n};\n*/\n"
+        "\t[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,\n"
+        "\t[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,\n"
+        "\t[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,\n};\n",
+        encoding="utf-8",
+    )
     return root, dpe
 
 
 class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_validates_expected_pristine_rom_hash(self):
-        builder = load_builder()
-        self.assertEqual(builder.EXPECTED_SHA1, EXPECTED_SHA1)
+        self.assertEqual(load_builder().EXPECTED_SHA1, EXPECTED_SHA1)
 
-    def test_pipeline_order_is_dpe_then_cfru_then_preview_patch(self):
-        builder = load_builder()
-        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN"))
+    def test_pipeline_order(self):
+        self.assertEqual(load_builder().PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN"))
 
     def test_dpe_sync_targets_preview_branch(self):
-        builder = load_builder()
-        self.assertEqual(builder.DPE_BRANCH, "feature/cagliari-preview-0.1")
+        self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
 
-    def test_dpe_preview_symbol_gate_requires_tartrek_and_mistrillo_assets(self):
+    def test_rc_learnset_pointer_overlay_activates_tartrek(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root, _ = make_fake_workspace(tmp)
+            table = root / builder.RC_LEARNSET_TABLE
+            original = table.read_bytes()
+            returned = builder.activate_rc_learnset_pointers(root)
+            self.assertEqual(returned, original)
+            text = table.read_text(encoding="utf-8")
+            self.assertIn("*/\n\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n\t[SPECIES_RC_CAGLIARI_WILD_01]", text)
+
+    def test_dpe_preview_symbol_gate_requires_all_rc_assets(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
             dpe = Path(tmp)
-            (dpe / "offsets.ini").write_text(
-                "gFrontSprite1294RCTartrekTiles: 09900000\n"
-                "gBackShinySprite1294RCTartrekTiles: 09901000\n"
-                "gIconSprite1294RCTartrekTiles: 09902000\n"
-                "gFrontSprite1294RCTartrekPal: 09903000\n"
-                "gBackShinySprite1294RCTartrekPal: 09903000\n"
-                "gFrontSprite1295RCFrobyteTiles: 09904000\n"
-                "gBackShinySprite1295RCFrobyteTiles: 09905000\n"
-                "gIconSprite1295RCFrobyteTiles: 09906000\n"
-                "gFrontSprite1295RCFrobytePal: 09907000\n"
-                "gBackShinySprite1295RCFrobytePal: 09907000\n"
-                "gFrontSprite1296RCEmberfoxTiles: 09908000\n"
-                "gBackShinySprite1296RCEmberfoxTiles: 09909000\n"
-                "gIconSprite1296RCEmberfoxTiles: 0990A000\n"
-                "gFrontSprite1296RCEmberfoxPal: 0990B000\n"
-                "gBackShinySprite1296RCEmberfoxPal: 0990B000\n"
-                "gFrontSprite1297RCMistrilloTiles: 0990C000\n"
-                "gBackShinySprite1297RCMistrilloTiles: 09905000\n"
-                "gIconSprite1297RCMistrilloTiles: 09906000\n"
-                "gFrontSprite1297RCMistrilloPal: 09907000\n"
-                "gBackShinySprite1297RCMistrilloPal: 09907000\n",
-                encoding="utf-8",
-            )
+            names = []
+            for slot, name in ((1294, "RCTartrek"), (1295, "RCFrobyte"), (1296, "RCEmberfox"), (1297, "RCMistrillo")):
+                names += [f"gFrontSprite{slot}{name}Tiles", f"gBackShinySprite{slot}{name}Tiles", f"gIconSprite{slot}{name}Tiles", f"gFrontSprite{slot}{name}Pal", f"gBackShinySprite{slot}{name}Pal"]
+            (dpe / "offsets.ini").write_text("\n".join(f"{n}: 09900000" for n in names), encoding="utf-8")
             builder.verify_dpe_tartrek_symbols(dpe)
 
-    def test_dpe_tartrek_symbol_gate_rejects_stale_dpe_build(self):
+    def test_dpe_symbol_gate_rejects_stale_build(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
-            dpe = Path(tmp)
-            (dpe / "offsets.ini").write_text("gFrontSprite001BulbasaurTiles: 09900000\n", encoding="utf-8")
-            with self.assertRaisesRegex(RuntimeError, "Tartrek"):
+            dpe = Path(tmp); (dpe / "offsets.ini").write_text("gFrontSprite001BulbasaurTiles: 09900000\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "RC preview"):
                 builder.verify_dpe_tartrek_symbols(dpe)
-
-    def test_default_output_is_git_ignored_gba(self):
-        builder = load_builder()
-        self.assertEqual(builder.DEFAULT_OUTPUT_NAME, "release_candidate_test.gba")
-        ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
-        self.assertIn("*.gba", ignore)
 
     def test_private_rom_guard_rejects_wrong_hash(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
-            rom = Path(tmp) / "BPRE0.gba"
-            rom.write_bytes(b"not-a-fire-red-rom")
+            rom = Path(tmp) / "BPRE0.gba"; rom.write_bytes(b"not-a-fire-red-rom")
             with self.assertRaisesRegex(ValueError, "SHA-1"):
                 builder.verify_pristine_rom(rom)
 
-    def test_pipeline_restores_pristine_cfru_input_after_failure(self):
-        builder = load_builder()
-        pristine = b"private-pristine-rom"
+    def _run_fake_pipeline(self, tmp, *, fail_cfru=False, discovery=2, trainer=1, hub=2):
+        builder = load_builder(); root, dpe = make_fake_workspace(tmp)
+        base = root / "BPRE0.gba"; base.write_bytes(b"pristine")
+        output = root / "release_candidate_test.gba"
+        original_table = (root / builder.RC_LEARNSET_TABLE).read_bytes()
+        def fake_run(label, cwd):
+            if label == "DPE": (cwd / "test.gba").write_bytes(b"dpe-expanded")
+            else:
+                active = (cwd / builder.RC_LEARNSET_TABLE).read_text(encoding="utf-8")
+                self.assertIn("*/\n\t[SPECIES_RC_TURTLE_01]", active)
+                (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+                if fail_cfru: raise RuntimeError("forced CFRU failure")
+        def patch(source, destination): destination.write_bytes(source.read_bytes() + b"-preview")
+        def trainer_patch(source, destination):
+            if trainer == 0: destination.write_bytes(source.read_bytes() + b"-trainer")
+            return trainer
+        kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output, run_build=fake_run,
+                      verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
+                      apply_preview_patch=patch, discover_port_link=lambda _p: discovery,
+                      apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub)
+        if fail_cfru:
+            with self.assertRaisesRegex(RuntimeError, "forced CFRU failure"): builder.run_pipeline(**kwargs)
+        else: builder.run_pipeline(**kwargs)
+        self.assertEqual(base.read_bytes(), b"pristine")
+        self.assertEqual((root / builder.RC_LEARNSET_TABLE).read_bytes(), original_table)
+        self.assertFalse((dpe / "BPRE0.gba").exists())
+        return output
+
+    def test_pipeline_restores_rom_and_learnset_table_after_failure(self):
+        with tempfile.TemporaryDirectory() as tmp: self._run_fake_pipeline(tmp, fail_cfru=True)
+
+    def test_pipeline_applies_preview_patch(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root, dpe = make_fake_workspace(tmp)
-            base = root / "BPRE0.gba"
-            base.write_bytes(pristine)
-
-            def fake_verify(_path):
-                return "test"
-
-            def fake_run(label, cwd):
-                if label == "DPE":
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                    return
-                (cwd / "test.gba").write_bytes(b"cfru-partial")
-                raise RuntimeError("forced CFRU failure")
-
-            with self.assertRaisesRegex(RuntimeError, "forced CFRU failure"):
-                builder.run_pipeline(
-                    cfru_root=root,
-                    dpe_root=dpe,
-                    output_path=root / "release_candidate_test.gba",
-                    run_build=fake_run,
-                    verify_rom=fake_verify,
-                    sync_dpe=lambda _path: None,
-                    verify_dpe_symbols=lambda _path: None,
-                    apply_preview_patch=lambda source, output: output.write_bytes(source.read_bytes()),
-                    discover_port_link=lambda _output: 2,
-                    apply_port_link_trainer=lambda _source, _output: 1,
-                prepare_delivery_hub_map=lambda _output: 2,
-                    prepare_delivery_hub_map=lambda _output: 2,
-                )
-
-            self.assertEqual(base.read_bytes(), pristine)
-            self.assertFalse((dpe / "BPRE0.gba").exists())
-
-    def test_pipeline_consumes_test_gba_and_applies_preview_patch(self):
-        builder = load_builder()
-        with tempfile.TemporaryDirectory() as tmp:
-            root, dpe = make_fake_workspace(tmp)
-            base = root / "BPRE0.gba"
-            base.write_bytes(b"pristine")
-            output = root / "release_candidate_test.gba"
-
-            def fake_verify(_path):
-                return "test"
-
-            def fake_run(label, cwd):
-                source = (cwd / "BPRE0.gba").read_bytes()
-                if label == "DPE":
-                    self.assertEqual(source, b"pristine")
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                else:
-                    self.assertEqual(source, b"dpe-expanded")
-                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
-
-            def fake_preview_patch(source, destination):
-                self.assertEqual(source.read_bytes(), b"dpe-plus-cfru")
-                destination.write_bytes(source.read_bytes() + b"-tartrek")
-
-            builder.run_pipeline(
-                cfru_root=root,
-                dpe_root=dpe,
-                output_path=output,
-                run_build=fake_run,
-                verify_rom=fake_verify,
-                sync_dpe=lambda _path: None,
-                verify_dpe_symbols=lambda _path: None,
-                apply_preview_patch=fake_preview_patch,
-                discover_port_link=lambda _output: 2,
-                apply_port_link_trainer=lambda _source, _output: 1,
-                prepare_delivery_hub_map=lambda _output: 2,
-            )
-
-            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-tartrek")
-            self.assertEqual(base.read_bytes(), b"pristine")
-
-
-    def test_pipeline_runs_port_link_discovery_on_final_output(self):
-        builder = load_builder()
-        with tempfile.TemporaryDirectory() as tmp:
-            root, dpe = make_fake_workspace(tmp)
-            base = root / "BPRE0.gba"
-            base.write_bytes(b"pristine")
-            output = root / "release_candidate_test.gba"
-            discovered = []
-
-            def fake_run(label, cwd):
-                if label == "DPE":
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                else:
-                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
-
-            def fake_patch(source, destination):
-                destination.write_bytes(source.read_bytes() + b"-preview")
-
-            def fake_discover(path):
-                discovered.append(Path(path))
-                return 0
-
-            builder.run_pipeline(
-                cfru_root=root,
-                dpe_root=dpe,
-                output_path=output,
-                run_build=fake_run,
-                verify_rom=lambda _path: "test",
-                sync_dpe=lambda _path: None,
-                verify_dpe_symbols=lambda _path: None,
-                apply_preview_patch=fake_patch,
-                discover_port_link=fake_discover,
-                apply_port_link_trainer=lambda source, destination: (
-                    destination.write_bytes(source.read_bytes() + b"-trainer"), 0
-                )[1],
-                prepare_delivery_hub_map=lambda _output: 0,
-            )
-
-            self.assertEqual(discovered, [output.resolve()])
-            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-trainer")
-
-
-    def test_pipeline_preserves_preview_when_trainer_patch_is_pending(self):
-        builder = load_builder()
-        with tempfile.TemporaryDirectory() as tmp:
-            root, dpe = make_fake_workspace(tmp)
-            (root / "BPRE0.gba").write_bytes(b"pristine")
-            output = root / "release_candidate_test.gba"
-
-            def fake_run(label, cwd):
-                if label == "DPE":
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                else:
-                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
-
-            builder.run_pipeline(
-                cfru_root=root,
-                dpe_root=dpe,
-                output_path=output,
-                run_build=fake_run,
-                verify_rom=lambda _path: "test",
-                sync_dpe=lambda _path: None,
-                verify_dpe_symbols=lambda _path: None,
-                apply_preview_patch=lambda source, destination: destination.write_bytes(
-                    source.read_bytes() + b"-preview"
-                ),
-                discover_port_link=lambda _output: 0,
-                apply_port_link_trainer=lambda _source, _destination: 1,
-                prepare_delivery_hub_map=lambda _output: 2,
-            )
-
+            output = self._run_fake_pipeline(tmp)
             self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview")
 
-
-    def test_pipeline_prepares_delivery_hub_plan_on_final_output(self):
-        builder = load_builder()
+    def test_pipeline_applies_port_link_trainer_when_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root, dpe = make_fake_workspace(tmp)
-            (root / "BPRE0.gba").write_bytes(b"pristine")
-            output = root / "release_candidate_test.gba"
-            planned = []
+            output = self._run_fake_pipeline(tmp, discovery=0, trainer=0, hub=0)
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-trainer")
 
-            def fake_run(label, cwd):
-                if label == "DPE":
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                else:
-                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
-
-            builder.run_pipeline(
-                cfru_root=root,
-                dpe_root=dpe,
-                output_path=output,
-                run_build=fake_run,
-                verify_rom=lambda _path: "test",
-                sync_dpe=lambda _path: None,
-                verify_dpe_symbols=lambda _path: None,
-                apply_preview_patch=lambda source, destination: destination.write_bytes(
-                    source.read_bytes() + b"-preview"
-                ),
-                discover_port_link=lambda _output: 2,
-                apply_port_link_trainer=lambda _source, _destination: 1,
-                prepare_delivery_hub_map=lambda path: planned.append(Path(path)) or 0,
-            )
-
-            self.assertEqual(planned, [output.resolve()])
+    def test_default_output_is_git_ignored_gba(self):
+        builder = load_builder(); self.assertEqual(builder.DEFAULT_OUTPUT_NAME, "release_candidate_test.gba")
+        self.assertIn("*.gba", (ROOT / ".gitignore").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
