@@ -169,5 +169,6 @@
     "must_not_look_like": [
       "oak_lab_reskin"
     ]
-  }
+  },
+  "metatile_profile": "RC_DELIVERY_HUB_HOUSE2_BOOTSTRAP"
 }
