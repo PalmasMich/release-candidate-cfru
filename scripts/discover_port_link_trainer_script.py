@@ -32,7 +32,11 @@ CMD_FACEPLAYER = 0x5A
 CMD_TRAINERBATTLE = 0x5C
 CMD_LOCK = 0x69
 CMD_RELEASE = 0x6B
-CMD_MSGBOX_NORMAL = 0xCB
+CMD_CALLSTD = 0x09
+CMD_CHECKFLAG = 0x2B
+CMD_GOTO_IF = 0x06
+TRAINER_BOOTSTRAP_ID = 37
+TRAINER_BATTLE_SINGLE = 0
 
 
 def encode_text(text: str) -> bytes:
@@ -87,6 +91,10 @@ def classify_script_xref(data: bytes, xref_offset: int, radius: int = 24) -> dic
         and window[rel - 2] == CMD_LOADPOINTER
         and window[rel - 1] == 0x00
     )
+    route1_guard_before = (
+        bytes([CMD_CHECKFLAG]) in window[:rel]
+        and bytes([CMD_GOTO_IF]) in window[:rel]
+    )
 
     before = window[:rel]
     after = window[rel + 4:]
@@ -95,8 +103,9 @@ def classify_script_xref(data: bytes, xref_offset: int, radius: int = 24) -> dic
         "loadpointer_prefix": loadpointer_prefix,
         "has_lock_before": bytes([CMD_LOCK]) in before,
         "has_faceplayer_before": bytes([CMD_FACEPLAYER]) in before,
+        "has_route1_flag_guard_before": route1_guard_before,
         "has_trainerbattle_nearby": bytes([CMD_TRAINERBATTLE]) in window,
-        "has_msgbox_after": bytes([CMD_MSGBOX_NORMAL]) in after,
+        "has_callstd_after": bytes([CMD_CALLSTD]) in after,
         "has_release_after": bytes([CMD_RELEASE]) in after,
         "has_end_after": bytes([CMD_END]) in after,
     }
@@ -105,7 +114,8 @@ def classify_script_xref(data: bytes, xref_offset: int, radius: int = 24) -> dic
     score += 4 if markers["loadpointer_prefix"] else 0
     score += 1 if markers["has_lock_before"] else 0
     score += 1 if markers["has_faceplayer_before"] else 0
-    score += 1 if markers["has_msgbox_after"] else 0
+    score += 2 if markers["has_route1_flag_guard_before"] else 0
+    score += 1 if markers["has_callstd_after"] else 0
     score += 1 if markers["has_release_after"] else 0
     score += 1 if markers["has_end_after"] else 0
 
