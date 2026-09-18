@@ -15,14 +15,24 @@ def load_builder():
     return module
 
 
+def make_fake_workspace(tmp):
+    root = Path(tmp) / "cfru"
+    dpe = Path(tmp) / "dpe"
+    (root / "scripts").mkdir(parents=True)
+    (dpe / "scripts").mkdir(parents=True)
+    (root / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+    (dpe / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+    return root, dpe
+
+
 class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_validates_expected_pristine_rom_hash(self):
         builder = load_builder()
         self.assertEqual(builder.EXPECTED_SHA1, EXPECTED_SHA1)
 
-    def test_pipeline_order_is_dpe_then_cfru(self):
+    def test_pipeline_order_is_dpe_then_cfru_then_preview_patch(self):
         builder = load_builder()
-        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU"))
+        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH"))
 
     def test_default_output_is_git_ignored_gba(self):
         builder = load_builder()
@@ -42,10 +52,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         builder = load_builder()
         pristine = b"private-pristine-rom"
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "cfru"
-            dpe = Path(tmp) / "dpe"
-            root.mkdir()
-            dpe.mkdir()
+            root, dpe = make_fake_workspace(tmp)
             base = root / "BPRE0.gba"
             base.write_bytes(pristine)
 
@@ -66,20 +73,16 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                     output_path=root / "release_candidate_test.gba",
                     run_build=fake_run,
                     verify_rom=fake_verify,
+                    apply_preview_patch=lambda source, output: output.write_bytes(source.read_bytes()),
                 )
 
             self.assertEqual(base.read_bytes(), pristine)
             self.assertFalse((dpe / "BPRE0.gba").exists())
 
-    def test_pipeline_consumes_test_gba_from_each_engine(self):
+    def test_pipeline_consumes_test_gba_and_applies_preview_patch(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "cfru"
-            dpe = Path(tmp) / "dpe"
-            (root / "scripts").mkdir(parents=True)
-            (dpe / "scripts").mkdir(parents=True)
-            (root / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
-            (dpe / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+            root, dpe = make_fake_workspace(tmp)
             base = root / "BPRE0.gba"
             base.write_bytes(b"pristine")
             output = root / "release_candidate_test.gba"
@@ -96,15 +99,20 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                     self.assertEqual(source, b"dpe-expanded")
                     (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
 
+            def fake_preview_patch(source, destination):
+                self.assertEqual(source.read_bytes(), b"dpe-plus-cfru")
+                destination.write_bytes(source.read_bytes() + b"-tartrek")
+
             builder.run_pipeline(
                 cfru_root=root,
                 dpe_root=dpe,
                 output_path=output,
                 run_build=fake_run,
                 verify_rom=fake_verify,
+                apply_preview_patch=fake_preview_patch,
             )
 
-            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru")
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-tartrek")
             self.assertEqual(base.read_bytes(), b"pristine")
 
 
