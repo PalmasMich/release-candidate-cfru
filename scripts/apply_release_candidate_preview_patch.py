@@ -96,7 +96,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     ),
     (
         encode_text("This is my grandson."),
-        encode_text("This is your teammate."),
+        encode_text("Meet your teammate."),
     ),
     (
         encode_text("He's been your rival since you both"),
