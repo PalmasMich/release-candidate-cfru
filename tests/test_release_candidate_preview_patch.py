@@ -123,11 +123,19 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         patcher = load_patcher()
         payload = bytearray(b"prefix" + patcher.ROUTE1_WILD_SIGNATURE + b"suffix")
         patched = patcher.patch_route1_wild_encounters(payload)
-        species_bytes = patcher.MISTRILLO_SPECIES_ID.to_bytes(2, "little")
         base = len(b"prefix")
-        for record in patcher.ROUTE1_PIDGEY_RECORDS:
+        for record, species in enumerate(patcher.ROUTE1_PREVIEW_SPECIES):
             species_pos = base + (record * 4) + 2
-            self.assertEqual(patched[species_pos:species_pos + 2], species_bytes)
+            self.assertEqual(
+                patched[species_pos:species_pos + 2],
+                species.to_bytes(2, "little"),
+            )
+
+    def test_route1_preview_mix_matches_manifest_weights(self):
+        patcher = load_patcher()
+        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.MISTRILLO_SPECIES_ID), 4)
+        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.WINGULL_SPECIES_ID), 3)
+        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.MEOWTH_SPECIES_ID), 5)
 
     def test_file_patch_preserves_input_and_writes_complete_preview(self):
         patcher = load_patcher()
