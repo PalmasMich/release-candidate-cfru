@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+MAP_SLOTS_PATH = ROOT / "content" / "cagliari_preview" / "map_slots.json"
 
 
 def load_json(path: Path) -> dict:
@@ -125,6 +126,28 @@ def compile_warps(spec: dict) -> dict:
         "bytes_hex": data.hex(" "),
         "relocations": relocations,
     }
+
+
+def load_map_ids() -> dict[str, tuple[int, int]]:
+    slots = load_json(MAP_SLOTS_PATH)["slots"]
+    return {
+        slot["rc_map"]: (int(slot["map_group"]), int(slot["map_num"]))
+        for slot in slots
+    }
+
+
+def link_map_id_relocations(block: dict, map_ids: dict[str, tuple[int, int]]) -> bytes:
+    data = bytearray.fromhex(block["bytes_hex"])
+    for relocation in block.get("relocations", []):
+        if relocation["kind"] != "map_id":
+            continue
+        symbol = relocation["symbol"]
+        if symbol not in map_ids:
+            raise ValueError(f"missing map slot for {symbol}")
+        group, num = map_ids[symbol]
+        offset = relocation["offset"]
+        data[offset:offset + 2] = bytes([num & 0xFF, group & 0xFF])
+    return bytes(data)
 
 
 def compile_map_events(spec: dict) -> dict:
