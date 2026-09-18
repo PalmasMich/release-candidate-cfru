@@ -217,3 +217,38 @@ Expected playable sequence after a successful custom-map install:
 12. scope-change dialogue sets `RC_FLAG_SCOPE_CHANGE_REVEALED` and `RC_FLAG_CASTELLO_UNLOCKED`.
 
 Until this full loop is smoke-tested on the private built ROM, all three custom map statuses remain pending verification and the legacy preview/bootstrap path remains available.
+
+
+## Castello and Deploy District checkpoint
+
+The custom Chapter 1 path now extends beyond Marina and Port Link:
+
+- `RC_CASTELLO_ASCENT` -> reserved prototype `MAP_PROTOTYPE_SEVII_ISLE_6` (group 3 / map 50);
+- `RC_DEPLOY_DISTRICT` -> reserved prototype `MAP_PROTOTYPE_SEVII_ISLE_7` (group 3 / map 51);
+- both prototype source headers are discovered structurally as 1x1 route maps with live vanilla connections;
+- the atomic installer explicitly clears their old `connections_ptr` values when repointing them;
+- Castello uses a permanent 20x18 custom layout;
+- Deploy District uses a permanent 22x16 custom layout;
+- Marina exposes Castello through `RC_SCRIPT_CASTELLO_GATE`, which checks `RC_FLAG_CASTELLO_UNLOCKED` and only then executes a FireRed `warp` to map 3/50;
+- Castello summit exposes Deploy District through `RC_SCRIPT_DEPLOY_DISTRICT_GATE`, linked to map 3/51;
+- entering Deploy District triggers a real CoordEvent that sets `RC_FLAG_GO_NO_GO_STARTED` (0x0B7) and shows the Go/No-Go opening dialogue;
+- Deploy District retains a linked return warp to Castello map 3/50.
+
+The atomic custom-map installer now treats five maps as one install unit:
+`Delivery Hub -> Marina -> Port Link -> Castello -> Deploy District`.
+
+### Extended private-ROM smoke path
+
+After the existing Hub/Marina/Port Link checks, verify:
+
+13. scope change unlocks the Castello interaction;
+14. the locked Castello gate refuses access before flag 0x0B6;
+15. after unlock, Marina -> Castello lands at the intended 20x18 spawn;
+16. Castello return warp reaches Marina correctly;
+17. summit gate reaches Deploy District map 3/51;
+18. Deploy District arrival fires the one-shot Go/No-Go trigger;
+19. `RC_FLAG_GO_NO_GO_STARTED` is set;
+20. Deploy District return warp reaches Castello;
+21. save/reload remains stable on Castello and Deploy District.
+
+These additions remain pending device verification until a private DPE -> CFRU build passes the full loop.
