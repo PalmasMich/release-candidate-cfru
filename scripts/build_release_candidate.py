@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH")
+PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN")
 
 
 def sha1_file(path: Path) -> str:
@@ -144,6 +144,20 @@ def default_apply_port_link_trainer(source: Path, output: Path) -> int:
     return completed.returncode
 
 
+def default_prepare_delivery_hub_map(output_path: Path) -> int:
+    print("\n== Delivery Hub custom-map plan ==")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "prepare_delivery_hub_map_patch.py"),
+            str(output_path),
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    return completed.returncode
+
+
 def run_pipeline(
     *,
     cfru_root: Path,
@@ -156,6 +170,7 @@ def run_pipeline(
     apply_preview_patch=default_apply_preview_patch,
     discover_port_link=default_discover_port_link,
     apply_port_link_trainer=default_apply_port_link_trainer,
+    prepare_delivery_hub_map=default_prepare_delivery_hub_map,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
     dpe_root = Path(dpe_root).resolve()
@@ -236,6 +251,12 @@ def run_pipeline(
             print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}")
             print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
 
+        delivery_hub_status = prepare_delivery_hub_map(output_path)
+        if delivery_hub_status == 0:
+            print("DELIVERY_HUB_MAP_PLAN_STATUS=READY")
+        else:
+            print(f"DELIVERY_HUB_MAP_PLAN_STATUS=PENDING:{delivery_hub_status}")
+
         print(f"\nDPE_SHA1={dpe_hash}")
         print(f"CFRU_SHA1={cfru_hash}")
         print(f"OUTPUT={output_path}")
@@ -270,7 +291,7 @@ def main() -> int:
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}")
     print(f"DPE={dpe_root}")
-    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH")
+    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
 
     try:
