@@ -1,0 +1,39 @@
+{
+  "slots": [
+    {
+      "rc_map": "RC_DELIVERY_HUB",
+      "strategy": "repoint_unused_map_header",
+      "vanilla_map": "MAP_ROUTE19_UNUSED_HOUSE",
+      "vanilla_name": "Route19_UnusedHouse",
+      "map_group": 27,
+      "map_num": 0,
+      "vanilla_contract": {
+        "layout": "LAYOUT_HOUSE2",
+        "music_id": 293,
+        "region_map_section_id": 119,
+        "map_type": 8,
+        "weather": 0,
+        "allow_cycling": false,
+        "allow_escaping": false,
+        "allow_running": false,
+        "show_map_name": false,
+        "battle_scene": 0,
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_IndoorRoute19[0]",
+        "usage": "unused_house_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    }
+  ]
+}
