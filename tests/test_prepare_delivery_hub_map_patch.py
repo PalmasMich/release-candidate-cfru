@@ -69,6 +69,23 @@ class PrepareDeliveryHubMapPatchTest(unittest.TestCase):
             "RC_TILESET_CAGLIARI_INTERIORS_01",
             plan["required_before_mutation"][0],
         )
+        compiled = plan["compiled_content"]
+        self.assertEqual(compiled["event_script_format"], "RC_EVENT_SCRIPT_IR_V1")
+        self.assertEqual(compiled["event_script_count"], 5)
+        self.assertEqual(compiled["map_events_format"], "RC_MAP_EVENTS_IR_V1")
+        self.assertEqual(compiled["map_events_bytes"], 112)
+        self.assertGreater(compiled["dialogue_bytes"], 0)
+        self.assertGreater(compiled["minimum_payload_bytes"], 112)
+        self.assertEqual(
+            set(compiled["bound_script_ids"]),
+            {
+                "RC_SCRIPT_DELIVERY_LEAD",
+                "RC_SCRIPT_KPI_RIVAL",
+                "RC_SCRIPT_STARTER_TARTREK",
+                "RC_SCRIPT_STARTER_FROBYTE",
+                "RC_SCRIPT_STARTER_EMBERFOX",
+            },
+        )
 
     def test_plan_carries_original_header_pointers_for_rollback(self):
         prep = load(PREP, "delivery_hub_plan")
