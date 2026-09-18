@@ -134,6 +134,14 @@
         "Test sul campo: prova il nuovo partner nell'erba.",
         "Il Port Link è il posto giusto per una verifica rapida."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Accesso al Castello non previsto dallo scope corrente.",
+        "Serve una change request."
+      ]
     }
   ]
 }
