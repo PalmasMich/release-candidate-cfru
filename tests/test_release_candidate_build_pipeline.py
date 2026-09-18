@@ -38,7 +38,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         builder = load_builder()
         self.assertEqual(builder.DPE_BRANCH, "feature/cagliari-preview-0.1")
 
-    def test_dpe_tartrek_symbol_gate_requires_battle_and_icon_assets(self):
+    def test_dpe_preview_symbol_gate_requires_tartrek_and_mistrillo_assets(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
             dpe = Path(tmp)
@@ -47,7 +47,12 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 "gBackShinySprite1294RCTartrekTiles: 09901000\n"
                 "gIconSprite1294RCTartrekTiles: 09902000\n"
                 "gFrontSprite1294RCTartrekPal: 09903000\n"
-                "gBackShinySprite1294RCTartrekPal: 09903000\n",
+                "gBackShinySprite1294RCTartrekPal: 09903000\n"
+                "gFrontSprite1297RCMistrilloTiles: 09904000\n"
+                "gBackShinySprite1297RCMistrilloTiles: 09905000\n"
+                "gIconSprite1297RCMistrilloTiles: 09906000\n"
+                "gFrontSprite1297RCMistrilloPal: 09907000\n"
+                "gBackShinySprite1297RCMistrilloPal: 09907000\n",
                 encoding="utf-8",
             )
             builder.verify_dpe_tartrek_symbols(dpe)
