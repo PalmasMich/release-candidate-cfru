@@ -49,6 +49,16 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         self.assertIn(new_city, patched)
         self.assertNotIn(old_choice, patched)
 
+    def test_route1_wild_table_injects_mistrillo(self):
+        patcher = load_patcher()
+        payload = bytearray(b"prefix" + patcher.ROUTE1_WILD_SIGNATURE + b"suffix")
+        patched = patcher.patch_route1_wild_encounters(payload)
+        self.assertIn(patcher.MISTRILLO_SPECIES_ID.to_bytes(2, "little"), patched)
+        self.assertNotEqual(
+            patched[len(b"prefix"):len(b"prefix") + len(patcher.ROUTE1_WILD_SIGNATURE)],
+            patcher.ROUTE1_WILD_SIGNATURE,
+        )
+
     def test_file_patch_preserves_input_and_writes_output(self):
         patcher = load_patcher()
         with tempfile.TemporaryDirectory() as tmp:
