@@ -108,6 +108,7 @@ def run_pipeline(
     run_build=default_run_build,
     verify_rom=verify_pristine_rom,
     sync_dpe=sync_dpe_checkout,
+    verify_dpe_symbols=verify_dpe_tartrek_symbols,
     apply_preview_patch=default_apply_preview_patch,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
@@ -139,7 +140,7 @@ def run_pipeline(
         shutil.copy2(cfru_rom, dpe_rom)
         pristine_hash = sha1_file(dpe_rom)
         run_build("DPE", dpe_root)
-        verify_dpe_tartrek_symbols(dpe_root)
+        verify_dpe_symbols(dpe_root)
 
         if not dpe_output.exists():
             raise RuntimeError("DPE build finished without test.gba")
