@@ -81,14 +81,17 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
     labels = {}
 
     for entry in script["ops"]:
-        if "label" in entry:
+        op = entry.get("op")
+
+        # A bare {"label": "..."} entry declares a target. Commands such as
+        # goto_if also carry a "label" field, but that is a reference and must
+        # not be registered as a declaration.
+        if op is None and "label" in entry:
             label = entry["label"]
             if label in labels:
                 raise ValueError(f"{script['id']}: duplicate label {label}")
             labels[label] = len(buf)
             continue
-
-        op = entry.get("op")
 
         if op == "end":
             buf.append(OP_END)
