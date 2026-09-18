@@ -1,0 +1,43 @@
+{
+  "map": "RC_DEPLOY_DISTRICT",
+  "scripts": [
+    {
+      "id": "RC_SCRIPT_GO_NO_GO_START",
+      "ops": [
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_GO_NO_GO_STARTED"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "done"
+        },
+        {
+          "op": "lockall"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_GO_NO_GO_START",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_GO_NO_GO_STARTED"
+        },
+        {
+          "op": "releaseall"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    }
+  ]
+}
