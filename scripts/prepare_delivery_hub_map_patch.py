@@ -43,6 +43,15 @@ def build_plan(rom_data: bytes) -> dict:
 
     header = slot["candidates"][0]
 
+    compiled_script_ids = {script["id"] for script in event_ir["scripts"]}
+    bound_script_ids = {
+        item["script"]
+        for item in ir["objects"] + ir["interactions"]
+    }
+    missing_scripts = sorted(bound_script_ids - compiled_script_ids)
+    if missing_scripts:
+        raise ValueError(f"Delivery Hub map references uncompiled scripts: {missing_scripts}")
+
     dialogue_by_id = {scene["id"]: scene for scene in dialogue_ir["scenes"]}
     referenced_dialogues = sorted({
         relocation["symbol"]
@@ -84,6 +93,7 @@ def build_plan(rom_data: bytes) -> dict:
         "compiled_content": {
             "event_script_format": event_ir["format"],
             "event_script_count": len(event_ir["scripts"]),
+            "bound_script_ids": sorted(bound_script_ids),
             "event_script_bytes": script_bytes,
             "event_relocation_count": sum(len(script["relocations"]) for script in event_ir["scripts"]),
             "dialogue_format": dialogue_ir["format"],
