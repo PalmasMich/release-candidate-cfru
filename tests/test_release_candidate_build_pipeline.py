@@ -54,9 +54,9 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
 
             def fake_run(label, cwd):
                 if label == "DPE":
-                    (cwd / "BPRE0.gba").write_bytes(b"dpe-expanded")
+                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
                     return
-                (cwd / "BPRE0.gba").write_bytes(b"cfru-partial")
+                (cwd / "test.gba").write_bytes(b"cfru-partial")
                 raise RuntimeError("forced CFRU failure")
 
             with self.assertRaisesRegex(RuntimeError, "forced CFRU failure"):
@@ -70,6 +70,42 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
 
             self.assertEqual(base.read_bytes(), pristine)
             self.assertFalse((dpe / "BPRE0.gba").exists())
+
+    def test_pipeline_consumes_test_gba_from_each_engine(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "cfru"
+            dpe = Path(tmp) / "dpe"
+            (root / "scripts").mkdir(parents=True)
+            (dpe / "scripts").mkdir(parents=True)
+            (root / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+            (dpe / "scripts" / "make.py").write_text("# test fixture\n", encoding="utf-8")
+            base = root / "BPRE0.gba"
+            base.write_bytes(b"pristine")
+            output = root / "release_candidate_test.gba"
+
+            def fake_verify(_path):
+                return "test"
+
+            def fake_run(label, cwd):
+                source = (cwd / "BPRE0.gba").read_bytes()
+                if label == "DPE":
+                    self.assertEqual(source, b"pristine")
+                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
+                else:
+                    self.assertEqual(source, b"dpe-expanded")
+                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+
+            builder.run_pipeline(
+                cfru_root=root,
+                dpe_root=dpe,
+                output_path=output,
+                run_build=fake_run,
+                verify_rom=fake_verify,
+            )
+
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru")
+            self.assertEqual(base.read_bytes(), b"pristine")
 
 
 if __name__ == "__main__":
