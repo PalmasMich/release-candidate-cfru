@@ -123,16 +123,45 @@ def classify_script_xref(data: bytes, xref_offset: int, radius: int = 24) -> dic
     }
 
 
+def derive_patch_plan(data: bytes, xref_offset: int, radius: int = 24) -> dict | None:
+    classification = classify_script_xref(data, xref_offset, radius)
+    if classification["classification"] != "event_dialogue_script":
+        return None
+
+    search_start = max(0, xref_offset - radius)
+    prefix = data[search_start:xref_offset]
+    lock_rel = prefix.rfind(bytes([CMD_LOCK]))
+    script_start = search_start + lock_rel if lock_rel >= 0 else xref_offset - 2
+
+    signature_end = min(len(data), xref_offset + 12)
+    signature = data[script_start:signature_end]
+
+    return {
+        "script_start_candidate": script_start,
+        "text_pointer_offset": xref_offset,
+        "verification_signature_hex": signature.hex(" "),
+        "verification_signature_length": len(signature),
+        "mutation_allowed": False,
+        "next_step": (
+            "Classify the exact script command boundaries, allocate or identify "
+            "trainer data/dialogue storage, then generate a size-safe patch guarded "
+            "by this verification signature."
+        ),
+    }
+
+
 def script_context(data: bytes, xref_offset: int, radius: int = 24) -> dict:
     start = max(0, xref_offset - radius)
     end = min(len(data), xref_offset + 4 + radius)
+    classification = classify_script_xref(data, xref_offset, radius)
     return {
         "start": start,
         "end": end,
         "xref_offset": xref_offset,
         "xref_index": xref_offset - start,
         "hex": data[start:end].hex(" "),
-        **classify_script_xref(data, xref_offset, radius),
+        **classification,
+        "patch_plan": derive_patch_plan(data, xref_offset, radius),
     }
 
 
