@@ -43,11 +43,11 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             dpe = Path(tmp)
             (dpe / "offsets.ini").write_text(
-                "gFrontSprite1268RCTartrekTiles: 09900000\n"
-                "gBackShinySprite1268RCTartrekTiles: 09901000\n"
-                "gIconSprite1268RCTartrekTiles: 09902000\n"
-                "gFrontSprite1268RCTartrekPal: 09903000\n"
-                "gBackShinySprite1268RCTartrekPal: 09903000\n",
+                "gFrontSprite1294RCTartrekTiles: 09900000\n"
+                "gBackShinySprite1294RCTartrekTiles: 09901000\n"
+                "gIconSprite1294RCTartrekTiles: 09902000\n"
+                "gFrontSprite1294RCTartrekPal: 09903000\n"
+                "gBackShinySprite1294RCTartrekPal: 09903000\n",
                 encoding="utf-8",
             )
             builder.verify_dpe_tartrek_symbols(dpe)
