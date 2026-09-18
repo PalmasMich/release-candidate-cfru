@@ -22,6 +22,40 @@ BULBASAUR_STARTER_SIGNATURE = bytes.fromhex(
 )
 PLAYER_SPECIES_VALUE_OFFSET = 8
 
+CHARMAP = {
+    **{chr(ord("A") + i): 0xBB + i for i in range(26)},
+    **{chr(ord("a") + i): 0xD5 + i for i in range(26)},
+    " ": 0x00,
+    "!": 0xAB,
+    "?": 0xAC,
+    ".": 0xAD,
+    "-": 0xAE,
+    ",": 0xB8,
+    ":": 0xF0,
+    "'": 0xB4,
+}
+
+
+def encode_text(text: str) -> bytes:
+    return bytes(CHARMAP[ch] for ch in text)
+
+
+VISIBLE_TEXT_REPLACEMENTS = (
+    (
+        encode_text("I see! BULBASAUR is your choice."),
+        encode_text("TARTREK is your new partner!"),
+    ),
+    (
+        encode_text("It's very easy to raise."),
+        encode_text("First task starts now!"),
+    ),
+)
+
+MAP_NAME_REPLACEMENT = (
+    encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF",
+    encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("VIRIDIAN CITY") + b"\xFF",
+)
+
 
 def patch_tartrek_starter(data: bytearray) -> tuple[bytearray, int]:
     occurrences = []
@@ -46,6 +80,39 @@ def patch_tartrek_starter(data: bytearray) -> tuple[bytearray, int]:
     return data, 1
 
 
+def _replace_size_preserving(data: bytearray, old: bytes, new: bytes, *, expected: int | None = None) -> int:
+    if len(new) > len(old):
+        raise ValueError("Replacement text cannot exceed the source byte length.")
+
+    positions = []
+    start = 0
+    while True:
+        pos = data.find(old, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + 1
+
+    if expected is not None and len(positions) != expected:
+        raise ValueError(f"Expected {expected} occurrence(s), found {len(positions)}.")
+
+    replacement = new + (b"\x00" * (len(old) - len(new)))
+    for pos in positions:
+        data[pos:pos + len(old)] = replacement
+    return len(positions)
+
+
+def patch_visible_preview_text(data: bytearray) -> bytearray:
+    for old, new in VISIBLE_TEXT_REPLACEMENTS:
+        _replace_size_preserving(data, old, new, expected=1)
+
+    old_city, new_city = MAP_NAME_REPLACEMENT
+    if len(old_city) != len(new_city):
+        raise ValueError("Map-name replacement must preserve byte length.")
+    _replace_size_preserving(data, old_city, new_city, expected=1)
+    return data
+
+
 def patch_rom(source: Path, output: Path) -> Path:
     source = Path(source)
     output = Path(output)
@@ -57,6 +124,7 @@ def patch_rom(source: Path, output: Path) -> Path:
     patched, count = patch_tartrek_starter(bytearray(original))
     if count != 1:
         raise RuntimeError("Tartrek starter patch was not applied exactly once.")
+    patched = patch_visible_preview_text(patched)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(patched)
@@ -64,7 +132,7 @@ def patch_rom(source: Path, output: Path) -> Path:
     if output.stat().st_size != source.stat().st_size:
         raise RuntimeError("Preview patch changed ROM size unexpectedly.")
 
-    print(f"RC_PREVIEW_PATCH=TARTREK_STARTER")
+    print("RC_PREVIEW_PATCH=TARTREK_STARTER+CAGLIARI_LABELS")
     print(f"RC_PREVIEW_SPECIES_ID=0x{TARTREK_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_OUTPUT={output}")
     return output
