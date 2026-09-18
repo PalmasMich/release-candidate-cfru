@@ -252,3 +252,39 @@ After the existing Hub/Marina/Port Link checks, verify:
 21. save/reload remains stable on Castello and Deploy District.
 
 These additions remain pending device verification until a private DPE -> CFRU build passes the full loop.
+
+
+## Deploy Room / Chapter 1 boss checkpoint
+
+Chapter 1 now has a dedicated final indoor map:
+
+- `RC_DEPLOY_ROOM` -> reserved unused `MAP_ROUTE6_UNUSED_HOUSE` (group 18 / map 1);
+- permanent custom layout: 16x12;
+- the Deploy District release gate checks `RC_FLAG_GO_NO_GO_STARTED` (0x0B7) before allowing entry;
+- the gate executes a symbolic FireRed warp to map 18/1;
+- `RC_NPC_RELEASE_MANAGER` is installed as the Chapter 1 boss object;
+- `RC_SCRIPT_RELEASE_MANAGER` uses a one-time `trainerbattle_single`;
+- trainer id 38 is intentionally a temporary bootstrap trainer id until a verified trainer-data patch provides the final Release Manager name/party;
+- intended final boss party contract is Meowth Lv.7 + Mistrillo Lv.8;
+- after the battle, the script sets `RC_FLAG_RELEASE_MANAGER_DEFEATED` (0x0B8);
+- it then sets `RC_FLAG_DEPLOY_01_COMPLETE` (0x0B9);
+- repeat interaction skips the battle and shows the completed deploy message;
+- Deploy Room has a linked return warp to Deploy District.
+
+The atomic installer now treats six maps as one Chapter 1 install unit:
+`Delivery Hub -> Marina -> Port Link -> Castello -> Deploy District -> Deploy Room`.
+
+### Chapter 1 private-ROM completion gate
+
+After the existing five-map smoke path, verify:
+
+22. the Deploy Room gate stays blocked before Go/No-Go;
+23. after flag 0x0B7, Deploy District -> Deploy Room lands at the intended spawn;
+24. Release Manager battle launches once;
+25. winning sets flags 0x0B8 and 0x0B9;
+26. the completion dialogue appears after victory;
+27. talking to Release Manager again does not restart the battle;
+28. Deploy Room return warp reaches Deploy District;
+29. save/reload preserves completed Deploy 01 state.
+
+Until these checks pass on a real private DPE -> CFRU ROM, Chapter 1 remains implementation-complete at source level but pending runtime verification.
