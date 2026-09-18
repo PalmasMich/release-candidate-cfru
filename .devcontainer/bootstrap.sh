@@ -10,6 +10,9 @@ EXPECTED_SHA1="41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 WAV2AGB_REPO="https://github.com/ipatix/wav2agb.git"
 WAV2AGB_COMMIT="7279d3cf899e53154482bcdcd66a483f6a4572ba"
 WAV2AGB_DIR="/tmp/rc-wav2agb"
+MID2AGB_REPO="https://github.com/ipatix/midi2agb.git"
+MID2AGB_COMMIT="19a6f83f94af9efddc764dfe0b2e3dd86bf25e96"
+MID2AGB_DIR="/tmp/rc-midi2agb"
 
 printf '\n== Release Candidate Codespace bootstrap ==\n'
 
@@ -19,6 +22,23 @@ for command in python git arm-none-eabi-gcc grit make g++; do
     exit 1
   fi
 done
+
+if ! command -v mid2agb >/dev/null 2>&1; then
+  echo "Installing mid2agb Linux tool ..."
+  rm -rf "$MID2AGB_DIR"
+  git clone --recurse-submodules "$MID2AGB_REPO" "$MID2AGB_DIR"
+  cd "$MID2AGB_DIR"
+  git checkout "$MID2AGB_COMMIT"
+  git submodule update --init --recursive
+  make
+  install -m 0755 midi2agb /usr/local/bin/mid2agb
+  cd "$CFRU_DIR"
+fi
+
+if ! command -v mid2agb >/dev/null 2>&1; then
+  echo "ERROR: mid2agb installation failed." >&2
+  exit 1
+fi
 
 if ! command -v wav2agb >/dev/null 2>&1; then
   echo "Installing wav2agb Linux tool ..."
@@ -72,5 +92,6 @@ python --version
 arm-none-eabi-gcc --version | head -n 1
 grit --version 2>/dev/null | head -n 1 || true
 wav2agb --help 2>&1 | head -n 1 || true
+mid2agb --help 2>&1 | head -n 1 || true
 
 printf '\nCodespace setup complete.\n'
