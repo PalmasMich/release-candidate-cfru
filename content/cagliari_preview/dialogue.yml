@@ -25,6 +25,22 @@
       ]
     },
     {
+      "id": "RC_DIALOGUE_PORT_TRAINER_INTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Scusa, sei tu la nuova risorsa? Ho una verifica veloce da chiudere.",
+        "Dicono che bastino cinque minuti. Quindi preparati."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Ok, verifica chiusa. La segno completata al primo tentativo.",
+        "Se chiedono, non abbiamo mai avuto un blocker."
+      ]
+    },
+    {
       "id": "RC_DIALOGUE_DEPLOY_TEASER",
       "speaker": "Delivery Lead",
       "lines": [
