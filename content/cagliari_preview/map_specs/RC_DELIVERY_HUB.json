@@ -1,0 +1,97 @@
+{
+  "id": "RC_DELIVERY_HUB",
+  "chapter": "RC_CHAPTER_01_CAGLIARI",
+  "status": "permanent",
+  "map_type": "indoor",
+  "dimensions": {
+    "width": 18,
+    "height": 12
+  },
+  "legend": {
+    "#": "wall",
+    ".": "walkable_floor",
+    "=": "counter",
+    "S": "starter_pad",
+    "T": "terminal",
+    "D": "door",
+    "P": "plant",
+    "W": "window"
+  },
+  "layout": [
+    "##################",
+    "#WWWW......WWWWW.#",
+    "#................#",
+    "#..P..........P..#",
+    "#....S..S..S.....#",
+    "#................#",
+    "#..====....====..#",
+    "#..=..........=..#",
+    "#..=....T.....=..#",
+    "#................#",
+    "#........D.......#",
+    "##################"
+  ],
+  "collision": {
+    "blocked_roles": ["wall", "counter", "plant", "window"],
+    "walkable_roles": ["walkable_floor", "starter_pad", "terminal", "door"]
+  },
+  "anchors": {
+    "player_spawn": {"x": 9, "y": 9},
+    "delivery_lead": {"x": 9, "y": 7},
+    "rival": {"x": 13, "y": 5},
+    "starter_tartrek": {"x": 5, "y": 4},
+    "starter_frobyte": {"x": 8, "y": 4},
+    "starter_emberfox": {"x": 11, "y": 4},
+    "exit_marina": {"x": 9, "y": 10}
+  },
+  "objects": [
+    {
+      "id": "RC_NPC_DELIVERY_LEAD",
+      "role": "story_npc",
+      "anchor": "delivery_lead",
+      "script": "RC_EVENT_STARTER_ASSIGNMENT",
+      "movement": "face_down"
+    },
+    {
+      "id": "RC_NPC_KPI_RIVAL",
+      "role": "story_npc",
+      "anchor": "rival",
+      "script": "RC_EVENT_RIVAL_INTRO",
+      "movement": "face_left"
+    }
+  ],
+  "interactions": [
+    {
+      "id": "RC_INTERACT_STARTER_TARTREK",
+      "anchor": "starter_tartrek",
+      "event": "RC_EVENT_STARTER_ASSIGNMENT",
+      "choice": "SPECIES_RC_TURTLE_01"
+    },
+    {
+      "id": "RC_INTERACT_STARTER_FROBYTE",
+      "anchor": "starter_frobyte",
+      "event": "RC_EVENT_STARTER_ASSIGNMENT",
+      "choice": "SPECIES_RC_FROG_01"
+    },
+    {
+      "id": "RC_INTERACT_STARTER_EMBERFOX",
+      "anchor": "starter_emberfox",
+      "event": "RC_EVENT_STARTER_ASSIGNMENT",
+      "choice": "SPECIES_RC_FIREFOX_01"
+    }
+  ],
+  "warps": [
+    {
+      "id": "RC_WARP_DELIVERY_TO_MARINA",
+      "anchor": "exit_marina",
+      "target_map": "RC_CAGLIARI_MARINA",
+      "target_anchor": "delivery_hub_entrance",
+      "requires": ["RC_FLAG_RIVAL_INTRO_DONE"]
+    }
+  ],
+  "art_contract": {
+    "tileset": "RC_TILESET_CAGLIARI_INTERIORS_01",
+    "palette_notes": ["warm_limestone", "teal_accents", "soft_office_light"],
+    "must_not_look_like": ["oak_lab_reskin"]
+  }
+}
