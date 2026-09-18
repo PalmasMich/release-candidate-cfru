@@ -48,6 +48,7 @@ def build_plan(rom_data: bytes) -> dict:
             "original_events_ptr": header["events_ptr"],
             "original_scripts_ptr": header["scripts_ptr"],
             "original_connections_ptr": header["connections_ptr"],
+            "original_layout": header["layout"],
         },
         "new_map": {
             "dimensions": ir["dimensions"],
@@ -59,8 +60,8 @@ def build_plan(rom_data: bytes) -> dict:
         },
         "mutation_allowed": False,
         "required_before_mutation": [
-            "resolve RC_TILESET_CAGLIARI_INTERIORS_01 primary/secondary tileset pointers",
-            "resolve metatile ids for every semantic Delivery Hub role",
+            "resolve custom RC_TILESET_CAGLIARI_INTERIORS_01 asset insertion or explicitly approve temporary House2 bootstrap tilesets",
+            "resolve metatile ids for every semantic Delivery Hub role against the selected tileset pair",
             "allocate aligned free space for layout, map data, MapEvents and event scripts",
             "compile starter and rival event scripts to exact FireRed bytecode",
             "verify destination Marina map slot and warp target",
@@ -73,6 +74,9 @@ def build_plan(rom_data: bytes) -> dict:
             "events_ptr": header["events_ptr"],
             "scripts_ptr": header["scripts_ptr"],
             "connections_ptr": header["connections_ptr"],
+            "original_layout_ptr": header["layout_ptr"],
+            "original_primary_tileset_ptr": header["layout"]["primary_tileset_ptr"],
+            "original_secondary_tileset_ptr": header["layout"]["secondary_tileset_ptr"],
         },
     }
 
