@@ -63,11 +63,11 @@ def verify_dpe_tartrek_symbols(dpe_root: Path) -> None:
 
     text = offsets.read_text(encoding="utf-8")
     required = (
-        "gFrontSprite1268RCTartrekTiles",
-        "gBackShinySprite1268RCTartrekTiles",
-        "gIconSprite1268RCTartrekTiles",
-        "gFrontSprite1268RCTartrekPal",
-        "gBackShinySprite1268RCTartrekPal",
+        "gFrontSprite1294RCTartrekTiles",
+        "gBackShinySprite1294RCTartrekTiles",
+        "gIconSprite1294RCTartrekTiles",
+        "gFrontSprite1294RCTartrekPal",
+        "gBackShinySprite1294RCTartrekPal",
     )
     missing = [symbol for symbol in required if symbol not in text]
     if missing:
