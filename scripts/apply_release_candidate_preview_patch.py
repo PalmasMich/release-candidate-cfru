@@ -50,6 +50,7 @@ CHARMAP = {
     ",": 0xB8,
     ":": 0xF0,
     "'": 0xB4,
+    "é": 0x1B,
 }
 
 
@@ -58,6 +59,22 @@ def encode_text(text: str) -> bytes:
 
 
 VISIBLE_TEXT_REPLACEMENTS = (
+    (
+        encode_text("Welcome to the world of POKéMON!"),
+        encode_text("Welcome to Release Candidate!"),
+    ),
+    (
+        encode_text("My name is OAK."),
+        encode_text("I'm your Lead."),
+    ),
+    (
+        encode_text("People affectionately refer to me"),
+        encode_text("They call me Delivery Lead"),
+    ),
+    (
+        encode_text("as the POKéMON PROFESSOR."),
+        encode_text("on this project."),
+    ),
     (
         encode_text("I see! BULBASAUR is your choice."),
         encode_text("TARTREK is your new partner!"),
