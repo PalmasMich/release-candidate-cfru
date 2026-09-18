@@ -82,6 +82,26 @@ bash .devcontainer/bootstrap.sh
 
 A valid base ROM prints `ROM_OK`.
 
+## One-command private build
+
+Once `BPRE0.gba` is present and verified in the CFRU root, the supported build command is:
+
+```bash
+python scripts/build_release_candidate.py
+```
+
+The script:
+
+- verifies the pristine FireRed USA v1.0 SHA-1 before doing any work;
+- copies the private ROM to the sibling DPE workspace;
+- runs DPE first;
+- passes the DPE-expanded ROM into CFRU;
+- writes the private playable artifact as `release_candidate_test.gba`;
+- restores the pristine CFRU `BPRE0.gba` even when DPE or CFRU fails;
+- removes the temporary DPE ROM input after the build.
+
+Both input/output ROM files remain covered by `*.gba` in `.gitignore`.
+
 ## Source control strategy for binary ROM edits
 
 CFRU/DPE are binary-insertion projects rather than a full FireRed decomp. Therefore GitHub stores the reproducible intent of binary edits rather than a ROM image:
