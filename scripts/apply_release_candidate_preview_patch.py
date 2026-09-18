@@ -12,26 +12,13 @@ MISTRILLO_SPECIES_ID = 0x0511
 WINGULL_SPECIES_ID = 0x0135
 MEOWTH_SPECIES_ID = 0x0034
 
-# FireRed USA 1.0 Oak's Lab starter script sequence. CFRU leaves this script
-# region intact in the current Preview build, so the private-ROM patch can
-# safely replace only the species variables without redistributing ROM data.
-BULBASAUR_STARTER_SIGNATURE = bytes.fromhex(
-    "16 01 40 00 00 16 02 40 01 00 16 03 40 04 00 16 04 40 07 00"
-)
-SQUIRTLE_STARTER_SIGNATURE = bytes.fromhex(
-    "16 01 40 01 00 16 02 40 07 00 16 03 40 01 00"
-)
-CHARMANDER_STARTER_SIGNATURE = bytes.fromhex(
-    "16 01 40 02 00 16 02 40 04 00 16 03 40 07 00"
-)
+BULBASAUR_STARTER_SIGNATURE = bytes.fromhex("16 01 40 00 00 16 02 40 01 00 16 03 40 04 00 16 04 40 07 00")
+SQUIRTLE_STARTER_SIGNATURE = bytes.fromhex("16 01 40 01 00 16 02 40 07 00 16 03 40 01 00")
+CHARMANDER_STARTER_SIGNATURE = bytes.fromhex("16 01 40 02 00 16 02 40 04 00 16 03 40 07 00")
 PLAYER_SPECIES_VALUE_OFFSET = 8
 RIVAL_SPECIES_VALUE_OFFSET = 13
 
-# Vanilla Oak's Lab rival parties are three consecutive
-# TrainerMonNoItemDefaultMoves structs: iv(u16), lvl(u8), pad(u8), species(u16).
-OAK_LAB_RIVAL_PARTIES_SIGNATURE = bytes.fromhex(
-    "00 00 05 00 07 00 00 00 05 00 01 00 00 00 05 00 04 00"
-)
+OAK_LAB_RIVAL_PARTIES_SIGNATURE = bytes.fromhex("00 00 05 00 07 00 00 00 05 00 01 00 00 00 05 00 04 00")
 RIVAL_PARTY_SPECIES_OFFSETS = (4, 10, 16)
 
 ROUTE1_WILD_SIGNATURE = bytes.fromhex(
@@ -39,9 +26,6 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "02 02 10 00 02 02 13 00 03 03 10 00 03 03 13 00 "
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
-# FireRed grass-slot weights are 20/20/10/10/10/10/5/5/4/4/1/1.
-# This ordering therefore yields exactly 60% Mistrillo, 25% Wingull,
-# 15% Meowth while keeping the original encounter levels intact.
 ROUTE1_PREVIEW_SPECIES = (
     MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
     WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
@@ -85,7 +69,6 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("I know, I'll give you a sample.\nHere you go!"), encode_text("Quick handoff: take this.\nUse it well!")),
     (encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"), encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE")),
 )
-
 MAP_NAME_REPLACEMENT = (
     encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF",
     encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF",
@@ -110,12 +93,11 @@ def _find_exactly_one(data: bytearray, signature: bytes, label: str) -> int:
 
 
 def patch_preview_starters(data: bytearray) -> bytearray:
-    starter_specs = (
+    for signature, label, player_species, rival_species in (
         (BULBASAUR_STARTER_SIGNATURE, "Bulbasaur starter", TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
         (SQUIRTLE_STARTER_SIGNATURE, "Squirtle starter", FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
         (CHARMANDER_STARTER_SIGNATURE, "Charmander starter", EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
-    )
-    for signature, label, player_species, rival_species in starter_specs:
+    ):
         pos = _find_exactly_one(data, signature, label)
         data[pos + PLAYER_SPECIES_VALUE_OFFSET:pos + PLAYER_SPECIES_VALUE_OFFSET + 2] = player_species.to_bytes(2, "little")
         data[pos + RIVAL_SPECIES_VALUE_OFFSET:pos + RIVAL_SPECIES_VALUE_OFFSET + 2] = rival_species.to_bytes(2, "little")
@@ -166,21 +148,46 @@ def patch_visible_preview_text(data: bytearray) -> bytearray:
     pos = data.find(old_lab)
     if pos < 0:
         raise ValueError("Delivery Hub source label not found.")
-    replacement = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
-    data[pos:pos + len(old_lab)] = replacement
+    data[pos:pos + len(old_lab)] = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
     return data
 
 
 def validate_preview_patch(data: bytearray) -> None:
-    """Fail closed if the private ROM does not contain the complete preview contract."""
-    for old, new in VISIBLE_TEXT_REPLACEMENTS:
+    """Validate exact gameplay wiring, not merely the presence of species bytes."""
+    for _, new in VISIBLE_TEXT_REPLACEMENTS:
         if new not in data:
             raise RuntimeError("A required Release Candidate visible-text replacement is missing.")
     if MAP_NAME_REPLACEMENT[1] not in data or LAB_SIGN_REPLACEMENT[1] not in data:
         raise RuntimeError("Cagliari/Delivery Hub identity labels are incomplete.")
-    for species in (TARTREK_SPECIES_ID, FROBYTE_SPECIES_ID, EMBERFOX_SPECIES_ID, MISTRILLO_SPECIES_ID):
-        if species.to_bytes(2, "little") not in data:
-            raise RuntimeError(f"Required preview species 0x{species:04X} is missing from patched ROM.")
+
+    # Starter scripts retain their unique setvar-choice prefix after patching.
+    for signature, player_species, rival_species in (
+        (BULBASAUR_STARTER_SIGNATURE, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
+        (SQUIRTLE_STARTER_SIGNATURE, FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
+        (CHARMANDER_STARTER_SIGNATURE, EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
+    ):
+        pos = data.find(signature[:5])
+        if pos < 0:
+            raise RuntimeError("A patched starter choice script cannot be located.")
+        if data[pos + PLAYER_SPECIES_VALUE_OFFSET:pos + PLAYER_SPECIES_VALUE_OFFSET + 2] != player_species.to_bytes(2, "little"):
+            raise RuntimeError("Player starter species wiring is incorrect.")
+        if data[pos + RIVAL_SPECIES_VALUE_OFFSET:pos + RIVAL_SPECIES_VALUE_OFFSET + 2] != rival_species.to_bytes(2, "little"):
+            raise RuntimeError("Rival starter species wiring is incorrect.")
+
+    # Confirm the three level-5 rival party structs survived with the RC species.
+    rival_party = b"".join(
+        b"\x00\x00\x05\x00" + species.to_bytes(2, "little")
+        for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)
+    )
+    if rival_party not in data:
+        raise RuntimeError("Oak Lab KPI-rival party wiring is incomplete.")
+
+    # Confirm the full Port Link table, including original encounter levels.
+    expected_route = bytearray(ROUTE1_WILD_SIGNATURE)
+    for record, species in enumerate(ROUTE1_PREVIEW_SPECIES):
+        expected_route[record * 4 + 2:record * 4 + 4] = species.to_bytes(2, "little")
+    if bytes(expected_route) not in data:
+        raise RuntimeError("Port Link custom encounter table is incomplete.")
 
 
 def patch_rom(source: Path, output: Path) -> Path:
