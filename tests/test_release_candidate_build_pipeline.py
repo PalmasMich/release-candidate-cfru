@@ -38,6 +38,28 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         builder = load_builder()
         self.assertEqual(builder.DPE_BRANCH, "feature/cagliari-preview-0.1")
 
+    def test_dpe_tartrek_symbol_gate_requires_battle_and_icon_assets(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            dpe = Path(tmp)
+            (dpe / "offsets.ini").write_text(
+                "gFrontSprite1268RCTartrekTiles: 09900000\n"
+                "gBackShinySprite1268RCTartrekTiles: 09901000\n"
+                "gIconSprite1268RCTartrekTiles: 09902000\n"
+                "gFrontSprite1268RCTartrekPal: 09903000\n"
+                "gBackShinySprite1268RCTartrekPal: 09903000\n",
+                encoding="utf-8",
+            )
+            builder.verify_dpe_tartrek_symbols(dpe)
+
+    def test_dpe_tartrek_symbol_gate_rejects_stale_dpe_build(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            dpe = Path(tmp)
+            (dpe / "offsets.ini").write_text("gFrontSprite001BulbasaurTiles: 09900000\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "Tartrek"):
+                builder.verify_dpe_tartrek_symbols(dpe)
+
     def test_default_output_is_git_ignored_gba(self):
         builder = load_builder()
         self.assertEqual(builder.DEFAULT_OUTPUT_NAME, "release_candidate_test.gba")
