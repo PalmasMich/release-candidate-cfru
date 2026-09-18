@@ -150,6 +150,38 @@
         "Go/No-Go avviato.",
         "Tutti aspettano una decisione che nessuno vuole prendere."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
+      "speaker": "Release Manager",
+      "lines": [
+        "Siamo al Go/No-Go.",
+        "Se vuoi il deploy, dimostra che il pacchetto regge davvero."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT",
+      "speaker": "Release Manager",
+      "lines": [
+        "Ok. Questa passa.",
+        "Segno GO, ma non abituarti."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_COMPLETE",
+      "speaker": "System",
+      "lines": [
+        "DEPLOY 01 COMPLETATO.",
+        "La Release Candidate è passata in produzione."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_ROOM_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Il Go/No-Go non è ancora iniziato.",
+        "Torna quando tutti avranno deciso di non decidere."
+      ]
     }
   ]
 }
