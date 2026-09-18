@@ -32,8 +32,8 @@ def build_preview_fixture(patcher):
 def build_patched_fixture(patcher):
     payload = bytearray(build_preview_fixture(patcher))
     payload = patcher.patch_preview_starters(payload)
-    payload = patcher.patch_oak_lab_rival_parties(payload)
-    payload = patcher.patch_visible_preview_text(payload)
+    payload, _ = patcher.patch_oak_lab_rival_parties(payload)
+    payload, _, _, _ = patcher.patch_visible_preview_text(payload)
     return patcher.patch_route1_wild_encounters(payload)
 
 
@@ -51,10 +51,10 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
             (patcher.SQUIRTLE_STARTER_SIGNATURE, patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID),
             (patcher.CHARMANDER_STARTER_SIGNATURE, patcher.EMBERFOX_SPECIES_ID, patcher.FROBYTE_SPECIES_ID),
         ):
-            pos = patched.find(signature[:5])
-            self.assertGreaterEqual(pos, 0)
-            self.assertEqual(patched[pos + patcher.PLAYER_SPECIES_VALUE_OFFSET:pos + patcher.PLAYER_SPECIES_VALUE_OFFSET + 2], player_species.to_bytes(2, "little"))
-            self.assertEqual(patched[pos + patcher.RIVAL_SPECIES_VALUE_OFFSET:pos + patcher.RIVAL_SPECIES_VALUE_OFFSET + 2], rival_species.to_bytes(2, "little"))
+            expected = patcher.patched_starter_signature(
+                signature, player_species, rival_species
+            )
+            self.assertEqual(patched.count(expected), 1)
 
     def test_starter_patch_fails_closed_when_a_slot_is_missing(self):
         patcher = load_patcher()
@@ -65,7 +65,8 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_patches_oak_lab_rival_parties_to_original_species(self):
         patcher = load_patcher()
         payload = bytearray(b"prefix" + patcher.OAK_LAB_RIVAL_PARTIES_SIGNATURE + b"suffix")
-        patched = patcher.patch_oak_lab_rival_parties(payload)
+        patched, applied = patcher.patch_oak_lab_rival_parties(payload)
+        self.assertTrue(applied)
         base = len(b"prefix")
         expected = (patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID)
         for rel, species in zip(patcher.RIVAL_PARTY_SPECIES_OFFSETS, expected):
@@ -104,9 +105,14 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_validator_rejects_corrupted_starter_wiring(self):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)
-        pos = patched.find(patcher.BULBASAUR_STARTER_SIGNATURE[:5])
+        expected = patcher.patched_starter_signature(
+            patcher.BULBASAUR_STARTER_SIGNATURE,
+            patcher.TARTREK_SPECIES_ID,
+            patcher.EMBERFOX_SPECIES_ID,
+        )
+        pos = patched.find(expected)
         patched[pos + patcher.PLAYER_SPECIES_VALUE_OFFSET:pos + patcher.PLAYER_SPECIES_VALUE_OFFSET + 2] = b"\x01\x00"
-        with self.assertRaisesRegex(RuntimeError, "Player starter species wiring"):
+        with self.assertRaisesRegex(RuntimeError, "Tartrek starter wiring"):
             patcher.validate_preview_patch(patched)
 
     def test_validator_rejects_corrupted_rival_party(self):
