@@ -35,6 +35,7 @@ ROUTE1_PREVIEW_SPECIES = (
 CHARMAP = {
     **{chr(ord("A") + i): 0xBB + i for i in range(26)},
     **{chr(ord("a") + i): 0xD5 + i for i in range(26)},
+    **{str(i): 0xA1 + i for i in range(10)},
     " ": 0x00, "!": 0xAB, "?": 0xAC, ".": 0xAD, "-": 0xAE,
     ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4, "é": 0x1B, "\n": 0xFE,
 }
