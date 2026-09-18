@@ -17,17 +17,30 @@ REQUIRED_FILES = [
 ]
 
 REQUIRED_MAPS = {
+    "RC_CAGLIARI_ARRIVAL",
     "RC_DELIVERY_HUB",
     "RC_CAGLIARI_MARINA",
     "RC_PORT_CONNECTION",
+    "RC_CASTELLO_ASCENT",
+    "RC_DEPLOY_DISTRICT",
+    "RC_DEPLOY_ROOM_01",
 }
 
-REQUIRED_FLAGS = {
+REQUIRED_PREVIEW_FLAGS = {
+    "RC_FLAG_ARRIVAL_DONE",
     "RC_FLAG_STARTER_CHOSEN",
     "RC_FLAG_RIVAL_INTRO_DONE",
     "RC_FLAG_WILD_TUTORIAL_DONE",
-    "RC_FLAG_RIVAL_BATTLE_DONE",
+    "RC_FLAG_PORT_TRAINER_DONE",
     "RC_FLAG_DEPLOY_TEASER_SEEN",
+}
+
+REQUIRED_CHAPTER_FLAGS = {
+    "RC_FLAG_SCOPE_CHANGE_REVEALED",
+    "RC_FLAG_CASTELLO_UNLOCKED",
+    "RC_FLAG_GO_NO_GO_STARTED",
+    "RC_FLAG_RELEASE_MANAGER_DEFEATED",
+    "RC_FLAG_DEPLOY_01_COMPLETE",
 }
 
 STARTERS = {
@@ -59,11 +72,25 @@ def validate() -> None:
             raise ValueError(f"missing required file: {name}")
 
     maps = load("maps.yml")
+    if maps.get("chapter", {}).get("id") != "RC_CHAPTER_01_CAGLIARI":
+        raise ValueError("maps must belong to RC_CHAPTER_01_CAGLIARI")
+
     map_ids = [item["id"] for item in maps["maps"]]
     require_unique(map_ids, "map id")
     missing_maps = REQUIRED_MAPS - set(map_ids)
     if missing_maps:
         raise ValueError(f"missing required maps: {sorted(missing_maps)}")
+
+    bootstrap_maps = [item for item in maps["maps"] if item.get("status") == "bootstrap_replacement_pending"]
+    if not bootstrap_maps:
+        raise ValueError("at least one current bootstrap map must be explicitly tagged")
+    for item in bootstrap_maps:
+        if not item.get("bootstrap_source"):
+            raise ValueError(f"bootstrap map {item['id']} must declare bootstrap_source")
+
+    permanent_maps = [item for item in maps["maps"] if item.get("status") == "permanent"]
+    if len(permanent_maps) < 5:
+        raise ValueError("Chapter 1 must define permanent custom-world areas, not only bootstrap maps")
 
     dialogue = load("dialogue.yml")
     dialogue_ids = [scene["id"] for scene in dialogue["scenes"]]
@@ -126,9 +153,13 @@ def validate() -> None:
             raise ValueError(f"route trainer references unknown dialogue {dialogue_id}")
 
     events = load("events.yml")
+    if events.get("chapter") != "RC_CHAPTER_01_CAGLIARI":
+        raise ValueError("events must belong to RC_CHAPTER_01_CAGLIARI")
+
     flags = list(events["flags"])
     require_unique(flags, "story flag")
-    missing_flags = REQUIRED_FLAGS - set(flags)
+    required_flags = REQUIRED_PREVIEW_FLAGS | REQUIRED_CHAPTER_FLAGS
+    missing_flags = required_flags - set(flags)
     if missing_flags:
         raise ValueError(f"missing required story flags: {sorted(missing_flags)}")
 
@@ -139,6 +170,9 @@ def validate() -> None:
     for event in events["flow"]:
         if event["map"] not in map_ids:
             raise ValueError(f"event {event['id']} references unknown map {event['map']}")
+
+        if event.get("scope") not in {"preview", "chapter_01"}:
+            raise ValueError(f"event {event['id']} must declare preview or chapter_01 scope")
 
         for flag in event.get("requires", []) + event.get("sets", []):
             if flag not in flags:
@@ -165,9 +199,12 @@ def validate() -> None:
 
         produced_flags.update(event.get("sets", []))
 
-    missing_producers = REQUIRED_FLAGS - produced_flags
+    missing_producers = required_flags - produced_flags
     if missing_producers:
         raise ValueError(f"required story flags are never produced: {sorted(missing_producers)}")
+
+    if "RC_FLAG_DEPLOY_01_COMPLETE" not in produced_flags:
+        raise ValueError("Chapter 1 must terminate in Deploy 01 completion")
 
 
 if __name__ == "__main__":
