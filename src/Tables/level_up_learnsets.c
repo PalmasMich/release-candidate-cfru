@@ -18950,6 +18950,14 @@ static const struct LevelUpMove sRCTartrekLevelUpLearnset[] = {
 	LEVEL_UP_END,
 };
 
+static const struct LevelUpMove sRCMistrilloLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_GUST),
+	LEVEL_UP_MOVE( 1, MOVE_GROWL),
+	LEVEL_UP_MOVE( 4, MOVE_QUICKATTACK),
+	LEVEL_UP_MOVE( 7, MOVE_SANDATTACK),
+	LEVEL_UP_END,
+};
+
 const struct LevelUpMove* const gLevelUpLearnsets[] =
 {
 	[SPECIES_NONE] = sEmptyMoveset,
@@ -20220,6 +20228,7 @@ const struct LevelUpMove* const gLevelUpLearnsets[] =
 	[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,
 };
 */
+	[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,
 };
 
 #endif
