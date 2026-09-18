@@ -59,6 +59,10 @@
     "scope_change_stage": {
       "x": 14,
       "y": 6
+    },
+    "player_spawn": {
+      "x": 11,
+      "y": 13
     }
   },
   "objects": [],
