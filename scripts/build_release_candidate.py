@@ -115,6 +115,20 @@ def default_apply_preview_patch(source: Path, output: Path) -> None:
     )
 
 
+def default_discover_port_link(output_path: Path) -> int:
+    print("\n== Port Link script discovery ==")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "discover_port_link_trainer_script.py"),
+            str(output_path),
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    return completed.returncode
+
+
 def run_pipeline(
     *,
     cfru_root: Path,
@@ -125,6 +139,7 @@ def run_pipeline(
     sync_dpe=sync_dpe_checkout,
     verify_dpe_symbols=verify_dpe_tartrek_symbols,
     apply_preview_patch=default_apply_preview_patch,
+    discover_port_link=default_discover_port_link,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
     dpe_root = Path(dpe_root).resolve()
@@ -180,6 +195,12 @@ def run_pipeline(
         output_hash = sha1_file(output_path)
         if output_hash == cfru_hash:
             raise RuntimeError("Preview output is identical to the CFRU input")
+
+        discovery_status = discover_port_link(output_path)
+        if discovery_status == 0:
+            print("PORT_LINK_DISCOVERY_STATUS=READY")
+        else:
+            print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}")
 
         print(f"\nDPE_SHA1={dpe_hash}")
         print(f"CFRU_SHA1={cfru_hash}")
