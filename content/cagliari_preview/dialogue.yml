@@ -119,6 +119,13 @@
         "Prima chiudi la verifica al Port Link.",
         "Poi torniamo a parlare del Deploy."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_DEFEAT",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Ok. Verifica chiusa."
+      ]
     }
   ]
 }
