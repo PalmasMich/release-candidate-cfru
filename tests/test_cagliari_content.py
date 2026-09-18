@@ -55,6 +55,38 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertEqual(matrix["SPECIES_RC_FROG_01"], "SPECIES_RC_TURTLE_01")
         self.assertEqual(matrix["SPECIES_RC_FIREFOX_01"], "SPECIES_RC_FROG_01")
 
+    def test_port_link_trainer_has_dialogue_and_party(self):
+        dialogue = load("dialogue.yml")
+        dialogue_ids = {scene["id"] for scene in dialogue["scenes"]}
+        trainer = load("trainers.yml")["route_trainer"]
+        self.assertEqual(trainer["id"], "RC_TRAINER_PORT_01")
+        self.assertIn(trainer["intro_dialogue"], dialogue_ids)
+        self.assertIn(trainer["outro_dialogue"], dialogue_ids)
+        self.assertTrue(trainer["party"])
+
+    def test_story_events_bind_wild_trainer_and_deploy_teaser(self):
+        events = {item["id"]: item for item in load("events.yml")["flow"]}
+        self.assertEqual(
+            events["RC_EVENT_FIRST_WILD"]["encounter_table"],
+            "RC_PORT_CONNECTION_GRASS",
+        )
+        self.assertEqual(
+            events["RC_EVENT_RIVAL_BATTLE"]["trainer"],
+            "RC_TRAINER_PORT_01",
+        )
+        self.assertEqual(
+            events["RC_EVENT_DEPLOY_TEASER"]["dialogue"],
+            "RC_DIALOGUE_DEPLOY_TEASER",
+        )
+
+    def test_story_flag_dependencies_form_linear_preview_flow(self):
+        events = load("events.yml")
+        produced = set()
+        for event in events["flow"]:
+            self.assertTrue(set(event.get("requires", [])).issubset(produced))
+            produced.update(event.get("sets", []))
+        self.assertTrue(set(events["flags"]).issubset(produced))
+
 
 if __name__ == "__main__":
     unittest.main()
