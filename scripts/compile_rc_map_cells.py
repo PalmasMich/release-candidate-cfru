@@ -30,13 +30,23 @@ def compile_cells(map_spec: dict, profile: dict) -> dict:
             value = encode_cell(int(m["metatile_id"],16), int(m["collision"]), int(m["elevation"]))
             out.extend(value.to_bytes(2,"little"))
             role_counts[role] = role_counts.get(role,0)+1
-    border = roles["wall"]
+    border_role = profile.get("border_role")
+    if border_role is None:
+        blocked_roles = map_spec.get("collision", {}).get("blocked_roles", [])
+        border_role = next((role for role in blocked_roles if role in roles), None)
+    if border_role is None or border_role not in roles:
+        raise ValueError(
+            f"no valid border metatile role for {map_spec['id']}; "
+            f"declare profile.border_role or map a blocked role"
+        )
+    border = roles[border_role]
     border_value = encode_cell(int(border["metatile_id"],16), int(border["collision"]), int(border["elevation"]))
     border_blob = border_value.to_bytes(2,"little") * 4
     return {
       "format":"RC_MAP_CELLS_IR_V1",
       "map":map_spec["id"],
-      "profile":"RC_DELIVERY_HUB_HOUSE2_BOOTSTRAP",
+      "profile":map_spec.get("metatile_profile"),
+      "border_role":border_role,
       "map_bytes":len(out),
       "border_bytes":len(border_blob),
       "map_hex":out.hex(" "),
