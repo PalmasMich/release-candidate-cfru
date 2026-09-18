@@ -183,5 +183,28 @@ class RcEventScriptCompilerTest(unittest.TestCase):
         self.assertEqual(linked[1:3], bytes([3, 50]))
 
 
+    def test_goto_if_label_is_reference_not_declaration(self):
+        script = {
+            "id": "RC_TEST_GOTO_LABEL",
+            "ops": [
+                {"op": "checkflag", "flag": "RC_FLAG_STARTER_CHOSEN"},
+                {"op": "goto_if", "condition": True, "label": "already"},
+                {"op": "end"},
+                {"label": "already"},
+                {"op": "end"},
+            ],
+        }
+        ir = self.compiler.compile_script(
+            script,
+            self.compiler.load_flag_ids(),
+            self.compiler.load_species_ids(),
+        )
+        self.assertIn("already", ir["labels"])
+        self.assertEqual(
+            len([r for r in ir["relocations"] if r["kind"] == "internal_label"]),
+            1,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
