@@ -13,7 +13,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
-PIPELINE = ("DPE", "CFRU")
+PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH")
 
 
 def sha1_file(path: Path) -> str:
@@ -45,6 +45,20 @@ def default_run_build(label: str, cwd: Path) -> None:
     )
 
 
+def default_apply_preview_patch(source: Path, output: Path) -> None:
+    print("\n== Release Candidate preview patch ==")
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "apply_release_candidate_preview_patch.py"),
+            str(source),
+            str(output),
+        ],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def run_pipeline(
     *,
     cfru_root: Path,
@@ -52,6 +66,7 @@ def run_pipeline(
     output_path: Path,
     run_build=default_run_build,
     verify_rom=verify_pristine_rom,
+    apply_preview_patch=default_apply_preview_patch,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
     dpe_root = Path(dpe_root).resolve()
@@ -96,11 +111,19 @@ def run_pipeline(
         if cfru_hash == dpe_hash:
             raise RuntimeError("CFRU test.gba is identical to the DPE input")
 
-        shutil.copy2(cfru_output, output_path)
+        if output_path.exists():
+            output_path.unlink()
+        apply_preview_patch(cfru_output, output_path)
+        if not output_path.exists():
+            raise RuntimeError("Release Candidate preview patch did not produce an output ROM")
+        output_hash = sha1_file(output_path)
+        if output_hash == cfru_hash:
+            raise RuntimeError("Preview output is identical to the CFRU input")
+
         print(f"\nDPE_SHA1={dpe_hash}")
         print(f"CFRU_SHA1={cfru_hash}")
         print(f"OUTPUT={output_path}")
-        print(f"OUTPUT_SHA1={sha1_file(output_path)}")
+        print(f"OUTPUT_SHA1={output_hash}")
         return output_path
     finally:
         cfru_rom.write_bytes(original)
@@ -131,7 +154,7 @@ def main() -> int:
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}")
     print(f"DPE={dpe_root}")
-    print("PIPELINE=DPE -> CFRU")
+    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
 
     try:
