@@ -26,6 +26,8 @@ OP_LOCK = 0x6A
 OP_RELEASEALL = 0x6B
 OP_RELEASE = 0x6C
 OP_GIVEMON = 0x79
+OP_SETWILDBATTLE = 0xB6
+OP_DOWILDBATTLE = 0xB7
 
 ITEM_NONE = 0
 TRUE = 1
@@ -82,10 +84,6 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
 
     for entry in script["ops"]:
         op = entry.get("op")
-
-        # A bare {"label": "..."} entry declares a target. Commands such as
-        # goto_if also carry a "label" field, but that is a reference and must
-        # not be registered as a declaration.
         if op is None and "label" in entry:
             label = entry["label"]
             if label in labels:
@@ -120,18 +118,10 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
         elif op == "goto_if":
             buf.append(OP_GOTO_IF)
             buf.append(TRUE if entry["condition"] else FALSE)
-            emit_u32_placeholder(
-                buf,
-                relocations,
-                {"kind": "internal_label", "label": entry["label"]},
-            )
+            emit_u32_placeholder(buf, relocations, {"kind": "internal_label", "label": entry["label"]})
         elif op == "msgbox":
             buf.extend((OP_LOADWORD, 0x00))
-            emit_u32_placeholder(
-                buf,
-                relocations,
-                {"kind": "dialogue", "symbol": entry["dialogue"]},
-            )
+            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["dialogue"]})
             buf.extend((OP_CALLSTD, int(entry.get("type", 4))))
         elif op == "warp":
             x = int(entry["x"])
@@ -139,11 +129,7 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
             if not 0 <= x <= 0xFFFF or not 0 <= y <= 0xFFFF:
                 raise ValueError(f"{script['id']}: invalid warp coordinates ({x}, {y})")
             buf.append(OP_WARP)
-            emit_u16_placeholder(
-                buf,
-                relocations,
-                {"kind": "map_id", "symbol": entry["target_map"]},
-            )
+            emit_u16_placeholder(buf, relocations, {"kind": "map_id", "symbol": entry["target_map"]})
             buf.append(int(entry.get("warp_id", 0xFF)) & 0xFF)
             emit_u16(buf, x)
             emit_u16(buf, y)
@@ -157,16 +143,8 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
             buf.extend((OP_TRAINERBATTLE, 0x00))
             emit_u16(buf, trainer_id)
             emit_u16(buf, local_id)
-            emit_u32_placeholder(
-                buf,
-                relocations,
-                {"kind": "dialogue", "symbol": entry["intro_dialogue"]},
-            )
-            emit_u32_placeholder(
-                buf,
-                relocations,
-                {"kind": "dialogue", "symbol": entry["defeat_dialogue"]},
-            )
+            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["intro_dialogue"]})
+            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["defeat_dialogue"]})
         elif op == "givemon":
             species_name = entry["species"]
             if species_name not in species:
@@ -180,6 +158,22 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
             buf.append(level)
             emit_u16(buf, item)
             buf.extend(b"\x00" * 9)
+        elif op == "setwildbattle":
+            species_name = entry["species"]
+            if species_name not in species:
+                raise ValueError(f"{script['id']}: unknown species {species_name}")
+            level = int(entry["level"])
+            if not 1 <= level <= 100:
+                raise ValueError(f"{script['id']}: invalid wild level {level}")
+            item = int(entry.get("item", ITEM_NONE))
+            if not 0 <= item <= 0xFFFF:
+                raise ValueError(f"{script['id']}: invalid wild held item {item}")
+            buf.append(OP_SETWILDBATTLE)
+            emit_u16(buf, species[species_name])
+            buf.append(level)
+            emit_u16(buf, item)
+        elif op == "dowildbattle":
+            buf.append(OP_DOWILDBATTLE)
         else:
             raise ValueError(f"{script['id']}: unsupported op {op}")
 
@@ -190,39 +184,21 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
                 raise ValueError(f"{script['id']}: unknown label {label}")
             relocation["target_offset"] = labels[label]
 
-    return {
-        "id": script["id"],
-        "size": len(buf),
-        "bytes_hex": buf.hex(" "),
-        "labels": labels,
-        "relocations": relocations,
-    }
+    return {"id": script["id"], "size": len(buf), "bytes_hex": buf.hex(" "), "labels": labels, "relocations": relocations}
 
 
 def compile_spec(spec: dict) -> dict:
     flags = load_flag_ids()
     species = load_species_ids()
-
     scripts = [compile_script(script, flags, species) for script in spec["scripts"]]
     ids = [script["id"] for script in scripts]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate event-script ids")
-
-    return {
-        "format": "RC_EVENT_SCRIPT_IR_V1",
-        "map": spec["map"],
-        "scripts": scripts,
-    }
+    return {"format": "RC_EVENT_SCRIPT_IR_V1", "map": spec["map"], "scripts": scripts}
 
 
-def link_script(
-    script_ir: dict,
-    base_address: int,
-    dialogue_addresses: dict[str, int],
-    map_ids: dict[str, tuple[int, int]] | None = None,
-) -> bytes:
+def link_script(script_ir: dict, base_address: int, dialogue_addresses: dict[str, int], map_ids: dict[str, tuple[int, int]] | None = None) -> bytes:
     data = bytearray.fromhex(script_ir["bytes_hex"])
-
     for relocation in script_ir["relocations"]:
         offset = relocation["offset"]
         if relocation["kind"] == "internal_label":
@@ -241,9 +217,7 @@ def link_script(
             continue
         else:
             raise ValueError(f"unsupported relocation kind {relocation['kind']}")
-
         data[offset:offset + 4] = int(value).to_bytes(4, "little")
-
     return bytes(data)
 
 
@@ -260,13 +234,11 @@ def main() -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
-
     try:
         ir = compile_file(args.source, args.output)
     except (FileNotFoundError, ValueError) as exc:
         print(f"RC_EVENT_SCRIPTS_INVALID: {exc}")
         return 1
-
     print(f"RC_EVENT_SCRIPTS_VALID={ir['map']}")
     print(f"RC_EVENT_SCRIPT_COUNT={len(ir['scripts'])}")
     return 0
