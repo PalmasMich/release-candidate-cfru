@@ -158,6 +158,22 @@ VISIBLE_TEXT_REPLACEMENTS = (
         encode_text("You can have one.\nGo on, choose!"),
         encode_text("Pick one now.\nFirst task starts!"),
     ),
+    (
+        encode_text("Hi!\nI work at a POKéMON MART."),
+        encode_text("Hi!\nI work on Delivery."),
+    ),
+    (
+        encode_text("Please, visit us in VIRIDIAN CITY."),
+        encode_text("Please, report at MARINA PORTO."),
+    ),
+    (
+        encode_text("I know, I'll give you a sample.\nHere you go!"),
+        encode_text("Quick handoff: take this.\nUse it well!"),
+    ),
+    (
+        encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"),
+        encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE"),
+    ),
 )
 
 MAP_NAME_REPLACEMENT = (
