@@ -233,6 +233,53 @@
         }
       },
       "retirement_condition": "replace with RC_TILESET_DEPLOY_DISTRICT_01 after custom district tileset smoke test"
+    },
+    "RC_DEPLOY_ROOM_HOUSE2_BOOTSTRAP": {
+      "status": "bootstrap_only",
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_GenericBuilding2",
+      "evidence": {
+        "source_layout": "LAYOUT_HOUSE2",
+        "walkable_sample": {
+          "metatile_id": "0x001"
+        },
+        "blocked_sample": {
+          "metatile_id": "0x020"
+        }
+      },
+      "semantic_roles": {
+        "walkable_floor": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "release_manager_tile": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "status_terminal": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "district_exit": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "room_wall": {
+          "metatile_id": "0x020",
+          "collision": 1,
+          "elevation": 0
+        },
+        "meeting_table": {
+          "metatile_id": "0x020",
+          "collision": 1,
+          "elevation": 0
+        }
+      },
+      "retirement_condition": "replace with RC_TILESET_DEPLOY_ROOM_01 after custom boss-room tileset smoke test"
     }
   }
 }
