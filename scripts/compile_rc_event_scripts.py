@@ -19,6 +19,7 @@ OP_LOADWORD = 0x0F
 OP_SETFLAG = 0x29
 OP_CHECKFLAG = 0x2B
 OP_FACEPLAYER = 0x5A
+OP_TRAINERBATTLE = 0x5C
 OP_LOCKALL = 0x69
 OP_LOCK = 0x6A
 OP_RELEASEALL = 0x6B
@@ -120,6 +121,26 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
                 {"kind": "dialogue", "symbol": entry["dialogue"]},
             )
             buf.extend((OP_CALLSTD, int(entry.get("type", 4))))
+        elif op == "trainerbattle_single":
+            trainer_id = int(entry["trainer_id"])
+            local_id = int(entry.get("local_id", 0))
+            if not 0 <= trainer_id <= 0xFFFF:
+                raise ValueError(f"{script['id']}: invalid trainer id {trainer_id}")
+            if not 0 <= local_id <= 0xFFFF:
+                raise ValueError(f"{script['id']}: invalid trainer local id {local_id}")
+            buf.extend((OP_TRAINERBATTLE, 0x00))
+            emit_u16(buf, trainer_id)
+            emit_u16(buf, local_id)
+            emit_u32_placeholder(
+                buf,
+                relocations,
+                {"kind": "dialogue", "symbol": entry["intro_dialogue"]},
+            )
+            emit_u32_placeholder(
+                buf,
+                relocations,
+                {"kind": "dialogue", "symbol": entry["defeat_dialogue"]},
+            )
         elif op == "givemon":
             species_name = entry["species"]
             if species_name not in species:
