@@ -56,6 +56,27 @@ def sync_dpe_checkout(dpe_root: Path) -> None:
     )
 
 
+def verify_dpe_tartrek_symbols(dpe_root: Path) -> None:
+    offsets = Path(dpe_root) / "offsets.ini"
+    if not offsets.is_file():
+        raise RuntimeError("DPE build did not produce offsets.ini for Tartrek verification.")
+
+    text = offsets.read_text(encoding="utf-8")
+    required = (
+        "gFrontSprite1268RCTartrekTiles",
+        "gBackShinySprite1268RCTartrekTiles",
+        "gIconSprite1268RCTartrekTiles",
+        "gFrontSprite1268RCTartrekPal",
+        "gBackShinySprite1268RCTartrekPal",
+    )
+    missing = [symbol for symbol in required if symbol not in text]
+    if missing:
+        raise RuntimeError(
+            "DPE build is missing Tartrek sprite symbols: " + ", ".join(missing)
+        )
+    print("DPE_TARTREK_SYMBOLS=OK")
+
+
 def default_run_build(label: str, cwd: Path) -> None:
     print(f"\n== {label} build ==")
     subprocess.run(
@@ -118,6 +139,7 @@ def run_pipeline(
         shutil.copy2(cfru_rom, dpe_rom)
         pristine_hash = sha1_file(dpe_rom)
         run_build("DPE", dpe_root)
+        verify_dpe_tartrek_symbols(dpe_root)
 
         if not dpe_output.exists():
             raise RuntimeError("DPE build finished without test.gba")
