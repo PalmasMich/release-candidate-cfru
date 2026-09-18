@@ -48,6 +48,16 @@ class PortLinkTrainerDiscoveryTest(unittest.TestCase):
         self.assertTrue(context["markers"]["loadpointer_prefix"])
         self.assertTrue(context["markers"]["has_lock_before"])
         self.assertTrue(context["markers"]["has_faceplayer_before"])
+        self.assertIsNotNone(context["patch_plan"])
+        self.assertEqual(
+            context["patch_plan"]["script_start_candidate"],
+            xref_offset - 4,
+        )
+        self.assertFalse(context["patch_plan"]["mutation_allowed"])
+        self.assertGreater(
+            context["patch_plan"]["verification_signature_length"],
+            0,
+        )
 
     def test_falls_back_to_source_route1_text(self):
         module = load_module()
@@ -75,6 +85,7 @@ class PortLinkTrainerDiscoveryTest(unittest.TestCase):
             report["candidate_contexts"][0]["classification"],
             "data_or_unknown_reference",
         )
+        self.assertIsNone(report["candidate_contexts"][0]["patch_plan"])
 
     def test_duplicate_target_text_is_not_safe_to_patch(self):
         module = load_module()
