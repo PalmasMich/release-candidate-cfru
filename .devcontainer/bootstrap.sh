@@ -7,15 +7,34 @@ DPE_DIR="$WORKSPACES_DIR/release-candidate-dpe"
 DPE_REPO="https://github.com/PalmasMich/release-candidate-dpe.git"
 DPE_BRANCH="feature/cagliari-preview-0.1"
 EXPECTED_SHA1="41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
+WAV2AGB_REPO="https://github.com/ipatix/wav2agb.git"
+WAV2AGB_COMMIT="7279d3cf899e53154482bcdcd66a483f6a4572ba"
+WAV2AGB_DIR="/tmp/rc-wav2agb"
 
 printf '\n== Release Candidate Codespace bootstrap ==\n'
 
-for command in python git arm-none-eabi-gcc grit; do
+for command in python git arm-none-eabi-gcc grit make g++; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "ERROR: required tool not found: $command" >&2
     exit 1
   fi
 done
+
+if ! command -v wav2agb >/dev/null 2>&1; then
+  echo "Installing wav2agb Linux tool ..."
+  rm -rf "$WAV2AGB_DIR"
+  git clone "$WAV2AGB_REPO" "$WAV2AGB_DIR"
+  cd "$WAV2AGB_DIR"
+  git checkout "$WAV2AGB_COMMIT"
+  make
+  install -m 0755 wav2agb /usr/local/bin/wav2agb
+  cd "$CFRU_DIR"
+fi
+
+if ! command -v wav2agb >/dev/null 2>&1; then
+  echo "ERROR: wav2agb installation failed." >&2
+  exit 1
+fi
 
 if [ ! -d "$DPE_DIR/.git" ]; then
   echo "Cloning DPE branch into $DPE_DIR ..."
@@ -52,5 +71,6 @@ printf '\nToolchain versions:\n'
 python --version
 arm-none-eabi-gcc --version | head -n 1
 grit --version 2>/dev/null | head -n 1 || true
+wav2agb --help 2>&1 | head -n 1 || true
 
 printf '\nCodespace setup complete.\n'
