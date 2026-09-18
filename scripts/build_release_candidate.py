@@ -59,6 +59,8 @@ def run_pipeline(
 
     cfru_rom = cfru_root / "BPRE0.gba"
     dpe_rom = dpe_root / "BPRE0.gba"
+    dpe_output = dpe_root / "test.gba"
+    cfru_output = cfru_root / "test.gba"
 
     verify_rom(cfru_rom)
 
@@ -71,29 +73,40 @@ def run_pipeline(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
-        if dpe_rom.exists():
-            dpe_rom.unlink()
+        for path in (dpe_rom, dpe_output, cfru_output):
+            if path.exists():
+                path.unlink()
 
         shutil.copy2(cfru_rom, dpe_rom)
+        pristine_hash = sha1_file(dpe_rom)
         run_build("DPE", dpe_root)
 
-        if not dpe_rom.exists():
-            raise RuntimeError("DPE build finished without BPRE0.gba")
+        if not dpe_output.exists():
+            raise RuntimeError("DPE build finished without test.gba")
+        dpe_hash = sha1_file(dpe_output)
+        if dpe_hash == pristine_hash:
+            raise RuntimeError("DPE test.gba is identical to the pristine input")
 
-        shutil.copy2(dpe_rom, cfru_rom)
+        shutil.copy2(dpe_output, cfru_rom)
         run_build("CFRU", cfru_root)
 
-        if not cfru_rom.exists():
-            raise RuntimeError("CFRU build finished without BPRE0.gba")
+        if not cfru_output.exists():
+            raise RuntimeError("CFRU build finished without test.gba")
+        cfru_hash = sha1_file(cfru_output)
+        if cfru_hash == dpe_hash:
+            raise RuntimeError("CFRU test.gba is identical to the DPE input")
 
-        shutil.copy2(cfru_rom, output_path)
-        print(f"\nOUTPUT={output_path}")
+        shutil.copy2(cfru_output, output_path)
+        print(f"\nDPE_SHA1={dpe_hash}")
+        print(f"CFRU_SHA1={cfru_hash}")
+        print(f"OUTPUT={output_path}")
         print(f"OUTPUT_SHA1={sha1_file(output_path)}")
         return output_path
     finally:
         cfru_rom.write_bytes(original)
-        if dpe_rom.exists():
-            dpe_rom.unlink()
+        for path in (dpe_rom, dpe_output, cfru_output):
+            if path.exists():
+                path.unlink()
 
 
 def main() -> int:
