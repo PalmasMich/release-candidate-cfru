@@ -95,6 +95,18 @@ VISIBLE_TEXT_REPLACEMENTS = (
         encode_text("They call me Delivery Lead"),
     ),
     (
+        encode_text("This is my grandson."),
+        encode_text("This is your teammate."),
+    ),
+    (
+        encode_text("He's been your rival since you both"),
+        encode_text("He's tracked your KPI since day one"),
+    ),
+    (
+        encode_text("were babies."),
+        encode_text("onboarding."),
+    ),
+    (
         encode_text("as the POKéMON PROFESSOR."),
         encode_text("on this project."),
     ),
@@ -103,8 +115,28 @@ VISIBLE_TEXT_REPLACEMENTS = (
         encode_text("TARTREK is your new partner!"),
     ),
     (
+        encode_text("Hm! SQUIRTLE is your choice."),
+        encode_text("FROBYTE is your new partner!"),
+    ),
+    (
+        encode_text("Ah! CHARMANDER is your choice."),
+        encode_text("EMBERFOX is your new partner!"),
+    ),
+    (
         encode_text("It's very easy to raise."),
         encode_text("First task starts now!"),
+    ),
+    (
+        encode_text("the GRASS POKéMON BULBASAUR?"),
+        encode_text("the GRASS/GROUND TARTREK?"),
+    ),
+    (
+        encode_text("the WATER POKéMON SQUIRTLE?"),
+        encode_text("the WATER/ELECTRIC FROBYTE?"),
+    ),
+    (
+        encode_text("FIRE POKéMON CHARMANDER?"),
+        encode_text("FIRE/DARK EMBERFOX?"),
     ),
     (
         encode_text("Come on, I'll take you on!"),
