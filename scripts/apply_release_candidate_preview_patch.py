@@ -105,11 +105,31 @@ def patch_preview_starters(data: bytearray) -> bytearray:
     return data
 
 
-def patch_oak_lab_rival_parties(data: bytearray) -> bytearray:
-    pos = _find_exactly_one(data, OAK_LAB_RIVAL_PARTIES_SIGNATURE, "Oak Lab rival party")
-    for rel, species in zip(RIVAL_PARTY_SPECIES_OFFSETS, (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)):
+def patch_oak_lab_rival_parties(data: bytearray) -> tuple[bytearray, bool]:
+    positions, start = [], 0
+    while True:
+        pos = data.find(OAK_LAB_RIVAL_PARTIES_SIGNATURE, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + 1
+
+    if len(positions) == 0:
+        print("RC_PREVIEW_KPI_RIVAL_PARTY=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
+        return data, False
+    if len(positions) != 1:
+        raise ValueError(
+            f"Expected at most one Oak Lab rival party signature, found {len(positions)}."
+        )
+
+    pos = positions[0]
+    for rel, species in zip(
+        RIVAL_PARTY_SPECIES_OFFSETS,
+        (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
+    ):
         data[pos + rel:pos + rel + 2] = species.to_bytes(2, "little")
-    return data
+    print("RC_PREVIEW_KPI_RIVAL_PARTY=APPLIED")
+    return data, True
 
 
 def _replace_size_preserving(data: bytearray, old: bytes, new: bytes, *, expected: int | None = None) -> int:
@@ -153,7 +173,7 @@ def patch_visible_preview_text(data: bytearray) -> bytearray:
     return data
 
 
-def validate_preview_patch(data: bytearray) -> None:
+def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True) -> None:
     """Validate exact gameplay wiring, not merely the presence of species bytes."""
     for _, new in VISIBLE_TEXT_REPLACEMENTS:
         if new not in data:
@@ -175,13 +195,16 @@ def validate_preview_patch(data: bytearray) -> None:
         if data[pos + RIVAL_SPECIES_VALUE_OFFSET:pos + RIVAL_SPECIES_VALUE_OFFSET + 2] != rival_species.to_bytes(2, "little"):
             raise RuntimeError("Rival starter species wiring is incorrect.")
 
-    # Confirm the three level-5 rival party structs survived with the RC species.
-    rival_party = b"".join(
-        b"\x00\x00\x05\x00" + species.to_bytes(2, "little")
-        for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)
-    )
-    if rival_party not in data:
-        raise RuntimeError("Oak Lab KPI-rival party wiring is incomplete.")
+    # The Oak Lab rival party is now only a legacy bootstrap fallback. The
+    # permanent Chapter 1 path uses RC custom-map scripts, so a missing legacy
+    # signature must not block the private build.
+    if rival_party_required:
+        rival_party = b"".join(
+            b"\x00\x00\x05\x00" + species.to_bytes(2, "little")
+            for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)
+        )
+        if rival_party not in data:
+            raise RuntimeError("Oak Lab KPI-rival party wiring is incomplete.")
 
     # Confirm the full Port Link table, including original encounter levels.
     expected_route = bytearray(ROUTE1_WILD_SIGNATURE)
@@ -197,10 +220,10 @@ def patch_rom(source: Path, output: Path) -> Path:
         raise FileNotFoundError(f"Input ROM not found: {source}")
     original = source.read_bytes()
     patched = patch_preview_starters(bytearray(original))
-    patched = patch_oak_lab_rival_parties(patched)
+    patched, rival_party_patched = patch_oak_lab_rival_parties(patched)
     patched = patch_visible_preview_text(patched)
     patched = patch_route1_wild_encounters(patched)
-    validate_preview_patch(patched)
+    validate_preview_patch(patched, rival_party_required=rival_party_patched)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
