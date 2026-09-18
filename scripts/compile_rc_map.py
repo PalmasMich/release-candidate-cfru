@@ -71,7 +71,10 @@ def validate_spec(spec: dict) -> None:
     for interaction in spec.get("interactions", []):
         anchor = interaction.get("anchor")
         require(anchor in anchors, f"{map_id}: interaction {interaction.get('id')} has unknown anchor {anchor}")
-        require(interaction.get("event"), f"{map_id}: interaction {interaction.get('id')} has no event")
+        require(
+            str(interaction.get("script", "")).startswith("RC_SCRIPT_"),
+            f"{map_id}: interaction {interaction.get('id')} has no compiled script binding",
+        )
 
     for warp in spec.get("warps", []):
         anchor = warp.get("anchor")
