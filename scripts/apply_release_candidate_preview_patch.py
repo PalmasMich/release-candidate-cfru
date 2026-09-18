@@ -105,6 +105,17 @@ def patch_preview_starters(data: bytearray) -> bytearray:
     return data
 
 
+def patched_starter_signature(signature: bytes, player_species: int, rival_species: int) -> bytes:
+    patched = bytearray(signature)
+    patched[
+        PLAYER_SPECIES_VALUE_OFFSET:PLAYER_SPECIES_VALUE_OFFSET + 2
+    ] = player_species.to_bytes(2, "little")
+    patched[
+        RIVAL_SPECIES_VALUE_OFFSET:RIVAL_SPECIES_VALUE_OFFSET + 2
+    ] = rival_species.to_bytes(2, "little")
+    return bytes(patched)
+
+
 def patch_oak_lab_rival_parties(data: bytearray) -> tuple[bytearray, bool]:
     positions, start = [], 0
     while True:
@@ -231,19 +242,27 @@ def validate_preview_patch(
     if lab_label_required and LAB_SIGN_REPLACEMENT[1] not in data:
         raise RuntimeError("Applied Delivery Hub identity label is missing.")
 
-    # Starter scripts retain their unique setvar-choice prefix after patching.
-    for signature, player_species, rival_species in (
-        (BULBASAUR_STARTER_SIGNATURE, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
-        (SQUIRTLE_STARTER_SIGNATURE, FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
-        (CHARMANDER_STARTER_SIGNATURE, EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
+    # Validate the complete post-patch script signatures. Prefix-only matching
+    # is unsafe in a full CFRU ROM because common setvar prefixes occur in
+    # unrelated scripts.
+    for signature, label, player_species, rival_species in (
+        (BULBASAUR_STARTER_SIGNATURE, "Tartrek starter", TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
+        (SQUIRTLE_STARTER_SIGNATURE, "Frobyte starter", FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
+        (CHARMANDER_STARTER_SIGNATURE, "Emberfox starter", EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
     ):
-        pos = data.find(signature[:5])
-        if pos < 0:
-            raise RuntimeError("A patched starter choice script cannot be located.")
-        if data[pos + PLAYER_SPECIES_VALUE_OFFSET:pos + PLAYER_SPECIES_VALUE_OFFSET + 2] != player_species.to_bytes(2, "little"):
-            raise RuntimeError("Player starter species wiring is incorrect.")
-        if data[pos + RIVAL_SPECIES_VALUE_OFFSET:pos + RIVAL_SPECIES_VALUE_OFFSET + 2] != rival_species.to_bytes(2, "little"):
-            raise RuntimeError("Rival starter species wiring is incorrect.")
+        expected = patched_starter_signature(signature, player_species, rival_species)
+        positions, start = [], 0
+        while True:
+            pos = data.find(expected, start)
+            if pos < 0:
+                break
+            positions.append(pos)
+            start = pos + 1
+        if len(positions) != 1:
+            raise RuntimeError(
+                f"{label} wiring is incorrect: expected exactly one patched script, "
+                f"found {len(positions)}."
+            )
 
     # The Oak Lab rival party is now only a legacy bootstrap fallback. The
     # permanent Chapter 1 path uses RC custom-map scripts, so a missing legacy
