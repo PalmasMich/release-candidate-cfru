@@ -203,9 +203,13 @@ def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes],
         print("RC_PREVIEW_DELIVERY_HUB_LABEL=APPLIED")
         lab_applied = True
     else:
-        raise ValueError(
-            f"Expected at most one legacy Delivery Hub label signature, found {len(positions)}."
+        # This is a legacy visual fallback only. Never patch multiple matching
+        # locations blindly: the permanent Delivery Hub uses its custom map.
+        print(
+            "RC_PREVIEW_DELIVERY_HUB_LABEL="
+            f"PENDING:AMBIGUOUS_SIGNATURE:{len(positions)}"
         )
+        lab_applied = False
 
     return data, applied_texts, city_applied, lab_applied
 
