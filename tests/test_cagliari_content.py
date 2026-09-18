@@ -11,24 +11,58 @@ def load(name: str):
 
 
 class CagliariPreviewContentTest(unittest.TestCase):
-    def test_required_maps_exist(self):
+    def test_chapter_one_has_permanent_original_world_maps(self):
         maps = load("maps.yml")
-        ids = {item["id"] for item in maps["maps"]}
-        self.assertTrue({
+        self.assertEqual(maps["chapter"]["id"], "RC_CHAPTER_01_CAGLIARI")
+
+        by_id = {item["id"]: item for item in maps["maps"]}
+        required = {
+            "RC_CAGLIARI_ARRIVAL",
             "RC_DELIVERY_HUB",
             "RC_CAGLIARI_MARINA",
             "RC_PORT_CONNECTION",
-        }.issubset(ids))
+            "RC_CASTELLO_ASCENT",
+            "RC_DEPLOY_DISTRICT",
+            "RC_DEPLOY_ROOM_01",
+        }
+        self.assertTrue(required.issubset(by_id))
+        self.assertEqual(
+            by_id["RC_PORT_CONNECTION"]["status"],
+            "bootstrap_replacement_pending",
+        )
+        self.assertEqual(
+            by_id["RC_PORT_CONNECTION"]["bootstrap_source"],
+            "FIRERED_ROUTE_1",
+        )
+        permanent = {
+            map_id
+            for map_id, item in by_id.items()
+            if item.get("status") == "permanent"
+        }
+        self.assertTrue({
+            "RC_CAGLIARI_ARRIVAL",
+            "RC_DELIVERY_HUB",
+            "RC_CAGLIARI_MARINA",
+            "RC_CASTELLO_ASCENT",
+            "RC_DEPLOY_DISTRICT",
+            "RC_DEPLOY_ROOM_01",
+        }.issubset(permanent))
 
-    def test_required_story_flags_exist(self):
+    def test_required_story_flags_cover_preview_and_chapter_climax(self):
         events = load("events.yml")
         flags = set(events["flags"])
         self.assertTrue({
+            "RC_FLAG_ARRIVAL_DONE",
             "RC_FLAG_STARTER_CHOSEN",
             "RC_FLAG_RIVAL_INTRO_DONE",
             "RC_FLAG_WILD_TUTORIAL_DONE",
-            "RC_FLAG_RIVAL_BATTLE_DONE",
+            "RC_FLAG_PORT_TRAINER_DONE",
             "RC_FLAG_DEPLOY_TEASER_SEEN",
+            "RC_FLAG_SCOPE_CHANGE_REVEALED",
+            "RC_FLAG_CASTELLO_UNLOCKED",
+            "RC_FLAG_GO_NO_GO_STARTED",
+            "RC_FLAG_RELEASE_MANAGER_DEFEATED",
+            "RC_FLAG_DEPLOY_01_COMPLETE",
         }.issubset(flags))
 
     def test_approved_opening_line_is_present(self):
@@ -64,22 +98,40 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertIn(trainer["outro_dialogue"], dialogue_ids)
         self.assertTrue(trainer["party"])
 
-    def test_story_events_bind_wild_trainer_and_deploy_teaser(self):
+    def test_preview_story_binds_wild_trainer_and_deploy_teaser(self):
         events = {item["id"]: item for item in load("events.yml")["flow"]}
         self.assertEqual(
             events["RC_EVENT_FIRST_WILD"]["encounter_table"],
             "RC_PORT_CONNECTION_GRASS",
         )
         self.assertEqual(
-            events["RC_EVENT_RIVAL_BATTLE"]["trainer"],
+            events["RC_EVENT_PORT_TRAINER"]["trainer"],
             "RC_TRAINER_PORT_01",
         )
         self.assertEqual(
             events["RC_EVENT_DEPLOY_TEASER"]["dialogue"],
             "RC_DIALOGUE_DEPLOY_TEASER",
         )
+        self.assertEqual(
+            events["RC_EVENT_PORT_TRAINER"]["implementation_status"],
+            "bootstrap_route1",
+        )
 
-    def test_story_flag_dependencies_form_linear_preview_flow(self):
+    def test_story_continues_beyond_preview_into_deploy_one(self):
+        events = {item["id"]: item for item in load("events.yml")["flow"]}
+        self.assertIn("RC_FLAG_SCOPE_CHANGE_REVEALED", events["RC_EVENT_SCOPE_CHANGE"]["sets"])
+        self.assertIn("RC_FLAG_CASTELLO_UNLOCKED", events["RC_EVENT_SCOPE_CHANGE"]["sets"])
+        self.assertIn("RC_FLAG_GO_NO_GO_STARTED", events["RC_EVENT_GO_NO_GO"]["sets"])
+        self.assertIn(
+            "RC_FLAG_RELEASE_MANAGER_DEFEATED",
+            events["RC_EVENT_RELEASE_MANAGER"]["sets"],
+        )
+        self.assertIn(
+            "RC_FLAG_DEPLOY_01_COMPLETE",
+            events["RC_EVENT_DEPLOY_01_COMPLETE"]["sets"],
+        )
+
+    def test_story_flag_dependencies_form_linear_chapter_flow(self):
         events = load("events.yml")
         produced = set()
         for event in events["flow"]:
