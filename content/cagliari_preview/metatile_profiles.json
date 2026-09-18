@@ -107,6 +107,47 @@
         }
       },
       "retirement_condition": "replace with RC_TILESET_CAGLIARI_EXTERIORS_01 after custom exterior tileset smoke test"
+    },
+    "RC_PORT_LINK_GENERAL_BOOTSTRAP": {
+      "status": "bootstrap_only",
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_CeladonCity",
+      "evidence": {
+        "source": "pret/pokefirered/include/constants/metatile_labels.h",
+        "known_metatiles": {
+          "plain_mowed": "0x001",
+          "plain_grass": "0x00D",
+          "thin_tree_top_grass": "0x00A"
+        }
+      },
+      "semantic_roles": {
+        "walkable_path": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "wild_grass": {
+          "metatile_id": "0x00D",
+          "collision": 0,
+          "elevation": 3
+        },
+        "door": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "trainer_tile": {
+          "metatile_id": "0x001",
+          "collision": 0,
+          "elevation": 3
+        },
+        "route_boundary": {
+          "metatile_id": "0x00A",
+          "collision": 1,
+          "elevation": 0
+        }
+      },
+      "retirement_condition": "replace with RC_TILESET_CAGLIARI_EXTERIORS_01 after custom exterior tileset smoke test"
     }
   }
 }
