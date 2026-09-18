@@ -106,3 +106,41 @@ Still required before Preview 0.1 can be called a candidate:
 ## Next technical checkpoint
 
 Implement the Port Link trainer battle using an exact, verified FireRed/CFRU script signature or event insertion point. Do not patch guessed offsets. Once the binding is deterministic, add a ROM-patcher regression test before running the next private build.
+
+
+## Port Link trainer bootstrap implementation
+
+Source implementation now includes a guarded bootstrap path for the Port Link trainer battle.
+
+Current bootstrap contract:
+
+- discovery starts from the already-patched Port Link delivery NPC text;
+- the reference must classify as a FireRed event script, not merely as a raw ROM pointer;
+- classification now matches the actual FireRed Route 1 Mart Clerk structure:
+  - `lock`;
+  - `faceplayer`;
+  - `checkflag` / conditional `goto`;
+  - `loadword 0, <text>`;
+  - `callstd`;
+- a verification signature is captured before any write;
+- the trainer patch aborts if the signature, intro text or defeat text is ambiguous;
+- the bootstrap script uses `TRAINER_RS_YOUNGSTER = 37`, a preserved RS dummy trainer with a single level-5 party member;
+- the bootstrap defeat text reuses the already-patched Port Link text `Please, report at MARINA PORTO.`;
+- trainer patching occurs on a temporary output file and replaces the preview ROM only after successful completion;
+- a failed/ambiguous trainer patch leaves the normal preview ROM intact and reports a pending status.
+
+The target manifest remains `RC_TRAINER_PORT_01` with one level-4 Meowth. The bootstrap trainer's dummy party is intentionally **not** binary-patched yet because the dummy party payload is repeated for many preserved RS trainer classes and therefore is not a unique safe signature.
+
+### Next verification
+
+On the next private build, expect the pipeline:
+
+`DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH`
+
+A successful bootstrap should emit:
+
+- `PORT_LINK_DISCOVERY_STATUS=READY`;
+- `PORT_LINK_TRAINER_STATUS=APPLIED`;
+- the exact Port Link script, intro-text and defeat-text ROM offsets.
+
+Only after that device smoke test should the bootstrap party/name be promoted to the final Consulente Junior implementation.
