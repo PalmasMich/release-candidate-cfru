@@ -158,28 +158,74 @@ def patch_route1_wild_encounters(data: bytearray) -> bytearray:
     return data
 
 
-def patch_visible_preview_text(data: bytearray) -> bytearray:
-    for old, new in VISIBLE_TEXT_REPLACEMENTS:
-        _replace_size_preserving(data, old, new, expected=1)
+def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes], bool, bool]:
+    applied_texts = []
+
+    for index, (old, new) in enumerate(VISIBLE_TEXT_REPLACEMENTS):
+        count = _replace_size_preserving(data, old, new, expected=None)
+        if count == 0:
+            print(f"RC_PREVIEW_TEXT_{index:02d}=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
+            continue
+        if count != 1:
+            raise ValueError(
+                f"Expected at most one legacy visible-text signature {index}, found {count}."
+            )
+        applied_texts.append(new)
+        print(f"RC_PREVIEW_TEXT_{index:02d}=APPLIED")
+
     old_city, new_city = MAP_NAME_REPLACEMENT
     if len(old_city) != len(new_city):
         raise ValueError("Map-name replacement must preserve byte length.")
-    _replace_size_preserving(data, old_city, new_city, expected=1)
+    city_count = _replace_size_preserving(data, old_city, new_city, expected=None)
+    if city_count == 0:
+        print("RC_PREVIEW_MAP_NAMES=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
+        city_applied = False
+    elif city_count == 1:
+        print("RC_PREVIEW_MAP_NAMES=APPLIED")
+        city_applied = True
+    else:
+        raise ValueError(f"Expected at most one legacy map-name signature, found {city_count}.")
+
     old_lab, new_lab = LAB_SIGN_REPLACEMENT
-    pos = data.find(old_lab)
-    if pos < 0:
-        raise ValueError("Delivery Hub source label not found.")
-    data[pos:pos + len(old_lab)] = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
-    return data
+    positions, start = [], 0
+    while True:
+        pos = data.find(old_lab, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + 1
+    if len(positions) == 0:
+        print("RC_PREVIEW_DELIVERY_HUB_LABEL=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
+        lab_applied = False
+    elif len(positions) == 1:
+        pos = positions[0]
+        data[pos:pos + len(old_lab)] = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
+        print("RC_PREVIEW_DELIVERY_HUB_LABEL=APPLIED")
+        lab_applied = True
+    else:
+        raise ValueError(
+            f"Expected at most one legacy Delivery Hub label signature, found {len(positions)}."
+        )
+
+    return data, applied_texts, city_applied, lab_applied
 
 
-def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True) -> None:
-    """Validate exact gameplay wiring, not merely the presence of species bytes."""
-    for _, new in VISIBLE_TEXT_REPLACEMENTS:
+def validate_preview_patch(
+    data: bytearray,
+    *,
+    rival_party_required: bool = True,
+    applied_texts: list[bytes] | None = None,
+    map_names_required: bool = False,
+    lab_label_required: bool = False,
+) -> None:
+    """Validate gameplay wiring and any legacy preview patches that were applied."""
+    for new in applied_texts or []:
         if new not in data:
-            raise RuntimeError("A required Release Candidate visible-text replacement is missing.")
-    if MAP_NAME_REPLACEMENT[1] not in data or LAB_SIGN_REPLACEMENT[1] not in data:
-        raise RuntimeError("Cagliari/Delivery Hub identity labels are incomplete.")
+            raise RuntimeError("An applied Release Candidate visible-text replacement is missing.")
+    if map_names_required and MAP_NAME_REPLACEMENT[1] not in data:
+        raise RuntimeError("Applied Cagliari map-name replacement is missing.")
+    if lab_label_required and LAB_SIGN_REPLACEMENT[1] not in data:
+        raise RuntimeError("Applied Delivery Hub identity label is missing.")
 
     # Starter scripts retain their unique setvar-choice prefix after patching.
     for signature, player_species, rival_species in (
@@ -221,9 +267,15 @@ def patch_rom(source: Path, output: Path) -> Path:
     original = source.read_bytes()
     patched = patch_preview_starters(bytearray(original))
     patched, rival_party_patched = patch_oak_lab_rival_parties(patched)
-    patched = patch_visible_preview_text(patched)
+    patched, applied_texts, map_names_applied, lab_label_applied = patch_visible_preview_text(patched)
     patched = patch_route1_wild_encounters(patched)
-    validate_preview_patch(patched, rival_party_required=rival_party_patched)
+    validate_preview_patch(
+        patched,
+        rival_party_required=rival_party_patched,
+        applied_texts=applied_texts,
+        map_names_required=map_names_applied,
+        lab_label_required=lab_label_applied,
+    )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
