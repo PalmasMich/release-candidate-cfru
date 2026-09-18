@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH")
+PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY")
 
 
 def sha1_file(path: Path) -> str:
@@ -215,7 +215,7 @@ def main() -> int:
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}")
     print(f"DPE={dpe_root}")
-    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH")
+    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
 
     try:
