@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN")
+PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
 RC_LEARNSET_TABLE = Path("src/Tables/level_up_learnsets.c")
 
 
@@ -110,11 +110,21 @@ def default_prepare_delivery_hub_map(output_path: Path) -> int:
     return subprocess.run([sys.executable, str(ROOT / "scripts" / "prepare_delivery_hub_map_patch.py"), str(output_path)], cwd=ROOT, check=False).returncode
 
 
+def default_apply_custom_maps(source: Path, output: Path) -> int:
+    print("\n== Release Candidate custom maps patch ==")
+    return subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "patch_rc_custom_maps.py"), str(source), str(output)],
+        cwd=ROOT,
+        check=False,
+    ).returncode
+
+
 def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path, run_build=default_run_build,
                  verify_rom=verify_pristine_rom, sync_dpe=sync_dpe_checkout,
                  verify_dpe_symbols=verify_dpe_tartrek_symbols, apply_preview_patch=default_apply_preview_patch,
                  discover_port_link=default_discover_port_link, apply_port_link_trainer=default_apply_port_link_trainer,
-                 prepare_delivery_hub_map=default_prepare_delivery_hub_map) -> Path:
+                 prepare_delivery_hub_map=default_prepare_delivery_hub_map,
+                 apply_custom_maps=default_apply_custom_maps) -> Path:
     cfru_root, dpe_root, output_path = Path(cfru_root).resolve(), Path(dpe_root).resolve(), Path(output_path).resolve()
     cfru_rom, dpe_rom = cfru_root / "BPRE0.gba", dpe_root / "BPRE0.gba"
     dpe_output, cfru_output = dpe_root / "test.gba", cfru_root / "test.gba"
@@ -167,6 +177,23 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path, run_buil
             print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
         delivery_hub_status = prepare_delivery_hub_map(output_path)
         print("DELIVERY_HUB_MAP_PLAN_STATUS=READY" if delivery_hub_status == 0 else f"DELIVERY_HUB_MAP_PLAN_STATUS=PENDING:{delivery_hub_status}")
+
+        if delivery_hub_status == 0:
+            maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
+            if maps_output.exists(): maps_output.unlink()
+            try:
+                custom_maps_status = apply_custom_maps(output_path, maps_output)
+                if custom_maps_status == 0 and maps_output.exists():
+                    shutil.move(str(maps_output), str(output_path))
+                    output_hash = sha1_file(output_path)
+                    print("RC_CUSTOM_MAPS_STATUS=APPLIED")
+                else:
+                    print(f"RC_CUSTOM_MAPS_STATUS=PENDING:{custom_maps_status}")
+            finally:
+                if maps_output.exists(): maps_output.unlink()
+        else:
+            print("RC_CUSTOM_MAPS_STATUS=PENDING:MAP_PLAN")
+
         print(f"\nDPE_SHA1={dpe_hash}\nCFRU_SHA1={cfru_hash}\nOUTPUT={output_path}\nOUTPUT_SHA1={output_hash}")
         return output_path
     finally:
@@ -183,7 +210,7 @@ def main() -> int:
     args = parser.parse_args()
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}")
-    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN")
+    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
     try:
         run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
