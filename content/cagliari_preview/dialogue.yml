@@ -126,6 +126,14 @@
       "lines": [
         "Ok. Verifica chiusa."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
+      "speaker": "System",
+      "lines": [
+        "Test sul campo: prova il nuovo partner nell'erba.",
+        "Il Port Link è il posto giusto per una verifica rapida."
+      ]
     }
   ]
 }
