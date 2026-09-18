@@ -34,6 +34,32 @@
         "requires_private_rom": true,
         "keep_bootstrap_until_smoke_test": true
       }
+    },
+    {
+      "rc_map": "RC_CAGLIARI_MARINA",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_8",
+      "vanilla_name": "Prototype_SeviiIsle_8",
+      "map_group": 3,
+      "map_num": 52,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[52]",
+        "usage": "prototype_map_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
     }
   ]
 }
