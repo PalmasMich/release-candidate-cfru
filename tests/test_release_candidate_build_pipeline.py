@@ -38,7 +38,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         self.assertEqual(load_builder().EXPECTED_SHA1, EXPECTED_SHA1)
 
     def test_pipeline_order(self):
-        self.assertEqual(load_builder().PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN"))
+        self.assertEqual(load_builder().PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
 
     def test_dpe_sync_targets_preview_branch(self):
         self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
@@ -78,7 +78,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "SHA-1"):
                 builder.verify_pristine_rom(rom)
 
-    def _run_fake_pipeline(self, tmp, *, fail_cfru=False, discovery=2, trainer=1, hub=2):
+    def _run_fake_pipeline(self, tmp, *, fail_cfru=False, discovery=2, trainer=1, hub=2, custom=1):
         builder = load_builder(); root, dpe = make_fake_workspace(tmp)
         base = root / "BPRE0.gba"; base.write_bytes(b"pristine")
         output = root / "release_candidate_test.gba"
@@ -94,10 +94,14 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         def trainer_patch(source, destination):
             if trainer == 0: destination.write_bytes(source.read_bytes() + b"-trainer")
             return trainer
+        def custom_patch(source, destination):
+            if custom == 0: destination.write_bytes(source.read_bytes() + b"-maps")
+            return custom
         kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output, run_build=fake_run,
                       verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
                       apply_preview_patch=patch, discover_port_link=lambda _p: discovery,
-                      apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub)
+                      apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub,
+                      apply_custom_maps=custom_patch)
         if fail_cfru:
             with self.assertRaisesRegex(RuntimeError, "forced CFRU failure"): builder.run_pipeline(**kwargs)
         else: builder.run_pipeline(**kwargs)
@@ -117,6 +121,16 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_pipeline_applies_port_link_trainer_when_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
             output = self._run_fake_pipeline(tmp, discovery=0, trainer=0, hub=0)
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-trainer")
+
+    def test_pipeline_applies_custom_maps_when_plan_ready(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = self._run_fake_pipeline(tmp, hub=0, custom=0)
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-maps")
+
+    def test_pipeline_keeps_previous_output_when_custom_maps_pending(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = self._run_fake_pipeline(tmp, discovery=0, trainer=0, hub=0, custom=1)
             self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-trainer")
 
     def test_default_output_is_git_ignored_gba(self):
