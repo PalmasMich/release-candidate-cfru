@@ -32,7 +32,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
 
     def test_pipeline_order_is_dpe_then_cfru_then_preview_patch(self):
         builder = load_builder()
-        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH"))
+        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY"))
 
     def test_dpe_sync_targets_preview_branch(self):
         builder = load_builder()
