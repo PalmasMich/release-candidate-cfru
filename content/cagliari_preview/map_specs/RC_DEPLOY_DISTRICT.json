@@ -1,0 +1,106 @@
+{
+  "id": "RC_DEPLOY_DISTRICT",
+  "chapter": "RC_CHAPTER_01_CAGLIARI",
+  "status": "permanent",
+  "map_type": "outdoor",
+  "dimensions": {
+    "width": 22,
+    "height": 16
+  },
+  "legend": {
+    "#": "district_boundary",
+    ".": "deploy_pavement",
+    "B": "office_block",
+    "T": "status_terminal",
+    "G": "release_gate",
+    "D": "castello_return"
+  },
+  "layout": [
+    "######################",
+    "#....................#",
+    "#..BBBBB.....BBBBB...#",
+    "#..B...B.....B...B...#",
+    "#..B...B.....B...B...#",
+    "#..BBBBB.....BBBBB...#",
+    "#....................#",
+    "#........T...........#",
+    "#....................#",
+    "#...BBBBBBBB.........#",
+    "#...B......B.........#",
+    "#...B......B.........#",
+    "#...BBBBBBBB.........#",
+    "#..........G.........#",
+    "#..........D.........#",
+    "######################"
+  ],
+  "collision": {
+    "blocked_roles": [
+      "district_boundary",
+      "office_block"
+    ],
+    "walkable_roles": [
+      "deploy_pavement",
+      "status_terminal",
+      "release_gate",
+      "castello_return"
+    ]
+  },
+  "anchors": {
+    "player_spawn": {
+      "x": 11,
+      "y": 13
+    },
+    "castello_return": {
+      "x": 11,
+      "y": 14
+    },
+    "go_no_go_trigger": {
+      "x": 11,
+      "y": 13
+    },
+    "release_gate": {
+      "x": 11,
+      "y": 13
+    },
+    "status_terminal": {
+      "x": 9,
+      "y": 7
+    }
+  },
+  "objects": [],
+  "interactions": [],
+  "coord_events": [
+    {
+      "id": "RC_COORD_GO_NO_GO_START",
+      "anchor": "go_no_go_trigger",
+      "elevation": 3,
+      "var_id": "0x4001",
+      "var_value": 0,
+      "script": "RC_SCRIPT_GO_NO_GO_START"
+    }
+  ],
+  "warps": [
+    {
+      "id": "RC_WARP_DEPLOY_TO_CASTELLO",
+      "anchor": "castello_return",
+      "target_map": "RC_CASTELLO_ASCENT",
+      "target_anchor": "summit_gate",
+      "elevation": 3,
+      "warp_id": 0,
+      "requires": []
+    }
+  ],
+  "art_contract": {
+    "tileset": "RC_TILESET_DEPLOY_DISTRICT_01",
+    "palette_notes": [
+      "corporate_concrete",
+      "release_red_accents",
+      "mediterranean_sky"
+    ],
+    "must_not_look_like": [
+      "sevii_prototype_reskin",
+      "generic_city_route"
+    ]
+  },
+  "metatile_profile": "RC_DEPLOY_DISTRICT_GENERAL_BOOTSTRAP"
+}
