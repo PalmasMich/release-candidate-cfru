@@ -192,20 +192,6 @@
 #define FLAG_0x0B8               0x0B8
 #define FLAG_0x0B9               0x0B9
 
-/* Release Candidate Chapter 1 — Cagliari story flags.
- * Aliases intentionally occupy the upstream unused 0x0AF..0x0B9 block.
- */
-#define FLAG_RC_ARRIVAL_DONE                 0x0AF
-#define FLAG_RC_STARTER_CHOSEN               0x0B0
-#define FLAG_RC_RIVAL_INTRO_DONE             0x0B1
-#define FLAG_RC_WILD_TUTORIAL_DONE           0x0B2
-#define FLAG_RC_PORT_TRAINER_DONE            0x0B3
-#define FLAG_RC_DEPLOY_TEASER_SEEN           0x0B4
-#define FLAG_RC_SCOPE_CHANGE_REVEALED        0x0B5
-#define FLAG_RC_CASTELLO_UNLOCKED             0x0B6
-#define FLAG_RC_GO_NO_GO_STARTED             0x0B7
-#define FLAG_RC_RELEASE_MANAGER_DEFEATED     0x0B8
-#define FLAG_RC_DEPLOY_01_COMPLETE           0x0B9
 #define FLAG_0x0BA               0x0BA
 #define FLAG_0x0BB               0x0BB
 #define FLAG_0x0BC               0x0BC
@@ -585,6 +571,20 @@
 #define FLAG_0x22E               0x22E
 #define FLAG_0x22F               0x22F
 */
+
+// Release Candidate Chapter 1 — Cagliari story flags.
+// Aliases intentionally occupy the upstream-unused 0x0AF..0x0B9 block.
+#define FLAG_RC_ARRIVAL_DONE                 0x0AF
+#define FLAG_RC_STARTER_CHOSEN               0x0B0
+#define FLAG_RC_RIVAL_INTRO_DONE             0x0B1
+#define FLAG_RC_WILD_TUTORIAL_DONE           0x0B2
+#define FLAG_RC_PORT_TRAINER_DONE            0x0B3
+#define FLAG_RC_DEPLOY_TEASER_SEEN           0x0B4
+#define FLAG_RC_SCOPE_CHANGE_REVEALED        0x0B5
+#define FLAG_RC_CASTELLO_UNLOCKED            0x0B6
+#define FLAG_RC_GO_NO_GO_STARTED             0x0B7
+#define FLAG_RC_RELEASE_MANAGER_DEFEATED     0x0B8
+#define FLAG_RC_DEPLOY_01_COMPLETE           0x0B9
 
 // Story flags
 /*
