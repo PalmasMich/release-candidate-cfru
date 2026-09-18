@@ -18,6 +18,7 @@ OP_CALLSTD = 0x09
 OP_LOADWORD = 0x0F
 OP_SETFLAG = 0x29
 OP_CHECKFLAG = 0x2B
+OP_WARP = 0x39
 OP_FACEPLAYER = 0x5A
 OP_TRAINERBATTLE = 0x5C
 OP_LOCKALL = 0x69
@@ -56,6 +57,14 @@ def emit_u16(buf: bytearray, value: int) -> None:
     if not 0 <= value <= 0xFFFF:
         raise ValueError(f"u16 out of range: {value}")
     buf.extend(value.to_bytes(2, "little"))
+
+
+def emit_u16_placeholder(buf: bytearray, relocations: list[dict], relocation: dict) -> None:
+    relocation = dict(relocation)
+    relocation["offset"] = len(buf)
+    relocation["size"] = 2
+    relocations.append(relocation)
+    buf.extend(b"\x00\x00")
 
 
 def emit_u32_placeholder(buf: bytearray, relocations: list[dict], relocation: dict) -> None:
@@ -121,6 +130,20 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
                 {"kind": "dialogue", "symbol": entry["dialogue"]},
             )
             buf.extend((OP_CALLSTD, int(entry.get("type", 4))))
+        elif op == "warp":
+            x = int(entry["x"])
+            y = int(entry["y"])
+            if not 0 <= x <= 0xFFFF or not 0 <= y <= 0xFFFF:
+                raise ValueError(f"{script['id']}: invalid warp coordinates ({x}, {y})")
+            buf.append(OP_WARP)
+            emit_u16_placeholder(
+                buf,
+                relocations,
+                {"kind": "map_id", "symbol": entry["target_map"]},
+            )
+            buf.append(int(entry.get("warp_id", 0xFF)) & 0xFF)
+            emit_u16(buf, x)
+            emit_u16(buf, y)
         elif op == "trainerbattle_single":
             trainer_id = int(entry["trainer_id"])
             local_id = int(entry.get("local_id", 0))
@@ -189,7 +212,12 @@ def compile_spec(spec: dict) -> dict:
     }
 
 
-def link_script(script_ir: dict, base_address: int, dialogue_addresses: dict[str, int]) -> bytes:
+def link_script(
+    script_ir: dict,
+    base_address: int,
+    dialogue_addresses: dict[str, int],
+    map_ids: dict[str, tuple[int, int]] | None = None,
+) -> bytes:
     data = bytearray.fromhex(script_ir["bytes_hex"])
 
     for relocation in script_ir["relocations"]:
@@ -201,6 +229,13 @@ def link_script(script_ir: dict, base_address: int, dialogue_addresses: dict[str
             if symbol not in dialogue_addresses:
                 raise ValueError(f"missing dialogue address for {symbol}")
             value = dialogue_addresses[symbol]
+        elif relocation["kind"] == "map_id":
+            symbol = relocation["symbol"]
+            if map_ids is None or symbol not in map_ids:
+                raise ValueError(f"missing map id for {symbol}")
+            group, num = map_ids[symbol]
+            data[offset:offset + 2] = bytes([group & 0xFF, num & 0xFF])
+            continue
         else:
             raise ValueError(f"unsupported relocation kind {relocation['kind']}")
 
