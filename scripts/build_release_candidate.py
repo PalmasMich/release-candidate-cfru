@@ -68,13 +68,18 @@ def verify_dpe_tartrek_symbols(dpe_root: Path) -> None:
         "gIconSprite1294RCTartrekTiles",
         "gFrontSprite1294RCTartrekPal",
         "gBackShinySprite1294RCTartrekPal",
+        "gFrontSprite1297RCMistrilloTiles",
+        "gBackShinySprite1297RCMistrilloTiles",
+        "gIconSprite1297RCMistrilloTiles",
+        "gFrontSprite1297RCMistrilloPal",
+        "gBackShinySprite1297RCMistrilloPal",
     )
     missing = [symbol for symbol in required if symbol not in text]
     if missing:
         raise RuntimeError(
             "DPE build is missing Tartrek sprite symbols: " + ", ".join(missing)
         )
-    print("DPE_TARTREK_SYMBOLS=OK")
+    print("DPE_RC_PREVIEW_SYMBOLS=OK")
 
 
 def default_run_build(label: str, cwd: Path) -> None:
