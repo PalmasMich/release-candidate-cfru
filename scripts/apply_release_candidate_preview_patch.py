@@ -66,6 +66,10 @@ VISIBLE_TEXT_REPLACEMENTS = (
         encode_text("It's very easy to raise."),
         encode_text("First task starts now!"),
     ),
+    (
+        encode_text("Come on, I'll take you on!"),
+        encode_text("KPI check: show velocity!"),
+    ),
 )
 
 MAP_NAME_REPLACEMENT = (
