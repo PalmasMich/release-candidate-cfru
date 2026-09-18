@@ -1,0 +1,90 @@
+{
+  "id": "RC_CAGLIARI_MARINA",
+  "chapter": "RC_CHAPTER_01_CAGLIARI",
+  "status": "permanent",
+  "map_type": "outdoor",
+  "dimensions": {
+    "width": 24,
+    "height": 16
+  },
+  "legend": {
+    "#": "building_or_boundary",
+    ".": "walkable_pavement",
+    "~": "water",
+    "P": "palm",
+    "D": "door"
+  },
+  "layout": [
+    "########################",
+    "#..........~~~~........#",
+    "#..........~~~~........#",
+    "#..P.......~~~~....P...#",
+    "#..........~~~~........#",
+    "#......................#",
+    "#....######............#",
+    "#....#....#............#",
+    "#....#....#......P.....#",
+    "#....######............#",
+    "#......................#",
+    "#..........P...........#",
+    "#......................#",
+    "#......................#",
+    "#..........D...........#",
+    "########################"
+  ],
+  "collision": {
+    "blocked_roles": [
+      "building_or_boundary",
+      "water",
+      "palm"
+    ],
+    "walkable_roles": [
+      "walkable_pavement",
+      "door"
+    ]
+  },
+  "anchors": {
+    "delivery_hub_entrance": {
+      "x": 11,
+      "y": 14
+    },
+    "player_arrival": {
+      "x": 11,
+      "y": 13
+    },
+    "port_link_exit": {
+      "x": 21,
+      "y": 10
+    },
+    "scope_change_stage": {
+      "x": 14,
+      "y": 6
+    }
+  },
+  "objects": [],
+  "interactions": [],
+  "warps": [
+    {
+      "id": "RC_WARP_MARINA_TO_DELIVERY",
+      "anchor": "delivery_hub_entrance",
+      "target_map": "RC_DELIVERY_HUB",
+      "target_anchor": "exit_marina",
+      "elevation": 3,
+      "warp_id": 0,
+      "requires": []
+    }
+  ],
+  "art_contract": {
+    "tileset": "RC_TILESET_CAGLIARI_EXTERIORS_01",
+    "palette_notes": [
+      "mediterranean_light",
+      "sea_blue",
+      "warm_limestone",
+      "palm_green"
+    ],
+    "must_not_look_like": [
+      "sevii_prototype_reskin",
+      "pallet_reskin"
+    ]
+  }
+}
