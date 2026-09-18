@@ -20,6 +20,20 @@ class DeliveryHubMapSlotDiscoveryTest(unittest.TestCase):
         def ptr(file_offset):
             return (module.GBA_ROM_BASE + file_offset).to_bytes(4, "little")
 
+        def write_layout():
+            layout = bytearray(b"\x00" * 0x1C)
+            layout[0x00:0x04] = (11).to_bytes(4, "little", signed=True)
+            layout[0x04:0x08] = (9).to_bytes(4, "little", signed=True)
+            layout[0x08:0x0C] = ptr(0xB00)
+            layout[0x0C:0x10] = ptr(0xC00)
+            layout[0x10:0x14] = ptr(0xD00)
+            layout[0x14:0x18] = ptr(0xE00)
+            layout[0x18] = 2
+            layout[0x19] = 2
+            rom[0x800:0x800 + len(layout)] = layout
+
+        write_layout()
+
         def write_header(at):
             header = bytearray(b"\x00" * module.MAP_HEADER_SIZE)
             header[0x00:0x04] = ptr(0x800)
@@ -52,6 +66,10 @@ class DeliveryHubMapSlotDiscoveryTest(unittest.TestCase):
         self.assertTrue(report["safe_to_repoint"])
         self.assertEqual(report["candidate_count"], 1)
         self.assertEqual(report["candidates"][0]["offset"], 0x100)
+        self.assertEqual(report["candidates"][0]["layout"]["width"], 11)
+        self.assertEqual(report["candidates"][0]["layout"]["height"], 9)
+        self.assertEqual(report["candidates"][0]["layout"]["border_width"], 2)
+        self.assertEqual(report["candidates"][0]["layout"]["border_height"], 2)
         self.assertEqual(report["map_group"], 27)
         self.assertEqual(report["map_num"], 0)
 
@@ -78,6 +96,16 @@ class DeliveryHubMapSlotDiscoveryTest(unittest.TestCase):
         module = load_module()
         payload = bytearray(self.build_header(module))
         payload[0x119] = 0x02
+
+        report = module.analyze_rom(bytes(payload))
+
+        self.assertEqual(report["candidate_count"], 0)
+
+
+    def test_rejects_wrong_house2_layout_dimensions(self):
+        module = load_module()
+        payload = bytearray(self.build_header(module))
+        payload[0x800:0x804] = (12).to_bytes(4, "little", signed=True)
 
         report = module.analyze_rom(bytes(payload))
 
