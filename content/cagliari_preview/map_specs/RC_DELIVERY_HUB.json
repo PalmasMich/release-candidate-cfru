@@ -81,14 +81,34 @@
       "role": "story_npc",
       "anchor": "delivery_lead",
       "script": "RC_SCRIPT_DELIVERY_LEAD",
-      "movement": "face_down"
+      "elevation": 3,
+      "local_id": 1,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_DOWN",
+        "id": 8
+      }
     },
     {
       "id": "RC_NPC_KPI_RIVAL",
       "role": "story_npc",
       "anchor": "rival",
       "script": "RC_SCRIPT_KPI_RIVAL",
-      "movement": "face_left"
+      "elevation": 3,
+      "local_id": 2,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_COOLTRAINER_M",
+        "id": 41,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
     }
   ],
   "interactions": [
@@ -96,19 +116,34 @@
       "id": "RC_INTERACT_STARTER_TARTREK",
       "anchor": "starter_tartrek",
       "choice": "SPECIES_RC_TURTLE_01",
-      "script": "RC_SCRIPT_STARTER_TARTREK"
+      "script": "RC_SCRIPT_STARTER_TARTREK",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
     },
     {
       "id": "RC_INTERACT_STARTER_FROBYTE",
       "anchor": "starter_frobyte",
       "choice": "SPECIES_RC_FROG_01",
-      "script": "RC_SCRIPT_STARTER_FROBYTE"
+      "script": "RC_SCRIPT_STARTER_FROBYTE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
     },
     {
       "id": "RC_INTERACT_STARTER_EMBERFOX",
       "anchor": "starter_emberfox",
       "choice": "SPECIES_RC_FIREFOX_01",
-      "script": "RC_SCRIPT_STARTER_EMBERFOX"
+      "script": "RC_SCRIPT_STARTER_EMBERFOX",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
     }
   ],
   "warps": [
@@ -119,7 +154,9 @@
       "target_anchor": "delivery_hub_entrance",
       "requires": [
         "RC_FLAG_RIVAL_INTRO_DONE"
-      ]
+      ],
+      "elevation": 3,
+      "warp_id": 0
     }
   ],
   "art_contract": {
