@@ -7,11 +7,45 @@
     "RC_FLAG_DEPLOY_TEASER_SEEN"
   ],
   "flow": [
-    {"id": "RC_EVENT_OPENING", "map": "RC_DELIVERY_HUB", "sets": []},
-    {"id": "RC_EVENT_STARTER_ASSIGNMENT", "map": "RC_DELIVERY_HUB", "sets": ["RC_FLAG_STARTER_CHOSEN"]},
-    {"id": "RC_EVENT_RIVAL_INTRO", "map": "RC_DELIVERY_HUB", "requires": ["RC_FLAG_STARTER_CHOSEN"], "sets": ["RC_FLAG_RIVAL_INTRO_DONE"]},
-    {"id": "RC_EVENT_FIRST_WILD", "map": "RC_PORT_CONNECTION", "requires": ["RC_FLAG_RIVAL_INTRO_DONE"], "sets": ["RC_FLAG_WILD_TUTORIAL_DONE"]},
-    {"id": "RC_EVENT_RIVAL_BATTLE", "map": "RC_PORT_CONNECTION", "requires": ["RC_FLAG_WILD_TUTORIAL_DONE"], "sets": ["RC_FLAG_RIVAL_BATTLE_DONE"]},
-    {"id": "RC_EVENT_DEPLOY_TEASER", "map": "RC_CAGLIARI_MARINA", "requires": ["RC_FLAG_RIVAL_BATTLE_DONE"], "sets": ["RC_FLAG_DEPLOY_TEASER_SEEN"]}
+    {
+      "id": "RC_EVENT_OPENING",
+      "map": "RC_DELIVERY_HUB",
+      "dialogue": "RC_DIALOGUE_OPENING",
+      "sets": []
+    },
+    {
+      "id": "RC_EVENT_STARTER_ASSIGNMENT",
+      "map": "RC_DELIVERY_HUB",
+      "dialogue": "RC_DIALOGUE_STARTER",
+      "sets": ["RC_FLAG_STARTER_CHOSEN"]
+    },
+    {
+      "id": "RC_EVENT_RIVAL_INTRO",
+      "map": "RC_DELIVERY_HUB",
+      "dialogue": "RC_DIALOGUE_RIVAL_INTRO",
+      "requires": ["RC_FLAG_STARTER_CHOSEN"],
+      "sets": ["RC_FLAG_RIVAL_INTRO_DONE"]
+    },
+    {
+      "id": "RC_EVENT_FIRST_WILD",
+      "map": "RC_PORT_CONNECTION",
+      "encounter_table": "RC_PORT_CONNECTION_GRASS",
+      "requires": ["RC_FLAG_RIVAL_INTRO_DONE"],
+      "sets": ["RC_FLAG_WILD_TUTORIAL_DONE"]
+    },
+    {
+      "id": "RC_EVENT_RIVAL_BATTLE",
+      "map": "RC_PORT_CONNECTION",
+      "trainer": "RC_TRAINER_PORT_01",
+      "requires": ["RC_FLAG_WILD_TUTORIAL_DONE"],
+      "sets": ["RC_FLAG_RIVAL_BATTLE_DONE"]
+    },
+    {
+      "id": "RC_EVENT_DEPLOY_TEASER",
+      "map": "RC_CAGLIARI_MARINA",
+      "dialogue": "RC_DIALOGUE_DEPLOY_TEASER",
+      "requires": ["RC_FLAG_RIVAL_BATTLE_DONE"],
+      "sets": ["RC_FLAG_DEPLOY_TEASER_SEEN"]
+    }
   ]
 }
