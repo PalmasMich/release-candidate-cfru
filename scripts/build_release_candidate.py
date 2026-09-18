@@ -13,6 +13,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
+DPE_BRANCH = "feature/cagliari-preview-0.1"
 PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH")
 
 
@@ -34,6 +35,25 @@ def verify_pristine_rom(path: Path) -> str:
             f"Expected {EXPECTED_SHA1}, got {actual}."
         )
     return actual
+
+
+def sync_dpe_checkout(dpe_root: Path) -> None:
+    print("\n== Sync DPE preview branch ==")
+    subprocess.run(
+        ["git", "-c", f"safe.directory={dpe_root}", "fetch", "origin", DPE_BRANCH],
+        cwd=dpe_root,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-c", f"safe.directory={dpe_root}", "checkout", DPE_BRANCH],
+        cwd=dpe_root,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-c", f"safe.directory={dpe_root}", "merge", "--ff-only", f"origin/{DPE_BRANCH}"],
+        cwd=dpe_root,
+        check=True,
+    )
 
 
 def default_run_build(label: str, cwd: Path) -> None:
@@ -86,6 +106,8 @@ def run_pipeline(
 
     original = cfru_rom.read_bytes()
     output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    sync_dpe_checkout(dpe_root)
 
     try:
         for path in (dpe_rom, dpe_output, cfru_output):
