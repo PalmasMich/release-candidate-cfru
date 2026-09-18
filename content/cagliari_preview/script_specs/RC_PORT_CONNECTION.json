@@ -2,6 +2,44 @@
   "map": "RC_PORT_CONNECTION",
   "scripts": [
     {
+      "id": "RC_SCRIPT_WILD_TUTORIAL_TRIGGER",
+      "ops": [
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_WILD_TUTORIAL_DONE"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "done"
+        },
+        {
+          "op": "lockall"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_WILD_TUTORIAL_DONE"
+        },
+        {
+          "op": "releaseall"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
       "id": "RC_SCRIPT_PORT_TRAINER",
       "ops": [
         {
