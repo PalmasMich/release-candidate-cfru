@@ -38,7 +38,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         self.assertEqual(load_builder().EXPECTED_SHA1, EXPECTED_SHA1)
 
     def test_pipeline_order(self):
-        self.assertEqual(load_builder().PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
+        self.assertEqual(load_builder().PIPELINE, ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
 
     def test_dpe_sync_targets_preview_branch(self):
         self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
@@ -97,7 +97,8 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         def custom_patch(source, destination):
             if custom == 0: destination.write_bytes(source.read_bytes() + b"-maps")
             return custom
-        kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output, run_build=fake_run,
+        kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output,
+                      run_preflight=lambda: None, run_build=fake_run,
                       verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
                       apply_preview_patch=patch, discover_port_link=lambda _p: discovery,
                       apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub,
@@ -109,6 +110,45 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         self.assertEqual((root / builder.RC_LEARNSET_TABLE).read_bytes(), original_table)
         self.assertFalse((dpe / "BPRE0.gba").exists())
         return output
+
+    def test_preflight_runs_before_dpe_build(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root, dpe = make_fake_workspace(tmp)
+            (root / "BPRE0.gba").write_bytes(b"pristine")
+            output = root / "release_candidate_test.gba"
+            order = []
+
+            def preflight():
+                order.append("preflight")
+
+            def fake_run(label, cwd):
+                order.append(label)
+                if label == "DPE":
+                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
+                else:
+                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+
+            builder.run_pipeline(
+                cfru_root=root,
+                dpe_root=dpe,
+                output_path=output,
+                run_preflight=preflight,
+                run_build=fake_run,
+                verify_rom=lambda _p: "test",
+                sync_dpe=lambda _p: None,
+                verify_dpe_symbols=lambda _p: None,
+                apply_preview_patch=lambda source, destination: destination.write_bytes(
+                    source.read_bytes() + b"-preview"
+                ),
+                discover_port_link=lambda _p: 2,
+                apply_port_link_trainer=lambda _s, _d: 1,
+                prepare_delivery_hub_map=lambda _p: 2,
+                apply_custom_maps=lambda _s, _d: 1,
+            )
+
+            self.assertGreaterEqual(len(order), 3)
+            self.assertEqual(order[0:3], ["preflight", "DPE", "CFRU"])
 
     def test_pipeline_restores_rom_and_learnset_table_after_failure(self):
         with tempfile.TemporaryDirectory() as tmp: self._run_fake_pipeline(tmp, fail_cfru=True)
