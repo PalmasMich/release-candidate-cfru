@@ -7,6 +7,7 @@ HUB_DISC=ROOT/"scripts"/"discover_delivery_hub_map_slot.py"
 MARINA_DISC=ROOT/"scripts"/"discover_marina_map_slot.py"
 PORT_DISC=ROOT/"scripts"/"discover_port_link_map_slot.py"
 ENTRY=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
+WILD=ROOT/"scripts"/"patch_port_link_wild_header.py"
 
 def load(path,name):
     s=importlib.util.spec_from_file_location(name,path)
@@ -18,11 +19,25 @@ class TestCustomMapsPatch(unittest.TestCase):
         marina=load(MARINA_DISC,"marina")
         port=load(PORT_DISC,"port")
         entry=load(ENTRY,"entry")
+        wild=load(WILD,"wild")
         rom=bytearray(b"\x00"*0x10000)
         ptr=lambda o:(0x08000000+o).to_bytes(4,"little")
 
         rom[0x500:0x500+len(entry.SOURCE)]=entry.SOURCE
         rom[0x600:0x600+len(entry.SOURCE)]=entry.SOURCE
+
+        # Preview-patched Route 1 encounter chain: mons -> info -> header.
+        mon_offset=0x700
+        info_offset=0x780
+        wild_header_offset=0x7A0
+        rom[mon_offset:mon_offset+len(wild.ROUTE1_PATCHED_WILD_SIGNATURE)]=wild.ROUTE1_PATCHED_WILD_SIGNATURE
+        rom[info_offset:info_offset+4]=bytes([wild.ROUTE1_ENCOUNTER_RATE,0,0,0])
+        rom[info_offset+4:info_offset+8]=ptr(mon_offset)
+        rom[wild_header_offset]=wild.ROUTE1_GROUP
+        rom[wild_header_offset+1]=wild.ROUTE1_MAP
+        rom[wild_header_offset+2:wild_header_offset+4]=b"\x00\x00"
+        rom[wild_header_offset+4:wild_header_offset+8]=ptr(info_offset)
+        rom[wild_header_offset+8:wild_header_offset+20]=b"\x00"*12
 
         # Delivery Hub reserved source slot.
         hl=bytearray(b"\x00"*0x1C)
@@ -90,6 +105,8 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertEqual(len(patched),len(original))
         self.assertEqual(patched.count(entry.SOURCE),0)
         self.assertEqual(patched.count(entry.TARGET),2)
+        self.assertEqual(patched[e["wild_header_offset"]],3)
+        self.assertEqual(patched[e["wild_header_offset"]+1],53)
 
         self.assertEqual(int.from_bytes(patched[0x1000:0x1004],"little"),e["hub_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1004:0x1008],"little"),e["hub_events_ptr"])
