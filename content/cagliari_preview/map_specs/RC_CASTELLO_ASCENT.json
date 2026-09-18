@@ -64,7 +64,18 @@
     }
   },
   "objects": [],
-  "interactions": [],
+  "interactions": [
+    {
+      "id": "RC_INTERACT_DEPLOY_DISTRICT_GATE",
+      "anchor": "summit_gate",
+      "script": "RC_SCRIPT_DEPLOY_DISTRICT_GATE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    }
+  ],
   "coord_events": [],
   "warps": [
     {
