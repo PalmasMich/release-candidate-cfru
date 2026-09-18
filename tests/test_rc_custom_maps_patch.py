@@ -8,6 +8,7 @@ MARINA_DISC=ROOT/"scripts"/"discover_marina_map_slot.py"
 PORT_DISC=ROOT/"scripts"/"discover_port_link_map_slot.py"
 CASTELLO_DISC=ROOT/"scripts"/"discover_castello_map_slot.py"
 DEPLOY_DISC=ROOT/"scripts"/"discover_deploy_district_map_slot.py"
+ROOM_DISC=ROOT/"scripts"/"discover_deploy_room_map_slot.py"
 ENTRY=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
 WILD=ROOT/"scripts"/"patch_port_link_wild_header.py"
 
@@ -22,6 +23,7 @@ class TestCustomMapsPatch(unittest.TestCase):
         port=load(PORT_DISC,"port")
         castello=load(CASTELLO_DISC,"castello")
         deploy=load(DEPLOY_DISC,"deploy")
+        room=load(ROOM_DISC,"room")
         entry=load(ENTRY,"entry")
         wild=load(WILD,"wild")
         rom=bytearray(b"\x00"*0x10000)
@@ -131,10 +133,28 @@ class TestCustomMapsPatch(unittest.TestCase):
         dh[24]=1;dh[25]=deploy.HEADER_FLAGS;dh[26]=0;dh[27]=0
         rom[0x1400:0x141C]=dh
 
+        # Deploy Room reserved source slot.
+        rl=bytearray(b"\x00"*0x1C)
+        rl[0:4]=(11).to_bytes(4,"little",signed=True)
+        rl[4:8]=(9).to_bytes(4,"little",signed=True)
+        rl[8:12]=ptr(0x4900);rl[12:16]=ptr(0x4920)
+        rl[16:20]=ptr(0x4940);rl[20:24]=ptr(0x4960)
+        rl[24]=2;rl[25]=2
+        rom[0x3400:0x341C]=rl
+
+        rh=bytearray(b"\x00"*0x1C)
+        rh[0:4]=ptr(0x3400);rh[4:8]=ptr(0x3500);rh[8:12]=ptr(0x3600)
+        rh[12:16]=(0).to_bytes(4,"little")
+        rh[16:18]=room.MUSIC_ROUTE3.to_bytes(2,"little")
+        rh[18:20]=(0x6666).to_bytes(2,"little")
+        rh[20]=room.MAPSEC_ROUTE6;rh[21]=0;rh[22]=room.WEATHER_NONE;rh[23]=room.MAP_TYPE_INDOOR
+        rh[24]=0;rh[25]=0;rh[26]=0;rh[27]=room.BATTLE_SCENE_NORMAL
+        rom[0x1500:0x151C]=rh
+
         rom[0xC000:]=b"\xFF"*(len(rom)-0xC000)
         return bytes(rom)
 
-    def test_installs_five_maps_and_repoints_entry_atomically(self):
+    def test_installs_six_maps_and_repoints_entry_atomically(self):
         patcher=load(PATCHER,"patcher")
         entry=load(ENTRY,"entry")
         original=self.fixture()
@@ -158,12 +178,15 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertEqual(int.from_bytes(patched[0x1400:0x1404],"little"),e["deploy_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1404:0x1408],"little"),e["deploy_events_ptr"])
         self.assertEqual(patched[0x140C:0x1410],b"\x00\x00\x00\x00")
+        self.assertEqual(int.from_bytes(patched[0x1500:0x1504],"little"),e["room_layout_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1504:0x1508],"little"),e["room_events_ptr"])
 
         self.assertGreaterEqual(e["hub_payload_offset"],0xC000)
         self.assertGreater(e["marina_payload_offset"],e["hub_payload_offset"])
         self.assertGreater(e["port_payload_offset"],e["marina_payload_offset"])
         self.assertGreater(e["castello_payload_offset"],e["port_payload_offset"])
         self.assertGreater(e["deploy_payload_offset"],e["castello_payload_offset"])
+        self.assertGreater(e["room_payload_offset"],e["deploy_payload_offset"])
 
     def test_blocks_without_guarded_tail_space(self):
         patcher=load(PATCHER,"patcher")
