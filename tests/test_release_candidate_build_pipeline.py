@@ -32,7 +32,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
 
     def test_pipeline_order_is_dpe_then_cfru_then_preview_patch(self):
         builder = load_builder()
-        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY"))
+        self.assertEqual(builder.PIPELINE, ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH"))
 
     def test_dpe_sync_targets_preview_branch(self):
         builder = load_builder()
@@ -118,6 +118,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                     verify_dpe_symbols=lambda _path: None,
                     apply_preview_patch=lambda source, output: output.write_bytes(source.read_bytes()),
                     discover_port_link=lambda _output: 2,
+                    apply_port_link_trainer=lambda _source, _output: 1,
                 )
 
             self.assertEqual(base.read_bytes(), pristine)
@@ -156,7 +157,8 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 sync_dpe=lambda _path: None,
                 verify_dpe_symbols=lambda _path: None,
                 apply_preview_patch=fake_preview_patch,
-                discover_port_link=lambda _output: 0,
+                discover_port_link=lambda _output: 2,
+                apply_port_link_trainer=lambda _source, _output: 1,
             )
 
             self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-tartrek")
@@ -195,9 +197,44 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 verify_dpe_symbols=lambda _path: None,
                 apply_preview_patch=fake_patch,
                 discover_port_link=fake_discover,
+                apply_port_link_trainer=lambda source, destination: (
+                    destination.write_bytes(source.read_bytes() + b"-trainer") or 0
+                ),
             )
 
             self.assertEqual(discovered, [output.resolve()])
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview-trainer")
+
+
+    def test_pipeline_preserves_preview_when_trainer_patch_is_pending(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root, dpe = make_fake_workspace(tmp)
+            (root / "BPRE0.gba").write_bytes(b"pristine")
+            output = root / "release_candidate_test.gba"
+
+            def fake_run(label, cwd):
+                if label == "DPE":
+                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
+                else:
+                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+
+            builder.run_pipeline(
+                cfru_root=root,
+                dpe_root=dpe,
+                output_path=output,
+                run_build=fake_run,
+                verify_rom=lambda _path: "test",
+                sync_dpe=lambda _path: None,
+                verify_dpe_symbols=lambda _path: None,
+                apply_preview_patch=lambda source, destination: destination.write_bytes(
+                    source.read_bytes() + b"-preview"
+                ),
+                discover_port_link=lambda _output: 0,
+                apply_port_link_trainer=lambda _source, _destination: 1,
+            )
+
+            self.assertEqual(output.read_bytes(), b"dpe-plus-cfru-preview")
 
 
 if __name__ == "__main__":
