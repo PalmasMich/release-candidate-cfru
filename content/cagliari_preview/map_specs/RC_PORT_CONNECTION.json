@@ -100,5 +100,15 @@
       "sevii_prototype_reskin"
     ]
   },
-  "metatile_profile": "RC_PORT_LINK_GENERAL_BOOTSTRAP"
+  "metatile_profile": "RC_PORT_LINK_GENERAL_BOOTSTRAP",
+  "coord_events": [
+    {
+      "id": "RC_COORD_WILD_TUTORIAL",
+      "anchor": "wild_tutorial_zone",
+      "elevation": 3,
+      "var_id": "0x4001",
+      "var_value": 0,
+      "script": "RC_SCRIPT_WILD_TUTORIAL_TRIGGER"
+    }
+  ]
 }
