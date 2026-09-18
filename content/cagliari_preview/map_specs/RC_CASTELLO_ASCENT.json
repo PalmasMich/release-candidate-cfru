@@ -1,0 +1,93 @@
+{
+  "id": "RC_CASTELLO_ASCENT",
+  "chapter": "RC_CHAPTER_01_CAGLIARI",
+  "status": "permanent",
+  "map_type": "outdoor",
+  "dimensions": {
+    "width": 20,
+    "height": 18
+  },
+  "legend": {
+    "#": "castello_boundary",
+    ".": "stone_path",
+    "^": "fortification",
+    "=": "stairs",
+    "D": "marina_gate"
+  },
+  "layout": [
+    "####################",
+    "#..................#",
+    "#....^^^^^^........#",
+    "#....^....^........#",
+    "#....^.==.^........#",
+    "#....^.==.^........#",
+    "#....^....^........#",
+    "#....^^^^.^........#",
+    "#.........^........#",
+    "#....====.^........#",
+    "#....=....^........#",
+    "#....=....^^^^^....#",
+    "#....=.............#",
+    "#....======........#",
+    "#..................#",
+    "#.........D........#",
+    "#..................#",
+    "####################"
+  ],
+  "collision": {
+    "blocked_roles": [
+      "castello_boundary",
+      "fortification"
+    ],
+    "walkable_roles": [
+      "stone_path",
+      "stairs",
+      "marina_gate"
+    ]
+  },
+  "anchors": {
+    "player_spawn": {
+      "x": 10,
+      "y": 15
+    },
+    "marina_return": {
+      "x": 10,
+      "y": 15
+    },
+    "ascent_midpoint": {
+      "x": 6,
+      "y": 10
+    },
+    "summit_gate": {
+      "x": 10,
+      "y": 2
+    }
+  },
+  "objects": [],
+  "interactions": [],
+  "coord_events": [],
+  "warps": [
+    {
+      "id": "RC_WARP_CASTELLO_TO_MARINA",
+      "anchor": "marina_return",
+      "target_map": "RC_CAGLIARI_MARINA",
+      "target_anchor": "scope_change_stage",
+      "elevation": 3,
+      "warp_id": 2,
+      "requires": []
+    }
+  ],
+  "art_contract": {
+    "tileset": "RC_TILESET_CAGLIARI_CASTELLO_01",
+    "palette_notes": [
+      "warm_limestone",
+      "mediterranean_sky",
+      "castello_ramparts"
+    ],
+    "must_not_look_like": [
+      "sevii_prototype_reskin",
+      "generic_fantasy_castle"
+    ]
+  },
+  "metatile_profile": "RC_CASTELLO_GENERAL_BOOTSTRAP"
+}
