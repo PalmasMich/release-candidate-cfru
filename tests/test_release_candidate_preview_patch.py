@@ -15,7 +15,16 @@ def load_patcher():
 
 
 def build_preview_fixture(patcher):
-    chunks = [b"RCFIXTURE", patcher.BULBASAUR_STARTER_SIGNATURE]
+    chunks = [
+        b"RCFIXTURE",
+        patcher.BULBASAUR_STARTER_SIGNATURE,
+        b"|",
+        patcher.SQUIRTLE_STARTER_SIGNATURE,
+        b"|",
+        patcher.CHARMANDER_STARTER_SIGNATURE,
+        b"|",
+        patcher.OAK_LAB_RIVAL_PARTIES_SIGNATURE,
+    ]
     for old_text, _ in patcher.VISIBLE_TEXT_REPLACEMENTS:
         chunks.extend((b"|", old_text))
     chunks.extend(
@@ -33,6 +42,49 @@ def build_preview_fixture(patcher):
 
 
 class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
+    def test_wires_all_three_original_starters(self):
+        patcher = load_patcher()
+        payload = bytearray(
+            b"prefix"
+            + patcher.BULBASAUR_STARTER_SIGNATURE
+            + b"|"
+            + patcher.SQUIRTLE_STARTER_SIGNATURE
+            + b"|"
+            + patcher.CHARMANDER_STARTER_SIGNATURE
+            + b"suffix"
+        )
+        patched = patcher.patch_preview_starters(payload)
+        for signature, player_species, rival_species in (
+            (patcher.BULBASAUR_STARTER_SIGNATURE, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID),
+            (patcher.SQUIRTLE_STARTER_SIGNATURE, patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID),
+            (patcher.CHARMANDER_STARTER_SIGNATURE, patcher.EMBERFOX_SPECIES_ID, patcher.FROBYTE_SPECIES_ID),
+        ):
+            # The source signature has been changed, so locate the immutable
+            # starter-index prefix and verify both species vars.
+            prefix = signature[:5]
+            pos = patched.find(prefix)
+            self.assertGreaterEqual(pos, 0)
+            self.assertEqual(
+                patched[pos + patcher.PLAYER_SPECIES_VALUE_OFFSET:pos + patcher.PLAYER_SPECIES_VALUE_OFFSET + 2],
+                player_species.to_bytes(2, "little"),
+            )
+            self.assertEqual(
+                patched[pos + patcher.RIVAL_SPECIES_VALUE_OFFSET:pos + patcher.RIVAL_SPECIES_VALUE_OFFSET + 2],
+                rival_species.to_bytes(2, "little"),
+            )
+
+    def test_patches_oak_lab_rival_parties_to_original_species(self):
+        patcher = load_patcher()
+        payload = bytearray(b"prefix" + patcher.OAK_LAB_RIVAL_PARTIES_SIGNATURE + b"suffix")
+        patched = patcher.patch_oak_lab_rival_parties(payload)
+        base = len(b"prefix")
+        expected = (patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID)
+        for rel, species in zip(patcher.RIVAL_PARTY_SPECIES_OFFSETS, expected):
+            self.assertEqual(
+                patched[base + rel:base + rel + 2],
+                species.to_bytes(2, "little"),
+            )
+
     def test_replaces_bulbasaur_slot_with_tartrek(self):
         patcher = load_patcher()
         payload = bytearray(b"prefix" + patcher.BULBASAUR_STARTER_SIGNATURE + b"suffix")
