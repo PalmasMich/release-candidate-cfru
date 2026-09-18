@@ -56,13 +56,23 @@ class RcMapEventsCompilerTest(unittest.TestCase):
             },
         )
 
-    def test_warp_target_is_symbolic_until_marina_slot_is_ready(self):
+    def test_warp_target_resolves_to_reserved_marina_slot(self):
         relocs = self.ir["warp_events"]["relocations"]
         self.assertEqual(len(relocs), 1)
         self.assertEqual(relocs[0]["kind"], "map_id")
         self.assertEqual(relocs[0]["size"], 2)
         self.assertEqual(relocs[0]["symbol"], "RC_CAGLIARI_MARINA")
         self.assertEqual(relocs[0]["target_anchor"], "delivery_hub_entrance")
+
+        linked = self.compiler.link_map_id_relocations(
+            self.ir["warp_events"],
+            self.compiler.load_map_ids(),
+        )
+        relocation = relocs[0]
+        self.assertEqual(
+            linked[relocation["offset"]:relocation["offset"] + 2],
+            bytes([52, 3]),
+        )
 
     def test_map_events_header_has_null_coord_pointer(self):
         header = bytes.fromhex(self.ir["map_events_header"]["bytes_hex"])
