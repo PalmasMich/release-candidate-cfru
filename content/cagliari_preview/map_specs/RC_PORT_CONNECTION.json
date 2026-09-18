@@ -1,0 +1,104 @@
+{
+  "id": "RC_PORT_CONNECTION",
+  "chapter": "RC_CHAPTER_01_CAGLIARI",
+  "status": "permanent",
+  "map_type": "outdoor",
+  "dimensions": {
+    "width": 28,
+    "height": 12
+  },
+  "legend": {
+    "#": "route_boundary",
+    ".": "walkable_path",
+    "\"": "wild_grass",
+    "D": "door",
+    "T": "trainer_tile"
+  },
+  "layout": [
+    "############################",
+    "#..........................#",
+    "#..\"\"\"\"......\"\"\"\"..........#",
+    "#..\"\"\"\"......\"\"\"\"..........#",
+    "#..........................#",
+    "#..............\"\"\"\"........#",
+    "#D.................T.......#",
+    "#..............\"\"\"\"........#",
+    "#..........................#",
+    "#..\"\"\"\"....................#",
+    "#..\"\"\"\"....................#",
+    "############################"
+  ],
+  "collision": {
+    "blocked_roles": [
+      "route_boundary"
+    ],
+    "walkable_roles": [
+      "walkable_path",
+      "wild_grass",
+      "door",
+      "trainer_tile"
+    ]
+  },
+  "anchors": {
+    "player_spawn": {
+      "x": 2,
+      "y": 6
+    },
+    "marina_entrance": {
+      "x": 1,
+      "y": 6
+    },
+    "port_trainer": {
+      "x": 20,
+      "y": 6
+    },
+    "wild_tutorial_zone": {
+      "x": 15,
+      "y": 6
+    }
+  },
+  "objects": [
+    {
+      "id": "RC_NPC_PORT_TRAINER",
+      "role": "trainer_npc",
+      "anchor": "port_trainer",
+      "script": "RC_SCRIPT_PORT_TRAINER",
+      "local_id": 1,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
+    }
+  ],
+  "interactions": [],
+  "warps": [
+    {
+      "id": "RC_WARP_PORT_LINK_TO_MARINA",
+      "anchor": "marina_entrance",
+      "target_map": "RC_CAGLIARI_MARINA",
+      "target_anchor": "port_link_gate",
+      "elevation": 3,
+      "warp_id": 1,
+      "requires": []
+    }
+  ],
+  "art_contract": {
+    "tileset": "RC_TILESET_CAGLIARI_EXTERIORS_01",
+    "palette_notes": [
+      "port_service_lane",
+      "mediterranean_light",
+      "grass_edge"
+    ],
+    "must_not_look_like": [
+      "route1_reskin",
+      "sevii_prototype_reskin"
+    ]
+  },
+  "metatile_profile": "RC_PORT_LINK_GENERAL_BOOTSTRAP"
+}
