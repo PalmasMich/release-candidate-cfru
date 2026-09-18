@@ -113,6 +113,33 @@
         "clear_connections_pointer": true,
         "keep_bootstrap_until_smoke_test": true
       }
+    },
+    {
+      "rc_map": "RC_DEPLOY_DISTRICT",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_7",
+      "vanilla_name": "Prototype_SeviiIsle_7",
+      "map_group": 3,
+      "map_num": 51,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": "non_null",
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[51]",
+        "usage": "1x1 prototype route with no events"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "clear_connections_pointer": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
     }
   ]
 }
