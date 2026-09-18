@@ -95,6 +95,30 @@
         "Sto già aggiornando la dashboard.",
         "Non è una gara. La classifica però esiste."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Cambio requisiti: il deploy non può più passare da qui.",
+        "Serve una validazione al Castello. Ovviamente era urgente da ieri."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE_REPEAT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Il nuovo scope è confermato.",
+        "Vai verso il Castello. Io provo a capire chi l'ha approvato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_LINK_HINT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Prima chiudi la verifica al Port Link.",
+        "Poi torniamo a parlare del Deploy."
+      ]
     }
   ]
 }
