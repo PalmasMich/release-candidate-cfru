@@ -149,5 +149,39 @@ class RcEventScriptCompilerTest(unittest.TestCase):
         )
 
 
+    def test_symbolic_warp_links_group_and_map_bytes(self):
+        script = {
+            "id": "RC_TEST_WARP",
+            "ops": [
+                {
+                    "op": "warp",
+                    "target_map": "RC_CASTELLO_ASCENT",
+                    "warp_id": 255,
+                    "x": 10,
+                    "y": 15,
+                },
+                {"op": "end"},
+            ],
+        }
+        ir = self.compiler.compile_script(
+            script,
+            self.compiler.load_flag_ids(),
+            self.compiler.load_species_ids(),
+        )
+        raw = bytes.fromhex(ir["bytes_hex"])
+        self.assertEqual(raw[0], 0x39)
+        self.assertEqual(raw[3], 0xFF)
+        self.assertEqual(int.from_bytes(raw[4:6], "little"), 10)
+        self.assertEqual(int.from_bytes(raw[6:8], "little"), 15)
+
+        linked = self.compiler.link_script(
+            ir,
+            0x08900000,
+            {},
+            {"RC_CASTELLO_ASCENT": (3, 50)},
+        )
+        self.assertEqual(linked[1:3], bytes([3, 50]))
+
+
 if __name__ == "__main__":
     unittest.main()
