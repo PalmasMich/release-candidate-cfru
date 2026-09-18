@@ -198,8 +198,8 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 apply_preview_patch=fake_patch,
                 discover_port_link=fake_discover,
                 apply_port_link_trainer=lambda source, destination: (
-                    destination.write_bytes(source.read_bytes() + b"-trainer") or 0
-                ),
+                    destination.write_bytes(source.read_bytes() + b"-trainer"), 0
+                )[1],
             )
 
             self.assertEqual(discovered, [output.resolve()])
