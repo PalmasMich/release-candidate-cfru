@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY")
+PIPELINE = ("DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH")
 
 
 def sha1_file(path: Path) -> str:
@@ -129,6 +129,21 @@ def default_discover_port_link(output_path: Path) -> int:
     return completed.returncode
 
 
+def default_apply_port_link_trainer(source: Path, output: Path) -> int:
+    print("\n== Port Link trainer bootstrap patch ==")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "patch_port_link_trainer.py"),
+            str(source),
+            str(output),
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    return completed.returncode
+
+
 def run_pipeline(
     *,
     cfru_root: Path,
@@ -140,6 +155,7 @@ def run_pipeline(
     verify_dpe_symbols=verify_dpe_tartrek_symbols,
     apply_preview_patch=default_apply_preview_patch,
     discover_port_link=default_discover_port_link,
+    apply_port_link_trainer=default_apply_port_link_trainer,
 ) -> Path:
     cfru_root = Path(cfru_root).resolve()
     dpe_root = Path(dpe_root).resolve()
@@ -197,10 +213,28 @@ def run_pipeline(
             raise RuntimeError("Preview output is identical to the CFRU input")
 
         discovery_status = discover_port_link(output_path)
+        trainer_patch_status = None
         if discovery_status == 0:
             print("PORT_LINK_DISCOVERY_STATUS=READY")
+            trainer_output = output_path.with_name(
+                output_path.stem + "_trainer" + output_path.suffix
+            )
+            if trainer_output.exists():
+                trainer_output.unlink()
+            try:
+                trainer_patch_status = apply_port_link_trainer(output_path, trainer_output)
+                if trainer_patch_status == 0 and trainer_output.exists():
+                    shutil.move(str(trainer_output), str(output_path))
+                    output_hash = sha1_file(output_path)
+                    print("PORT_LINK_TRAINER_STATUS=APPLIED")
+                else:
+                    print(f"PORT_LINK_TRAINER_STATUS=PENDING:{trainer_patch_status}")
+            finally:
+                if trainer_output.exists():
+                    trainer_output.unlink()
         else:
             print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}")
+            print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
 
         print(f"\nDPE_SHA1={dpe_hash}")
         print(f"CFRU_SHA1={cfru_hash}")
@@ -236,7 +270,7 @@ def main() -> int:
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}")
     print(f"DPE={dpe_root}")
-    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY")
+    print("PIPELINE=DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
 
     try:
