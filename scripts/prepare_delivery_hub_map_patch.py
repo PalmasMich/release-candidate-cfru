@@ -13,6 +13,7 @@ SLOT_DISCOVERY_PATH = ROOT / "scripts" / "discover_delivery_hub_map_slot.py"
 EVENT_COMPILER_PATH = ROOT / "scripts" / "compile_rc_event_scripts.py"
 DIALOGUE_COMPILER_PATH = ROOT / "scripts" / "compile_rc_dialogue.py"
 MAP_EVENTS_COMPILER_PATH = ROOT / "scripts" / "compile_rc_map_events.py"
+MAP_CELLS_COMPILER_PATH = ROOT / "scripts" / "compile_rc_map_cells.py"
 DELIVERY_HUB_SPEC = ROOT / "content" / "cagliari_preview" / "map_specs" / "RC_DELIVERY_HUB.json"
 DELIVERY_HUB_SCRIPT_SPEC = ROOT / "content" / "cagliari_preview" / "script_specs" / "RC_DELIVERY_HUB.json"
 
@@ -30,12 +31,14 @@ def build_plan(rom_data: bytes) -> dict:
     event_compiler = load_module(EVENT_COMPILER_PATH, "rc_event_compiler")
     dialogue_compiler = load_module(DIALOGUE_COMPILER_PATH, "rc_dialogue_compiler")
     map_events_compiler = load_module(MAP_EVENTS_COMPILER_PATH, "rc_map_events_compiler")
+    map_cells_compiler = load_module(MAP_CELLS_COMPILER_PATH, "rc_map_cells_compiler")
 
     map_spec = compiler.load_json(DELIVERY_HUB_SPEC)
     ir = compiler.compile_spec(map_spec)
     event_ir = event_compiler.compile_file(DELIVERY_HUB_SCRIPT_SPEC)
     dialogue_ir = dialogue_compiler.compile_file()
     map_events_ir = map_events_compiler.compile_file(DELIVERY_HUB_SPEC)
+    map_cells_ir = map_cells_compiler.compile_file(DELIVERY_HUB_SPEC)
     slot = discovery.analyze_rom(rom_data)
 
     if not slot["safe_to_repoint"]:
@@ -66,7 +69,8 @@ def build_plan(rom_data: bytes) -> dict:
     if missing_dialogues:
         raise ValueError(f"Delivery Hub scripts reference missing dialogue: {missing_dialogues}")
 
-    map_cell_bytes = ir["dimensions"]["width"] * ir["dimensions"]["height"] * 2
+    map_cell_bytes = map_cells_ir["map_bytes"]
+    border_bytes = map_cells_ir["border_bytes"]
     script_bytes = sum(script["size"] for script in event_ir["scripts"])
     dialogue_bytes = sum(dialogue_by_id[dialogue_id]["size"] for dialogue_id in referenced_dialogues)
     map_events_bytes = map_events_ir["total_bytes"]
@@ -103,7 +107,10 @@ def build_plan(rom_data: bytes) -> dict:
             "dialogue_format": dialogue_ir["format"],
             "referenced_dialogues": referenced_dialogues,
             "dialogue_bytes": dialogue_bytes,
+            "map_cells_format": map_cells_ir["format"],
             "map_cell_bytes": map_cell_bytes,
+            "border_bytes": border_bytes,
+            "map_cell_profile": map_cells_ir["profile"],
             "map_events_format": map_events_ir["format"],
             "map_events_bytes": map_events_bytes,
             "map_event_relocation_count": (
@@ -112,12 +119,11 @@ def build_plan(rom_data: bytes) -> dict:
                 + len(map_events_ir["warp_events"]["relocations"])
                 + len(map_events_ir["bg_events"]["relocations"])
             ),
-            "minimum_payload_bytes": map_cell_bytes + map_events_bytes + script_bytes + dialogue_bytes,
+            "minimum_payload_bytes": border_bytes + map_cell_bytes + map_events_bytes + script_bytes + dialogue_bytes,
         },
         "mutation_allowed": False,
         "required_before_mutation": [
-            "resolve custom RC_TILESET_CAGLIARI_INTERIORS_01 asset insertion or explicitly approve temporary House2 bootstrap tilesets",
-            "resolve metatile ids for every semantic Delivery Hub role against the selected tileset pair",
+            "replace temporary House2 bootstrap metatile profile with RC_TILESET_CAGLIARI_INTERIORS_01 after smoke test",
             "allocate aligned free space for MapLayout, map cells, MapEvents, scripts and dialogue blobs",
             "link compiled event-script relocations after final ROM addresses are allocated",
             "link compiled MapEvents/ObjectEventTemplate/BgEvent/WarpEvent relocations after final ROM addresses are allocated",
