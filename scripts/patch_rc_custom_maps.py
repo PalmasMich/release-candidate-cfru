@@ -14,6 +14,7 @@ PORT_LINK_DISCOVERY=ROOT/"scripts"/"discover_port_link_map_slot.py"
 FREE_DISCOVERY=ROOT/"scripts"/"discover_rc_tail_free_space.py"
 PAYLOAD_COMPILER=ROOT/"scripts"/"compile_rc_map_payload.py"
 ENTRY_PATCHER=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
+WILD_HEADER_PATCHER=ROOT/"scripts"/"patch_port_link_wild_header.py"
 
 HUB_SPEC=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DELIVERY_HUB.json"
 HUB_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DELIVERY_HUB.json"
@@ -153,6 +154,7 @@ def build_payloads(data:bytes)->dict:
 def patch_bytes(data:bytes)->tuple[bytes,dict]:
     plan=build_payloads(data)
     entry=load(ENTRY_PATCHER,"entry_patcher")
+    wild=load(WILD_HEADER_PATCHER,"wild_header_patcher")
 
     out=bytearray(data)
 
@@ -182,8 +184,11 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
         events_ptr=p["map_events_address"],
     )
 
+    # Move the already-patched Route 1 wild header to the custom Port Link.
+    out_wild,wild_report=wild.patch_bytes(bytes(out))
+
     # Finally redirect the two story warps from Oak Lab to the new Hub slot.
-    out2,entry_offsets=entry.patch_bytes(bytes(out))
+    out2,entry_offsets=entry.patch_bytes(out_wild)
     if len(out2)!=len(data):
         raise RuntimeError("custom-map patch changed ROM size")
 
@@ -199,6 +204,9 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
       "port_payload_size":p["size"],
       "allocation_end":plan["allocation_end"],
       "entry_warp_offsets":entry_offsets,
+      "wild_header_offset":wild_report["header_offset"],
+      "wild_info_offset":wild_report["info_offset"],
+      "wild_mons_offset":wild_report["mon_offset"],
       "hub_layout_ptr":h["map_layout_address"],
       "hub_events_ptr":h["map_events_address"],
       "marina_layout_ptr":m["map_layout_address"],
@@ -224,6 +232,7 @@ def patch_rom(source:Path,output:Path)->Path:
     print(f"RC_MARINA_PAYLOAD_OFFSET=0x{e['marina_payload_offset']:X}")
     print(f"RC_PORT_LINK_PAYLOAD_OFFSET=0x{e['port_payload_offset']:X}")
     print("RC_ENTRY_WARP_OFFSETS="+",".join(f"0x{x:X}" for x in e["entry_warp_offsets"]))
+    print(f"RC_PORT_LINK_WILD_HEADER_OFFSET=0x{e['wild_header_offset']:X}")
     print(f"RC_CUSTOM_MAPS_OUTPUT={output}")
     return output
 
