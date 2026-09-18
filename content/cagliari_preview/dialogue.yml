@@ -47,6 +47,54 @@
         "Piccolo aggiornamento: il Deploy è bloccato.",
         "Dicono che sia una cosa semplice. È sempre così che comincia."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_TARTREK_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Tartrek entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_FROBYTE_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Frobyte entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_EMBERFOX_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Emberfox entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_ALREADY_ASSIGNED",
+      "speaker": "System",
+      "lines": [
+        "Hai già una risorsa assegnata.",
+        "Cambiare ora richiede una change request."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_BEFORE_STARTER",
+      "speaker": "Rivale",
+      "lines": [
+        "Prima fatti assegnare una risorsa.",
+        "Poi possiamo confrontare la velocity."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_REPEAT",
+      "speaker": "Rivale",
+      "lines": [
+        "Sto già aggiornando la dashboard.",
+        "Non è una gara. La classifica però esiste."
+      ]
     }
   ]
 }
