@@ -88,12 +88,43 @@ def matches_route19_unused_house(header: dict, rom_size: int) -> bool:
 
 def discover_candidates(data: bytes) -> list[dict]:
     candidates = []
-    # Map headers are pointer-aligned in vanilla FireRed. Scanning aligned
-    # offsets avoids accidental matches inside text/graphics data.
-    for offset in range(0, len(data) - MAP_HEADER_SIZE + 1, 4):
+
+    # Search the fixed tail first instead of parsing every aligned ROM word.
+    # MapLayoutId at 0x12 is intentionally excluded because it is not needed
+    # to identify this unused slot.
+    fixed_tail = bytes([
+        MAPSEC_ROUTE19,
+        0x00,  # cave / requires flash
+        WEATHER_NONE,
+        MAP_TYPE_INDOOR,
+        0x00,  # biking
+        0x00,  # escaping/running/show-name flags
+        0x00,  # floor
+        BATTLE_SCENE_NORMAL,
+    ])
+
+    start = 0
+    seen = set()
+    while True:
+        tail_pos = data.find(fixed_tail, start)
+        if tail_pos < 0:
+            break
+        start = tail_pos + 1
+
+        offset = tail_pos - 0x14
+        if offset < 0 or offset % 4 != 0 or offset in seen:
+            continue
+        seen.add(offset)
+
+        if offset + MAP_HEADER_SIZE > len(data):
+            continue
+        if int.from_bytes(data[offset + 0x10:offset + 0x12], "little") != MUSIC_ROUTE3:
+            continue
+
         header = parse_header(data, offset)
         if matches_route19_unused_house(header, len(data)):
             candidates.append(header)
+
     return candidates
 
 
