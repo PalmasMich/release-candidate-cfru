@@ -67,8 +67,8 @@ def parse_header(data: bytes, offset: int) -> dict:
 def matches_route19_unused_house(header: dict, rom_size: int) -> bool:
     return all(
         (
-            is_rom_pointer(header["layout_ptr"], rom_size),
-            is_rom_pointer(header["events_ptr"], rom_size),
+            is_rom_pointer(header["layout_ptr"], rom_size, alignment=4),
+            is_rom_pointer(header["events_ptr"], rom_size, alignment=4),
             is_rom_pointer(header["scripts_ptr"], rom_size),
             header["connections_ptr"] == 0,
             header["music"] == MUSIC_ROUTE3,
@@ -122,8 +122,16 @@ def discover_candidates(data: bytes) -> list[dict]:
             continue
 
         header = parse_header(data, offset)
-        if matches_route19_unused_house(header, len(data)):
-            candidates.append(header)
+        if not matches_route19_unused_house(header, len(data)):
+            continue
+        try:
+            layout = parse_layout(data, header["layout_ptr"])
+        except ValueError:
+            continue
+        if not matches_house2_layout(layout, len(data)):
+            continue
+        header["layout"] = layout
+        candidates.append(header)
 
     return candidates
 
