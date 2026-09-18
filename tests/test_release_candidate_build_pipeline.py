@@ -100,6 +100,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                     run_build=fake_run,
                     verify_rom=fake_verify,
                     sync_dpe=lambda _path: None,
+                    verify_dpe_symbols=lambda _path: None,
                     apply_preview_patch=lambda source, output: output.write_bytes(source.read_bytes()),
                 )
 
@@ -137,6 +138,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 run_build=fake_run,
                 verify_rom=fake_verify,
                 sync_dpe=lambda _path: None,
+                verify_dpe_symbols=lambda _path: None,
                 apply_preview_patch=fake_preview_patch,
             )
 
