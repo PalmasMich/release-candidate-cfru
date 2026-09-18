@@ -137,7 +137,10 @@ def compile_payload(
         bytes.fromhex(events_ir["object_events"]["bytes_hex"]),
     )
     warp_raw=events_comp.link_map_id_relocations(events_ir["warp_events"],map_ids)
-    coord_raw=bytes.fromhex(events_ir["coord_events"]["bytes_hex"])
+    coord_raw=link_script_ptrs(
+        events_ir["coord_events"],
+        bytes.fromhex(events_ir["coord_events"]["bytes_hex"]),
+    )
     bg_raw=link_script_ptrs(
         events_ir["bg_events"],
         bytes.fromhex(events_ir["bg_events"]["bytes_hex"]),
