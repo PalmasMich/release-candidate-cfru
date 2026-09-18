@@ -51,6 +51,7 @@ CHARMAP = {
     ":": 0xF0,
     "'": 0xB4,
     "é": 0x1B,
+    "\n": 0xFE,
 }
 
 
@@ -86,6 +87,14 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (
         encode_text("Come on, I'll take you on!"),
         encode_text("KPI check: show velocity!"),
+    ),
+    (
+        encode_text("PALLET TOWN\nShades of your journey await!"),
+        encode_text("CAGLIARI\nFirst sprint starts here!"),
+    ),
+    (
+        encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"),
+        encode_text("PORT LINK\nCAGLIARI - MARINA PORTO"),
     ),
 )
 
