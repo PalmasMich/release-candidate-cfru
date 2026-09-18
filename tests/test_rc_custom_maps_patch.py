@@ -5,6 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 PATCHER=ROOT/"scripts"/"patch_rc_custom_maps.py"
 HUB_DISC=ROOT/"scripts"/"discover_delivery_hub_map_slot.py"
 MARINA_DISC=ROOT/"scripts"/"discover_marina_map_slot.py"
+PORT_DISC=ROOT/"scripts"/"discover_port_link_map_slot.py"
 ENTRY=ROOT/"scripts"/"patch_pallet_lab_entry_to_delivery_hub.py"
 
 def load(path,name):
@@ -15,15 +16,15 @@ class TestCustomMapsPatch(unittest.TestCase):
     def fixture(self):
         hub=load(HUB_DISC,"hub")
         marina=load(MARINA_DISC,"marina")
+        port=load(PORT_DISC,"port")
         entry=load(ENTRY,"entry")
         rom=bytearray(b"\x00"*0x10000)
         ptr=lambda o:(0x08000000+o).to_bytes(4,"little")
 
-        # Two guarded Pallet -> Oak Lab coordinate warps.
         rom[0x500:0x500+len(entry.SOURCE)]=entry.SOURCE
         rom[0x600:0x600+len(entry.SOURCE)]=entry.SOURCE
 
-        # House2 source layout for the Delivery Hub reserved slot.
+        # Delivery Hub reserved source slot.
         hl=bytearray(b"\x00"*0x1C)
         hl[0:4]=(11).to_bytes(4,"little",signed=True)
         hl[4:8]=(9).to_bytes(4,"little",signed=True)
@@ -41,7 +42,7 @@ class TestCustomMapsPatch(unittest.TestCase):
         hh[24]=0;hh[25]=0;hh[26]=0;hh[27]=hub.BATTLE_SCENE_NORMAL
         rom[0x1000:0x101C]=hh
 
-        # Prototype Sevii 8 source layout for Marina reserved slot.
+        # Marina reserved source slot.
         ml=bytearray(b"\x00"*0x1C)
         ml[0:4]=(84).to_bytes(4,"little",signed=True)
         ml[4:8]=(20).to_bytes(4,"little",signed=True)
@@ -59,11 +60,28 @@ class TestCustomMapsPatch(unittest.TestCase):
         mh[24]=1;mh[25]=marina.HEADER_FLAGS;mh[26]=0;mh[27]=0
         rom[0x1100:0x111C]=mh
 
-        # Guarded terminal free space only.
+        # Port Link reserved source slot.
+        pl=bytearray(b"\x00"*0x1C)
+        pl[0:4]=(24).to_bytes(4,"little",signed=True)
+        pl[4:8]=(60).to_bytes(4,"little",signed=True)
+        pl[8:12]=ptr(0x4000);pl[12:16]=ptr(0x4200)
+        pl[16:20]=ptr(0x4400);pl[20:24]=ptr(0x4600)
+        pl[24]=2;pl[25]=2
+        rom[0x2800:0x281C]=pl
+
+        ph=bytearray(b"\x00"*0x1C)
+        ph[0:4]=ptr(0x2800);ph[4:8]=ptr(0x2A00);ph[8:12]=ptr(0x2B00)
+        ph[12:16]=(0).to_bytes(4,"little")
+        ph[16:18]=port.MUSIC_SEVII_ROUTE.to_bytes(2,"little")
+        ph[18:20]=(0x3333).to_bytes(2,"little")
+        ph[20]=port.MAPSEC_SEVII_ISLE_9;ph[21]=0;ph[22]=port.WEATHER_SUNNY;ph[23]=port.MAP_TYPE_ROUTE
+        ph[24]=1;ph[25]=port.HEADER_FLAGS;ph[26]=0;ph[27]=0
+        rom[0x1200:0x121C]=ph
+
         rom[0xC000:]=b"\xFF"*(len(rom)-0xC000)
         return bytes(rom)
 
-    def test_installs_both_maps_and_repoints_entry_atomically(self):
+    def test_installs_three_maps_and_repoints_entry_atomically(self):
         patcher=load(PATCHER,"patcher")
         entry=load(ENTRY,"entry")
         original=self.fixture()
@@ -73,24 +91,16 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertEqual(patched.count(entry.SOURCE),0)
         self.assertEqual(patched.count(entry.TARGET),2)
 
-        self.assertEqual(
-            int.from_bytes(patched[0x1000:0x1004],"little"),
-            e["hub_layout_ptr"],
-        )
-        self.assertEqual(
-            int.from_bytes(patched[0x1004:0x1008],"little"),
-            e["hub_events_ptr"],
-        )
-        self.assertEqual(
-            int.from_bytes(patched[0x1100:0x1104],"little"),
-            e["marina_layout_ptr"],
-        )
-        self.assertEqual(
-            int.from_bytes(patched[0x1104:0x1108],"little"),
-            e["marina_events_ptr"],
-        )
+        self.assertEqual(int.from_bytes(patched[0x1000:0x1004],"little"),e["hub_layout_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1004:0x1008],"little"),e["hub_events_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1100:0x1104],"little"),e["marina_layout_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1104:0x1108],"little"),e["marina_events_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1200:0x1204],"little"),e["port_layout_ptr"])
+        self.assertEqual(int.from_bytes(patched[0x1204:0x1208],"little"),e["port_events_ptr"])
+
         self.assertGreaterEqual(e["hub_payload_offset"],0xC000)
         self.assertGreater(e["marina_payload_offset"],e["hub_payload_offset"])
+        self.assertGreater(e["port_payload_offset"],e["marina_payload_offset"])
 
     def test_blocks_without_guarded_tail_space(self):
         patcher=load(PATCHER,"patcher")
