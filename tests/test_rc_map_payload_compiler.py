@@ -6,6 +6,7 @@ SCRIPT=ROOT/"scripts"/"compile_rc_map_payload.py"
 HUB=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DELIVERY_HUB.json"
 HUB_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DELIVERY_HUB.json"
 MARINA=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_CAGLIARI_MARINA.json"
+MARINA_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CAGLIARI_MARINA.json"
 
 def load():
     s=importlib.util.spec_from_file_location("payload",SCRIPT)
@@ -34,16 +35,16 @@ class TestPayload(unittest.TestCase):
         self.assertEqual(int.from_bytes(layout[16:20],"little"),0x08100000)
         self.assertEqual(int.from_bytes(layout[20:24],"little"),0x08110000)
 
-    def test_marina_payload_resolves_return_warp_without_scripts(self):
+    def test_marina_payload_links_story_script_and_return_warp(self):
         m=load()
         base=0x08910000
         p=m.compile_payload(
-            map_spec_path=MARINA,script_spec_path=None,base_address=base,
+            map_spec_path=MARINA,script_spec_path=MARINA_SCRIPTS,base_address=base,
             primary_tileset_ptr=0x08120000,secondary_tileset_ptr=0x08130000
         )
         self.assertEqual(p["map"],"RC_CAGLIARI_MARINA")
-        self.assertEqual(p["script_addresses"],{})
-        self.assertEqual(p["dialogue_addresses"],{})
+        self.assertIn("RC_SCRIPT_MARINA_DELIVERY_LEAD",p["script_addresses"])
+        self.assertIn("RC_DIALOGUE_SCOPE_CHANGE",p["dialogue_addresses"])
         self.assertEqual(p["map_cell_profile"],"RC_CAGLIARI_MARINA_GENERAL_BOOTSTRAP")
 
         warp_off=p["offsets"]["warp_events"]
