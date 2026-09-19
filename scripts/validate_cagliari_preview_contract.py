@@ -32,11 +32,10 @@ REQUIRED_DIALOGUE = {
     "RC_DIALOGUE_PORT_TRAINER_INTRO",
     "RC_DIALOGUE_DEPLOY_TEASER",
 }
-REQUIRED_LEARNSET_MARKERS = {
+REQUIRED_STARTER_LEARNSETS = {
     "SPECIES_RC_TURTLE_01": "sRCTartrekLevelUpLearnset",
     "SPECIES_RC_FROG_01": "sRCFrobyteLevelUpLearnset",
     "SPECIES_RC_FIREFOX_01": "sRCEmberfoxLevelUpLearnset",
-    "SPECIES_RC_MISTRILLO": "sRCMistrilloLevelUpLearnset",
 }
 
 
@@ -75,10 +74,12 @@ def validate() -> None:
     route = tables.get("RC_PORT_CONNECTION_GRASS")
     require(route is not None, "Port Link encounter table is missing.")
     weights = {item["species"]: item["weight"] for item in route["slots"]}
-    require(weights.get("SPECIES_RC_MISTRILLO") == 60, "Mistrillo must remain the primary Port Link encounter at 60%.")
+    require(weights.get("SPECIES_RC_CAGLIARI_WILD_01") == 60, "Mistrillo must remain the primary Port Link encounter at 60%.")
+    require(weights.get("SPECIES_WINGULL") == 25, "Wingull must remain 25% of Port Link encounters.")
+    require(weights.get("SPECIES_MEOWTH") == 15, "Meowth must remain 15% of Port Link encounters.")
     require(sum(weights.values()) == 100, "Port Link encounter weights must total 100%.")
 
-    for species, marker in REQUIRED_LEARNSET_MARKERS.items():
+    for species, marker in REQUIRED_STARTER_LEARNSETS.items():
         require(marker in learnsets, f"CFRU learnset definition missing for {species}.")
         require(f"[{species}] = {marker}" in learnsets, f"CFRU learnset table registration missing for {species}.")
 
