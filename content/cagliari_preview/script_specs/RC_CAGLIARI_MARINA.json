@@ -202,8 +202,123 @@
           "op": "faceplayer"
         },
         {
+          "op": "checkflag",
+          "flag": "RC_FLAG_MARINA_BUG_REPORT_DONE"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "done"
+        },
+        {
           "op": "msgbox",
-          "dialogue": "RC_DIALOGUE_MARINA_NPC_TESTER",
+          "dialogue": "RC_DIALOGUE_MARINA_BUG_REPORT_START",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_BUG_REPORT_REPEAT",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_MARINA_BUG_TERMINAL",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_MARINA_BUG_REPORT_DONE"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "done"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_BUG_REPORT_DONE",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_MARINA_BUG_REPORT_DONE"
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_BUG_REPORT_DONE",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_RAMEN_STOP",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_RAMEN_STOP_VISITED"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "repeat"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_RAMEN_STOP_FIRST",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_RAMEN_STOP_VISITED"
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "repeat"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_RAMEN_STOP_REPEAT",
           "type": 4
         },
         {
