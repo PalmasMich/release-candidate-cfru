@@ -2,6 +2,44 @@
   "map": "RC_DELIVERY_HUB",
   "scripts": [
     {
+      "id": "RC_SCRIPT_HUB_ARRIVAL",
+      "ops": [
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_ARRIVAL_DONE"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "done"
+        },
+        {
+          "op": "lockall"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_OPENING",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_ARRIVAL_DONE"
+        },
+        {
+          "op": "releaseall"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
       "id": "RC_SCRIPT_DELIVERY_LEAD",
       "ops": [
         {
