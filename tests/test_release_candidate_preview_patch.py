@@ -85,7 +85,18 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         patched = build_patched_fixture(patcher)
         for text in (
             "Welcome to Release Candidate!",
+            "CAGLIARI\nFirst sprint starts here!",
+            "Delivery is incredible!",
+            "We can now track every task",
+            "and blocker on one dashboard.",
+            "I'm on this project, too.",
+            "DELIVERY HUB - CAGLIARI",
+            "Those are team slots.\nResources inside!",
+            "Press START for your dashboard!",
+            "Save before each release.\nRollback matters.",
             "Three resources are ready.",
+            "LEAD: Field test starts outside.",
+            "Use your partner on Port Link.",
             "KPI check: show velocity!",
             "KPI is GREEN!",
             "PORT LINK\nCAGLIARI - MARINA PORTO",
