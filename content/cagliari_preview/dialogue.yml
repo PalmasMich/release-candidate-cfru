@@ -5,47 +5,76 @@
       "speaker": "Delivery Lead",
       "lines": [
         "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato.",
-        "Non abbiamo molto tempo per l'onboarding, quindi andiamo al punto."
+        "Il kickoff è passato, le scadenze no.",
+        "Io sono il Delivery Lead. Ti spiego il minimo indispensabile e poi partiamo."
       ]
     },
     {
-      "id": "RC_DIALOGUE_STARTER",
+      "id": "RC_DIALOGUE_PLAYER_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Queste sono le risorse attualmente disponibili.",
-        "Scegline una per l'assegnazione. Le altre due andranno su attività parallele."
+        "Prima cosa: come ti chiami?",
+        "Mi serve per aprirti l'accesso al progetto.",
+        "Perfetto. Da questo momento sei ufficialmente onboardato."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_INTRO",
       "speaker": "Rivale",
       "lines": [
-        "Io tengo traccia di tutto: KPI, velocity, story point e tempi di chiusura.",
-        "Non è una gara, ovviamente. Però ho già preparato la classifica."
+        "Finalmente sei arrivato.",
+        "Io tengo traccia di KPI, velocity e tempi di chiusura.",
+        "Non è una gara. Però ho già preparato la classifica."
       ]
     },
     {
-      "id": "RC_DIALOGUE_PORT_TRAINER_INTRO",
-      "speaker": "Consulente Junior",
-      "lines": [
-        "Scusa, sei tu la nuova risorsa? Ho una verifica veloce da chiudere.",
-        "Dicono che bastino cinque minuti. Quindi preparati."
-      ]
-    },
-    {
-      "id": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
-      "speaker": "Consulente Junior",
-      "lines": [
-        "Ok, verifica chiusa. La segno completata al primo tentativo.",
-        "Se chiedono, non abbiamo mai avuto un blocker."
-      ]
-    },
-    {
-      "id": "RC_DIALOGUE_DEPLOY_TEASER",
+      "id": "RC_DIALOGUE_RIVAL_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Piccolo aggiornamento: il Deploy è bloccato.",
-        "Dicono che sia una cosa semplice. È sempre così che comincia."
+        "Lui sarà il tuo collega sul progetto.",
+        "Competente, rapido e completamente incapace di ignorare una dashboard."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DELIVERY_HUB_WELCOME",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Questo è il Delivery Hub.",
+        "Qui partono task, escalation e promesse fatte prima di consultarci.",
+        "Oggi però partiamo da qualcosa di semplice."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Tre partner sono disponibili per l'assegnazione.",
+        "Tartrek, Frobyte ed Emberfox.",
+        "Scegline uno. Gli altri due finiranno su attività parallele."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_TARTREK_INFO",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Tartrek. Erba e Terra.",
+        "Solido, paziente e difficile da spostare quando ha preso una decisione."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_FROBYTE_INFO",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Frobyte. Acqua ed Elettro.",
+        "Rapido, reattivo e sempre a un passo dal sovraccarico."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_EMBERFOX_INFO",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Emberfox. Fuoco e Buio.",
+        "Intuitivo, aggressivo e allergico ai processi troppo lunghi."
       ]
     },
     {
@@ -53,7 +82,7 @@
       "speaker": "System",
       "lines": [
         "Tartrek entra nel team.",
-        "Primo task assegnato."
+        "Assegnazione completata."
       ]
     },
     {
@@ -61,7 +90,7 @@
       "speaker": "System",
       "lines": [
         "Frobyte entra nel team.",
-        "Primo task assegnato."
+        "Assegnazione completata."
       ]
     },
     {
@@ -69,23 +98,49 @@
       "speaker": "System",
       "lines": [
         "Emberfox entra nel team.",
-        "Primo task assegnato."
+        "Assegnazione completata."
       ]
     },
     {
       "id": "RC_DIALOGUE_STARTER_ALREADY_ASSIGNED",
       "speaker": "System",
       "lines": [
-        "Hai già una risorsa assegnata.",
-        "Cambiare ora richiede una change request."
+        "Hai già un partner assegnato.",
+        "Cambiare ora richiede una change request.",
+        "Nessuno vuole aprirla."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_BEFORE_STARTER",
       "speaker": "Rivale",
       "lines": [
-        "Prima fatti assegnare una risorsa.",
-        "Poi possiamo confrontare la velocity."
+        "Prima scegli il tuo partner.",
+        "Poi vediamo quanto regge la tua velocity."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_CHALLENGE",
+      "speaker": "Rivale",
+      "lines": [
+        "Bene. Hai fatto la tua scelta.",
+        "Facciamo un test rapido prima che qualcuno cambi i requisiti.",
+        "KPI check. Vediamo chi parte meglio."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_WIN",
+      "speaker": "Rivale",
+      "lines": [
+        "Ok. Dato interessante.",
+        "Aggiorno la dashboard e faccio finta che il campione sia statisticamente significativo."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_LOSE",
+      "speaker": "Rivale",
+      "lines": [
+        "Partenza efficiente.",
+        "Tranquillo, nella dashboard metterò solo il risultato."
       ]
     },
     {
@@ -97,57 +152,249 @@
       ]
     },
     {
-      "id": "RC_DIALOGUE_SCOPE_CHANGE",
+      "id": "RC_DIALOGUE_FIRST_ASSIGNMENT",
       "speaker": "Delivery Lead",
       "lines": [
-        "Cambio requisiti: il deploy non può più passare da qui.",
-        "Serve una validazione al Castello. Ovviamente era urgente da ieri."
+        "Primo incarico.",
+        "Raggiungi Marina Porto passando dal Port Link.",
+        "Consegna semplice, percorso semplice, nessuna sorpresa.",
+        "Sì, l'ho detto davvero."
       ]
     },
     {
-      "id": "RC_DIALOGUE_SCOPE_CHANGE_REPEAT",
-      "speaker": "Delivery Lead",
+      "id": "RC_DIALOGUE_HUB_NPC_ANALYST",
+      "speaker": "Analista",
       "lines": [
-        "Il nuovo scope è confermato.",
-        "Vai verso il Castello. Io provo a capire chi l'ha approvato."
+        "Sto traducendo un requisito scritto in tre versioni diverse.",
+        "Per ora sono tutte ufficiali."
       ]
     },
     {
-      "id": "RC_DIALOGUE_PORT_LINK_HINT",
-      "speaker": "Delivery Lead",
+      "id": "RC_DIALOGUE_HUB_NPC_DEVELOPER",
+      "speaker": "Sviluppatore",
       "lines": [
-        "Prima chiudi la verifica al Port Link.",
-        "Poi torniamo a parlare del Deploy."
+        "Se il requisito cambia ancora, tecnicamente non è rework.",
+        "È sviluppo iterativo."
       ]
     },
     {
-      "id": "RC_DIALOGUE_PORT_TRAINER_DEFEAT",
-      "speaker": "Consulente Junior",
+      "id": "RC_DIALOGUE_HUB_NPC_PM",
+      "speaker": "Project Manager",
       "lines": [
-        "Ok. Verifica chiusa."
+        "La timeline è sotto controllo.",
+        "Ho solo smesso di guardarla."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_HUB_SIGN",
+      "speaker": "System",
+      "lines": [
+        "DELIVERY HUB",
+        "Persone, task e priorità entrano qui.",
+        "L'ordine di uscita non è garantito."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_ARRIVAL",
+      "speaker": "System",
+      "lines": [
+        "MARINA PORTO",
+        "Mare, sole e backlog aperti."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_NPC_LOCAL",
+      "speaker": "Abitante",
+      "lines": [
+        "Qui al porto capisci subito quando cambia il vento.",
+        "Nel tuo progetto pare succeda più spesso."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_NPC_CONSULTANT",
+      "speaker": "Consulente",
+      "lines": [
+        "Sono venuto per una call di mezz'ora.",
+        "Sono qui da tre sprint."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_NPC_TESTER",
+      "speaker": "Tester",
+      "lines": [
+        "Ho trovato un bug.",
+        "Mi hanno chiesto se poteva diventare un comportamento atteso."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_SIGN",
+      "speaker": "System",
+      "lines": [
+        "MARINA PORTO",
+        "Prossimo checkpoint: Port Link."
       ]
     },
     {
       "id": "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
       "speaker": "System",
       "lines": [
-        "Test sul campo: prova il nuovo partner nell'erba.",
-        "Il Port Link è il posto giusto per una verifica rapida."
+        "Attività sul campo.",
+        "Nel Port Link puoi incontrare creature selvatiche.",
+        "È il momento di capire come lavora davvero il tuo partner."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_LINK_HINT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Attraversa il Port Link e chiudi la verifica.",
+        "Poi raggiungi Marina Porto.",
+        "Per ora lo scope è ancora quello."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_INTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Scusa, sei tu la nuova risorsa?",
+        "Mi hanno chiesto una verifica veloce prima di lasciarti passare.",
+        "Dicono cinque minuti. Sai già cosa significa."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_DEFEAT",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Ok. Verifica chiusa.",
+        "Metto esito positivo."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Passa pure.",
+        "Se chiedono, non c'è mai stato nessun blocker."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_TEASER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Aggiornamento.",
+        "Il deploy è bloccato.",
+        "Dicono che sia una cosa semplice.",
+        "È sempre così che comincia."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Cambio requisiti.",
+        "La consegna non può più passare dal flusso concordato.",
+        "Serve una validazione al Castello.",
+        "Il requisito è nuovo, ma risulta urgente da ieri."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE_REPEAT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Nuovo scope confermato.",
+        "Vai verso il Castello.",
+        "Io provo a capire chi ha approvato una cosa che nessuno ricorda di aver chiesto."
       ]
     },
     {
       "id": "RC_DIALOGUE_CASTELLO_LOCKED",
       "speaker": "System",
       "lines": [
-        "Accesso al Castello non previsto dallo scope corrente.",
+        "CASTELLO",
+        "Accesso non previsto dallo scope corrente.",
         "Serve una change request."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_UNLOCK",
+      "speaker": "System",
+      "lines": [
+        "Change request approvata.",
+        "Accesso al Castello autorizzato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_NPC_STAKEHOLDER",
+      "speaker": "Stakeholder",
+      "lines": [
+        "Non ho cambiato requisito.",
+        "Ho solo chiarito quello che intendevo.",
+        "Dopo che avete finito."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_NPC_ARCHITECT",
+      "speaker": "Architetto",
+      "lines": [
+        "La soluzione è semplice.",
+        "Basta ridisegnare metà del flusso senza toccare nulla."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_NPC_SENIOR",
+      "speaker": "Senior Consultant",
+      "lines": [
+        "Ricorda una regola.",
+        "Quando tutti dicono che manca solo una piccola modifica, controlla il calendario."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_CASTELLO",
+      "speaker": "Rivale",
+      "lines": [
+        "Ho già recepito il nuovo requisito.",
+        "La velocity resta alta se smetti di contare il lavoro rifatto.",
+        "Metodo scientifico."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_DISTRICT_ARRIVAL",
+      "speaker": "System",
+      "lines": [
+        "DEPLOY DISTRICT",
+        "Da qui in poi ogni errore ha un pubblico."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_NPC_OPS",
+      "speaker": "Ops",
+      "lines": [
+        "In DEV funziona.",
+        "In UAT quasi.",
+        "In produzione scopriremo quanto siamo ottimisti."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_NPC_BUSINESS",
+      "speaker": "Business",
+      "lines": [
+        "Per me possiamo andare.",
+        "A patto che non cambi nulla rispetto a quello che vi dirò tra cinque minuti."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_NPC_RELEASE",
+      "speaker": "Release Coordinator",
+      "lines": [
+        "Mi servono tre approvazioni.",
+        "Due persone sono offline e la terza dice di non essere owner."
       ]
     },
     {
       "id": "RC_DIALOGUE_GO_NO_GO_START",
       "speaker": "System",
       "lines": [
-        "Go/No-Go avviato.",
+        "GO/NO-GO AVVIATO.",
         "Tutti aspettano una decisione che nessuno vuole prendere."
       ]
     },
@@ -155,16 +402,28 @@
       "id": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
       "speaker": "Release Manager",
       "lines": [
-        "Siamo al Go/No-Go.",
-        "Se vuoi il deploy, dimostra che il pacchetto regge davvero."
+        "Quindi sei tu quello che vuole andare in produzione.",
+        "Il pacchetto è completo, i test sono verdi e lo scope è stato validato.",
+        "Ottimo.",
+        "Adesso dimostrami che regge anche sotto pressione."
       ]
     },
     {
       "id": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT",
       "speaker": "Release Manager",
       "lines": [
-        "Ok. Questa passa.",
-        "Segno GO, ma non abituarti."
+        "Bene.",
+        "Questa passa.",
+        "Segno GO, ma non prendere l'abitudine di vedere tutto verde."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_ROOM_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "DEPLOY ROOM 01",
+        "Go/No-Go non ancora autorizzato.",
+        "Torna quando tutti avranno deciso di decidere."
       ]
     },
     {
@@ -172,15 +431,35 @@
       "speaker": "System",
       "lines": [
         "DEPLOY 01 COMPLETATO.",
-        "La Release Candidate è passata in produzione."
+        "Release Candidate è in produzione.",
+        "Per qualche secondo nessuno apre ticket."
       ]
     },
     {
-      "id": "RC_DIALOGUE_DEPLOY_ROOM_LOCKED",
+      "id": "RC_DIALOGUE_POST_DEPLOY_LEAD",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Primo deploy completato.",
+        "Direi che ora puoi considerarti onboardato.",
+        "Domani si riparte."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_POST_DEPLOY_RIVAL",
+      "speaker": "Rivale",
+      "lines": [
+        "Bel deploy.",
+        "La dashboard dice che siamo quasi pari.",
+        "Quasi."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_NEXT_CHAPTER_TEASER",
       "speaker": "System",
       "lines": [
-        "Il Go/No-Go non è ancora iniziato.",
-        "Torna quando tutti avranno deciso di non decidere."
+        "Nuovo progetto assegnato.",
+        "Destinazione: Milano.",
+        "Scope: da definire."
       ]
     }
   ]
