@@ -24,6 +24,14 @@ MAPS = (
     ("RC_DEPLOY_ROOM", "RC_DEPLOY_ROOM.json", "RC_DEPLOY_ROOM.json"),
 )
 
+EXPECTED_PROGRESSION = (
+    ("RC_DELIVERY_HUB", "RC_CAGLIARI_MARINA"),
+    ("RC_CAGLIARI_MARINA", "RC_PORT_CONNECTION"),
+    ("RC_CAGLIARI_MARINA", "RC_CASTELLO_ASCENT"),
+    ("RC_CASTELLO_ASCENT", "RC_DEPLOY_DISTRICT"),
+    ("RC_DEPLOY_DISTRICT", "RC_DEPLOY_ROOM"),
+)
+
 DUMMY_PRIMARY_TILESET = 0x08100000
 DUMMY_SECONDARY_TILESET = 0x08110000
 DUMMY_BASE_START = 0x08900000
@@ -56,7 +64,7 @@ def main() -> int:
 
     compiled = []
     all_script_ids = set()
-    script_irs = {}
+    progression_edges = set()
 
     for index, (map_id, map_name, script_name) in enumerate(MAPS):
         map_path = CONTENT / "map_specs" / map_name
@@ -65,6 +73,7 @@ def main() -> int:
         if map_id not in slot_by_id:
             raise ValueError(f"{map_id}: missing reserved map slot")
 
+        raw_map = json.loads(map_path.read_text(encoding="utf-8"))
         map_ir = map_comp.compile_file(map_path)
         if map_ir["id"] != map_id:
             raise ValueError(f"{map_id}: map spec id mismatch: {map_ir['id']}")
@@ -78,15 +87,10 @@ def main() -> int:
         if duplicates:
             raise ValueError(f"duplicate RC script ids across maps: {sorted(duplicates)}")
         all_script_ids |= local_script_ids
-        script_irs[map_id] = scripts_ir
 
         bound_scripts = {
             item["script"]
-            for item in (
-                map_ir["objects"]
-                + map_ir["interactions"]
-                + json.loads(map_path.read_text(encoding="utf-8")).get("coord_events", [])
-            )
+            for item in (map_ir["objects"] + map_ir["interactions"] + raw_map.get("coord_events", []))
             if item.get("script")
         }
         missing_bound = bound_scripts - local_script_ids
@@ -103,20 +107,21 @@ def main() -> int:
         if missing_dialogue:
             raise ValueError(f"{map_id}: missing dialogue {sorted(missing_dialogue)}")
 
+        for warp in raw_map.get("warps", []):
+            target = warp.get("target_map")
+            if target:
+                progression_edges.add((map_id, target))
+
         for script in scripts_ir["scripts"]:
             for relocation in script["relocations"]:
-                if relocation["kind"] == "map_id" and relocation["symbol"] not in map_ids:
-                    raise ValueError(
-                        f"{map_id}: script {script['id']} targets unreserved map "
-                        f"{relocation['symbol']}"
-                    )
+                if relocation["kind"] == "map_id":
+                    if relocation["symbol"] not in map_ids:
+                        raise ValueError(f"{map_id}: script {script['id']} targets unreserved map {relocation['symbol']}")
+                    progression_edges.add((map_id, relocation["symbol"]))
 
-        for block_name in ("warp_events",):
-            for relocation in event_ir[block_name]["relocations"]:
-                if relocation["kind"] == "map_id" and relocation["symbol"] not in map_ids:
-                    raise ValueError(
-                        f"{map_id}: {block_name} targets unreserved map {relocation['symbol']}"
-                    )
+        for relocation in event_ir["warp_events"]["relocations"]:
+            if relocation["kind"] == "map_id" and relocation["symbol"] not in map_ids:
+                raise ValueError(f"{map_id}: warp_events targets unreserved map {relocation['symbol']}")
 
         payload = payload_comp.compile_payload(
             map_spec_path=map_path,
@@ -125,7 +130,6 @@ def main() -> int:
             primary_tileset_ptr=DUMMY_PRIMARY_TILESET,
             secondary_tileset_ptr=DUMMY_SECONDARY_TILESET,
         )
-
         if payload["map"] != map_id:
             raise ValueError(f"{map_id}: payload id mismatch")
         if payload["size"] <= cell_ir["map_bytes"]:
@@ -144,29 +148,34 @@ def main() -> int:
             "bg_events": event_ir["bg_events"]["count"],
         })
 
-    expected_path = [
-        "RC_DELIVERY_HUB",
-        "RC_CAGLIARI_MARINA",
-        "RC_PORT_CONNECTION",
-        "RC_CASTELLO_ASCENT",
-        "RC_DEPLOY_DISTRICT",
-        "RC_DEPLOY_ROOM",
-    ]
+    expected_path = [item[0] for item in MAPS]
     if [item["map"] for item in compiled] != expected_path:
         raise ValueError("Chapter 1 map order changed unexpectedly")
+
+    missing_progression = [edge for edge in EXPECTED_PROGRESSION if edge not in progression_edges]
+    if missing_progression:
+        raise ValueError(f"Chapter 1 progression edge(s) missing: {missing_progression}")
+
+    reachable = {"RC_DELIVERY_HUB"}
+    changed = True
+    while changed:
+        changed = False
+        for source, target in progression_edges:
+            if source in reachable and target not in reachable:
+                reachable.add(target)
+                changed = True
+    unreachable = set(expected_path) - reachable
+    if unreachable:
+        raise ValueError(f"Chapter 1 map(s) unreachable from Delivery Hub: {sorted(unreachable)}")
 
     total_payload = sum(item["payload_bytes"] for item in compiled)
     print("RC_CHAPTER1_PREFLIGHT=PASS")
     print(f"RC_CHAPTER1_MAP_COUNT={len(compiled)}")
     print(f"RC_CHAPTER1_SCRIPT_COUNT={len(all_script_ids)}")
+    print(f"RC_CHAPTER1_PROGRESSION_EDGES={len(progression_edges)}")
     print(f"RC_CHAPTER1_PAYLOAD_BYTES={total_payload}")
     for item in compiled:
-        print(
-            "RC_CHAPTER1_MAP="
-            f"{item['map']}:{item['group']}/{item['num']}:"
-            f"{item['dimensions']['width']}x{item['dimensions']['height']}:"
-            f"{item['payload_bytes']}"
-        )
+        print("RC_CHAPTER1_MAP=" f"{item['map']}:{item['group']}/{item['num']}:" f"{item['dimensions']['width']}x{item['dimensions']['height']}:" f"{item['payload_bytes']}")
     return 0
 
 
