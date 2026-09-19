@@ -85,6 +85,8 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         patched = build_patched_fixture(patcher)
         for text in (
             "Welcome to Release Candidate!",
+            "YOUR ID?",
+            "TEAMMATE ID?",
             "CAGLIARI\nFirst sprint starts here!",
             "Delivery is incredible!",
             "We can now track every task",
