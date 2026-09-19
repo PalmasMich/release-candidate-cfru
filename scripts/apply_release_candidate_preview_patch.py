@@ -59,6 +59,8 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("He's been your rival since you both"), encode_text("He's tracked your KPI since day one")),
     (encode_text("were babies."), encode_text("onboarding.")),
     (encode_text("as the POKéMON PROFESSOR."), encode_text("on this project.")),
+    (encode_text("YOUR NAME?"), encode_text("YOUR ID?")),
+    (encode_text("RIVAL's NAME?"), encode_text("TEAMMATE ID?")),
     (encode_text("There are three POKéMON here."), encode_text("Three resources are ready.")),
     (encode_text("You can have one.\nGo on, choose!"), encode_text("Pick one now.\nFirst task starts!")),
     (encode_text("OAK: Now, {PLAYER}."), encode_text("LEAD: Hi, {PLAYER}.")),
