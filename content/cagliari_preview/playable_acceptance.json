@@ -34,7 +34,7 @@
       "checks": [
         "Rival dialogue explicitly references KPI/velocity",
         "Win and loss text use corporate/KPI flavor",
-        "Rival party resolves to an original RC starter when the legacy party signature is available"
+        "Rival party is fail-closed and must resolve to an original RC starter before a preview build can succeed"
       ]
     },
     {
