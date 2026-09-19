@@ -46,17 +46,16 @@ class ThickCagliariPreviewContractTest(unittest.TestCase):
         replacements = {new for _, new in p.VISIBLE_TEXT_REPLACEMENTS}
         self.assertIn(p.encode_text("KPI check: show velocity!"), replacements)
         self.assertIn(p.encode_text("KPI is GREEN!"), replacements)
-        self.assertEqual(
+
+        prefix = b"fixture:"
+        patched, applied = p.patch_oak_lab_rival_parties(bytearray(prefix + p.OAK_LAB_RIVAL_PARTIES_SIGNATURE))
+        self.assertTrue(applied)
+        base = len(prefix)
+        for offset, species in zip(
+            p.RIVAL_PARTY_SPECIES_OFFSETS,
             (p.FROBYTE_SPECIES_ID, p.TARTREK_SPECIES_ID, p.EMBERFOX_SPECIES_ID),
-            tuple(
-                int.from_bytes(p.OAK_LAB_RIVAL_PARTIES_SIGNATURE[offset:offset + 2], "little")
-                if False else species
-                for offset, species in zip(
-                    p.RIVAL_PARTY_SPECIES_OFFSETS,
-                    (p.FROBYTE_SPECIES_ID, p.TARTREK_SPECIES_ID, p.EMBERFOX_SPECIES_ID),
-                )
-            ),
-        )
+        ):
+            self.assertEqual(patched[base + offset:base + offset + 2], species.to_bytes(2, "little"))
 
     def test_first_outdoor_area_contains_custom_mistrillo_encounter(self):
         p = load_patcher()
