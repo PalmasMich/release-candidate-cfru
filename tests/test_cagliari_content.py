@@ -142,6 +142,18 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertIn(trainer["outro_dialogue"], dialogue_ids)
         self.assertTrue(trainer["party"])
 
+    def test_delivery_hub_first_entry_runs_custom_arrival_once(self):
+        hub_map = json.loads((CONTENT / "map_specs" / "RC_DELIVERY_HUB.json").read_text(encoding="utf-8"))
+        hub_scripts = json.loads((CONTENT / "script_specs" / "RC_DELIVERY_HUB.json").read_text(encoding="utf-8"))
+        coord = {item["id"]: item for item in hub_map.get("coord_events", [])}
+        scripts = {item["id"]: item for item in hub_scripts["scripts"]}
+        self.assertIn("RC_COORD_HUB_ARRIVAL", coord)
+        self.assertEqual(coord["RC_COORD_HUB_ARRIVAL"]["script"], "RC_SCRIPT_HUB_ARRIVAL")
+        ops = scripts["RC_SCRIPT_HUB_ARRIVAL"]["ops"]
+        self.assertIn({"op": "checkflag", "flag": "RC_FLAG_ARRIVAL_DONE"}, ops)
+        self.assertIn({"op": "msgbox", "dialogue": "RC_DIALOGUE_OPENING", "type": 4}, ops)
+        self.assertIn({"op": "setflag", "flag": "RC_FLAG_ARRIVAL_DONE"}, ops)
+
     def test_preview_story_binds_wild_trainer_and_deploy_teaser(self):
         events = {item["id"]: item for item in load("events.yml")["flow"]}
         self.assertEqual(
