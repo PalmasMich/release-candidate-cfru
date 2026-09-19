@@ -148,5 +148,40 @@
       "implementation_status": "custom_deploy_room_pending_smoke",
       "dialogue": "RC_DIALOGUE_DEPLOY_COMPLETE"
     }
+  ],
+  "optional_flow": [
+    {
+      "id": "RC_OPTIONAL_MARINA_BUG_HUNT",
+      "map": "RC_CAGLIARI_MARINA",
+      "sets": [
+        "RC_FLAG_MARINA_BUG_REPORT_DONE"
+      ],
+      "available_after": [
+        "RC_FLAG_RIVAL_INTRO_DONE"
+      ],
+      "blocks_main_story": false
+    },
+    {
+      "id": "RC_OPTIONAL_RAMEN_STOP",
+      "map": "RC_CAGLIARI_MARINA",
+      "sets": [
+        "RC_FLAG_RAMEN_STOP_VISITED"
+      ],
+      "available_after": [
+        "RC_FLAG_RIVAL_INTRO_DONE"
+      ],
+      "blocks_main_story": false
+    },
+    {
+      "id": "RC_OPTIONAL_CASTELLO_VIEWPOINT",
+      "map": "RC_CASTELLO_ASCENT",
+      "sets": [
+        "RC_FLAG_CASTELLO_VIEWPOINT_SEEN"
+      ],
+      "available_after": [
+        "RC_FLAG_CASTELLO_UNLOCKED"
+      ],
+      "blocks_main_story": false
+    }
   ]
 }
