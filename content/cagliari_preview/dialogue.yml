@@ -13,9 +13,10 @@
       "id": "RC_DIALOGUE_PLAYER_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Prima cosa: come ti chiami?",
-        "Mi serve per aprirti l'accesso al progetto.",
-        "Perfetto. Da questo momento sei ufficialmente onboardato."
+        "Prima di aprirti gli accessi, devo creare il tuo badge.",
+        "Come vuoi comparire nel workspace?",
+        "Perfetto. Badge creato.",
+        "Accessi quasi pronti. Quasi."
       ]
     },
     {
