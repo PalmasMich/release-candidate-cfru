@@ -193,6 +193,10 @@
 #define FLAG_0x0B9               0x0B9
 
 #define FLAG_0x0BA               0x0BA
+#define RC_FLAG_MARINA_BUG_REPORT_DONE 0x0BA
+#define RC_FLAG_RAMEN_STOP_VISITED     0x0BB
+#define RC_FLAG_CASTELLO_VIEWPOINT_SEEN 0x0BC
+
 #define FLAG_0x0BB               0x0BB
 #define FLAG_0x0BC               0x0BC
 #define FLAG_0x0BD               0x0BD
