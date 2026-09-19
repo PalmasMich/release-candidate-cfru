@@ -117,6 +117,32 @@ class CagliariPreviewContentTest(unittest.TestCase):
         for term in forbidden:
             self.assertNotIn(term, text.upper())
 
+    def test_optional_chapter_activities_are_non_blocking_and_stateful(self):
+        events = load("events.yml")
+        optional = {item["id"]: item for item in events.get("optional_flow", [])}
+        self.assertEqual(set(optional), {
+            "RC_OPTIONAL_MARINA_BUG_HUNT",
+            "RC_OPTIONAL_RAMEN_STOP",
+            "RC_OPTIONAL_CASTELLO_VIEWPOINT",
+        })
+        for item in optional.values():
+            self.assertFalse(item["blocks_main_story"])
+            self.assertTrue(item["sets"])
+
+        flags = load("flags.json")["flags"]
+        self.assertEqual(flags["RC_FLAG_MARINA_BUG_REPORT_DONE"], "0x0BA")
+        self.assertEqual(flags["RC_FLAG_RAMEN_STOP_VISITED"], "0x0BB")
+        self.assertEqual(flags["RC_FLAG_CASTELLO_VIEWPOINT_SEEN"], "0x0BC")
+
+    def test_optional_exploration_dialogues_are_wired_to_custom_maps(self):
+        marina = json.loads((CONTENT / "map_specs" / "RC_CAGLIARI_MARINA.json").read_text(encoding="utf-8"))
+        castello = json.loads((CONTENT / "map_specs" / "RC_CASTELLO_ASCENT.json").read_text(encoding="utf-8"))
+        marina_scripts = {item["script"] for item in marina.get("interactions", [])}
+        castello_scripts = {item["script"] for item in castello.get("interactions", [])}
+        self.assertIn("RC_SCRIPT_MARINA_BUG_TERMINAL", marina_scripts)
+        self.assertIn("RC_SCRIPT_RAMEN_STOP", marina_scripts)
+        self.assertIn("RC_SCRIPT_CASTELLO_VIEWPOINT", castello_scripts)
+
     def test_original_wild_species_is_in_encounters(self):
         encounters = load("encounters.yml")
         species = {
