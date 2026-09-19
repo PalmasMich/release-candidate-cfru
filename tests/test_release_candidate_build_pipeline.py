@@ -43,7 +43,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_dpe_sync_targets_preview_branch(self):
         self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
 
-    def test_rc_learnset_pointer_overlay_activates_tartrek(self):
+    def test_rc_learnset_pointer_overlay_activates_all_preview_species(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as tmp:
             root, _ = make_fake_workspace(tmp)
@@ -52,7 +52,14 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
             returned = builder.activate_rc_learnset_pointers(root)
             self.assertEqual(returned, original)
             text = table.read_text(encoding="utf-8")
-            self.assertIn("*/\n\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n\t[SPECIES_RC_CAGLIARI_WILD_01]", text)
+            active_tail = text.split("*/", 1)[1]
+            for pointer in (
+                "[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset",
+                "[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset",
+                "[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset",
+                "[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset",
+            ):
+                self.assertEqual(active_tail.count(pointer), 1)
 
     def test_dpe_preview_symbol_gate_requires_all_rc_assets(self):
         builder = load_builder()
@@ -86,8 +93,9 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         def fake_run(label, cwd):
             if label == "DPE": (cwd / "test.gba").write_bytes(b"dpe-expanded")
             else:
-                active = (cwd / builder.RC_LEARNSET_TABLE).read_text(encoding="utf-8")
-                self.assertIn("*/\n\t[SPECIES_RC_TURTLE_01]", active)
+                active = (cwd / builder.RC_LEARNSET_TABLE).read_text(encoding="utf-8").split("*/", 1)[1]
+                for pointer in ("SPECIES_RC_TURTLE_01", "SPECIES_RC_CAGLIARI_WILD_01", "SPECIES_RC_FROG_01", "SPECIES_RC_FIREFOX_01"):
+                    self.assertIn(pointer, active)
                 (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
                 if fail_cfru: raise RuntimeError("forced CFRU failure")
         def patch(source, destination): destination.write_bytes(source.read_bytes() + b"-preview")
@@ -119,34 +127,17 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
             output = root / "release_candidate_test.gba"
             order = []
 
-            def preflight():
-                order.append("preflight")
-
+            def preflight(): order.append("preflight")
             def fake_run(label, cwd):
                 order.append(label)
-                if label == "DPE":
-                    (cwd / "test.gba").write_bytes(b"dpe-expanded")
-                else:
-                    (cwd / "test.gba").write_bytes(b"dpe-plus-cfru")
+                (cwd / "test.gba").write_bytes(b"dpe-expanded" if label == "DPE" else b"dpe-plus-cfru")
 
-            builder.run_pipeline(
-                cfru_root=root,
-                dpe_root=dpe,
-                output_path=output,
-                run_preflight=preflight,
-                run_build=fake_run,
-                verify_rom=lambda _p: "test",
-                sync_dpe=lambda _p: None,
-                verify_dpe_symbols=lambda _p: None,
-                apply_preview_patch=lambda source, destination: destination.write_bytes(
-                    source.read_bytes() + b"-preview"
-                ),
-                discover_port_link=lambda _p: 2,
-                apply_port_link_trainer=lambda _s, _d: 1,
-                prepare_delivery_hub_map=lambda _p: 2,
-                apply_custom_maps=lambda _s, _d: 1,
-            )
-
+            builder.run_pipeline(cfru_root=root, dpe_root=dpe, output_path=output,
+                run_preflight=preflight, run_build=fake_run, verify_rom=lambda _p: "test",
+                sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
+                apply_preview_patch=lambda source, destination: destination.write_bytes(source.read_bytes() + b"-preview"),
+                discover_port_link=lambda _p: 2, apply_port_link_trainer=lambda _s, _d: 1,
+                prepare_delivery_hub_map=lambda _p: 2, apply_custom_maps=lambda _s, _d: 1)
             self.assertGreaterEqual(len(order), 3)
             self.assertEqual(order[0:3], ["preflight", "DPE", "CFRU"])
 
