@@ -21,6 +21,72 @@
           "op": "end"
         }
       ]
+    },
+    {
+      "id": "RC_SCRIPT_CASTELLO_STAKEHOLDER",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_CASTELLO_NPC_STAKEHOLDER",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_CASTELLO_ARCHITECT",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_CASTELLO_NPC_ARCHITECT",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_CASTELLO_SENIOR",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_CASTELLO_NPC_SENIOR",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
     }
   ]
 }
