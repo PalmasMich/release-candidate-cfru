@@ -6,29 +6,31 @@ from pathlib import Path
 
 from apply_release_candidate_preview_patch import encode_text
 
+# Keep this list limited to long, intro-specific signatures. Generic location
+# names such as PALLET or VIRIDIAN may legitimately remain in unreachable
+# vanilla data and must not make the Chapter 1 audit noisy.
 FORBIDDEN_OPENING_TEXT = (
     "Welcome to the world of POKéMON!",
     "My name is OAK.",
+    "People affectionately refer to me",
     "This is my grandson.",
     "He's been your rival since you both",
-    "PALLET TOWN",
-    "VIRIDIAN CITY",
+    "Your very own POKéMON legend is about",
+    "A world of dreams and adventures",
+    "with POKéMON awaits! Let's go!",
 )
 
 def audit_rom(path: Path) -> list[str]:
     data = path.read_bytes()
     remaining = []
     for text in FORBIDDEN_OPENING_TEXT:
-        try:
-            encoded = encode_text(text)
-        except KeyError:
-            continue
+        encoded = encode_text(text)
         if encoded in data:
             remaining.append(text)
     return remaining
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Audit Release Candidate ROM for visible stock FireRed opening text.")
+    parser = argparse.ArgumentParser(description="Audit Release Candidate ROM for stock FireRed opening text.")
     parser.add_argument("rom", type=Path)
     args = parser.parse_args()
 
