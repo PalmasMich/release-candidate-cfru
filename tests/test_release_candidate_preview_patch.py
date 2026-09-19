@@ -94,14 +94,15 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         ):
             self.assertIn(patcher.encode_text(text), patched)
 
-    def test_route1_wild_table_matches_preview_distribution(self):
+    def test_route1_wild_table_matches_preview_distribution_and_levels(self):
         patcher = load_patcher()
         payload = bytearray(b"prefix" + patcher.ROUTE1_WILD_SIGNATURE + b"suffix")
         patched = patcher.patch_route1_wild_encounters(payload)
         base = len(b"prefix")
-        for record, species in enumerate(patcher.ROUTE1_PREVIEW_SPECIES):
-            species_pos = base + (record * 4) + 2
-            self.assertEqual(patched[species_pos:species_pos + 2], species.to_bytes(2, "little"))
+        for record, (species, levels) in enumerate(zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.ROUTE1_PREVIEW_LEVELS)):
+            record_pos = base + (record * 4)
+            self.assertEqual(patched[record_pos:record_pos + 2], bytes(levels))
+            self.assertEqual(patched[record_pos + 2:record_pos + 4], species.to_bytes(2, "little"))
         weighted = {}
         for species, weight in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.GRASS_SLOT_WEIGHTS):
             weighted[species] = weighted.get(species, 0) + weight
@@ -109,6 +110,13 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         self.assertEqual(weighted[patcher.MISTRILLO_SPECIES_ID], 60)
         self.assertEqual(weighted[patcher.WINGULL_SPECIES_ID], 25)
         self.assertEqual(weighted[patcher.MEOWTH_SPECIES_ID], 15)
+        level_ranges = {}
+        for species, (min_level, max_level) in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.ROUTE1_PREVIEW_LEVELS):
+            levels = level_ranges.setdefault(species, [])
+            levels.extend((min_level, max_level))
+        self.assertEqual((min(level_ranges[patcher.MISTRILLO_SPECIES_ID]), max(level_ranges[patcher.MISTRILLO_SPECIES_ID])), (3, 5))
+        self.assertEqual((min(level_ranges[patcher.WINGULL_SPECIES_ID]), max(level_ranges[patcher.WINGULL_SPECIES_ID])), (3, 4))
+        self.assertEqual((min(level_ranges[patcher.MEOWTH_SPECIES_ID]), max(level_ranges[patcher.MEOWTH_SPECIES_ID])), (3, 4))
 
     def test_validator_accepts_complete_playable_contract(self):
         patcher = load_patcher()
@@ -136,8 +144,10 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)
         expected = bytearray(patcher.ROUTE1_WILD_SIGNATURE)
-        for record, species in enumerate(patcher.ROUTE1_PREVIEW_SPECIES):
-            expected[record * 4 + 2:record * 4 + 4] = species.to_bytes(2, "little")
+        for record, (species, levels) in enumerate(zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.ROUTE1_PREVIEW_LEVELS)):
+            record_pos = record * 4
+            expected[record_pos:record_pos + 2] = bytes(levels)
+            expected[record_pos + 2:record_pos + 4] = species.to_bytes(2, "little")
         pos = patched.find(expected)
         patched[pos + 2:pos + 4] = b"\x10\x00"
         with self.assertRaisesRegex(RuntimeError, "Port Link custom encounter"):
