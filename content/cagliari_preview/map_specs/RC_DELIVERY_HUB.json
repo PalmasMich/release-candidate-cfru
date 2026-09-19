@@ -233,5 +233,15 @@
       "oak_lab_reskin"
     ]
   },
-  "metatile_profile": "RC_DELIVERY_HUB_HOUSE2_BOOTSTRAP"
+  "metatile_profile": "RC_DELIVERY_HUB_HOUSE2_BOOTSTRAP",
+  "coord_events": [
+    {
+      "id": "RC_COORD_HUB_ARRIVAL",
+      "anchor": "player_spawn",
+      "elevation": 3,
+      "var_id": "0x4001",
+      "var_value": 0,
+      "script": "RC_SCRIPT_HUB_ARRIVAL"
+    }
+  ]
 }
