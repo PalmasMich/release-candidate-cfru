@@ -27,9 +27,6 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
 GRASS_SLOT_WEIGHTS = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)
-# The two 20% slots plus the first two 10% slots guarantee that the first
-# Port Link field test is overwhelmingly likely to showcase the custom mon,
-# while preserving a small coastal mix for repeat encounters.
 ROUTE1_PREVIEW_SPECIES = (
     MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
     WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
@@ -77,6 +74,19 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("Come on, I'll take you on!"), encode_text("KPI check: show velocity!")),
     (encode_text("{RIVAL}: Yeah!\nAm I great or what?"), encode_text("{RIVAL}: Yeah!\nKPI is GREEN!")),
     (encode_text("PALLET TOWN\nShades of your journey await!"), encode_text("CAGLIARI\nFirst sprint starts here!")),
+    (encode_text("Technology is incredible!"), encode_text("Delivery is incredible!")),
+    (encode_text("You can now store and recall items"), encode_text("We can now track every task")),
+    (encode_text("and POKéMON as data via PC."), encode_text("and blocker on one dashboard.")),
+    (encode_text("I'm raising POKéMON, too."), encode_text("I'm on this project, too.")),
+    (encode_text("When they get strong, they can\nprotect me."), encode_text("When scope changes, I just\nupdate the estimate.")),
+    (encode_text("OAK POKéMON RESEARCH LAB"), encode_text("DELIVERY HUB - CAGLIARI")),
+    (encode_text("Those are POKé BALLS.\nThey contain POKéMON!"), encode_text("Those are team slots.\nResources inside!")),
+    (encode_text("Press START to open the MENU!"), encode_text("Press START for your dashboard!")),
+    (encode_text("The SAVE option is on the MENU.\nUse it regularly."), encode_text("Save before each release.\nRollback matters.")),
+    (encode_text("OAK: If a wild POKéMON appears,"), encode_text("LEAD: Field test starts outside.")),
+    (encode_text("your POKéMON can battle it."), encode_text("Use your partner on Port Link.")),
+    (encode_text("With it at your side, you should be"), encode_text("Close one check, then report")),
+    (encode_text("able to reach the next town."), encode_text("at Marina Porto.")),
     (encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"), encode_text("PORT LINK\nCAGLIARI - MARINA PORTO")),
     (encode_text("Hi!\nI work at a POKéMON MART."), encode_text("Hi!\nI work on Delivery.")),
     (encode_text("It's part of a convenient chain\nselling all sorts of items."), encode_text("I'm covering Port Link today.\nScope says five minutes.")),
@@ -270,7 +280,7 @@ def patch_rom(source: Path, output: Path) -> Path:
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
         raise RuntimeError("Preview patch changed ROM size unexpectedly.")
-    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+PORT_LINK_ENCOUNTERS")
+    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_HUB_IDENTITY+KPI_RIVAL+PORT_LINK_ENCOUNTERS")
     print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_OUTPUT={output}")
