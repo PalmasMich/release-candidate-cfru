@@ -38,7 +38,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         self.assertEqual(load_builder().EXPECTED_SHA1, EXPECTED_SHA1)
 
     def test_pipeline_order(self):
-        self.assertEqual(load_builder().PIPELINE, ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
+        self.assertEqual(load_builder().PIPELINE, ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
 
     def test_dpe_sync_targets_preview_branch(self):
         self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
@@ -100,7 +100,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output,
                       run_preflight=lambda: None, run_build=fake_run,
                       verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
-                      apply_preview_patch=patch, discover_port_link=lambda _p: discovery,
+                      apply_preview_patch=patch, audit_opening=lambda _p: None, discover_port_link=lambda _p: discovery,
                       apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub,
                       apply_custom_maps=custom_patch)
         if fail_cfru:
@@ -141,6 +141,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 apply_preview_patch=lambda source, destination: destination.write_bytes(
                     source.read_bytes() + b"-preview"
                 ),
+                audit_opening=lambda _p: None,
                 discover_port_link=lambda _p: 2,
                 apply_port_link_trainer=lambda _s, _d: 1,
                 prepare_delivery_hub_map=lambda _p: 2,
