@@ -65,9 +65,73 @@
     "status_terminal": {
       "x": 9,
       "y": 7
+    },
+    "ops_npc": {
+      "x": 4,
+      "y": 7
+    },
+    "business_npc": {
+      "x": 17,
+      "y": 7
+    },
+    "release_coordinator": {
+      "x": 7,
+      "y": 13
     }
   },
-  "objects": [],
+  "objects": [
+    {
+      "id": "RC_NPC_DEPLOY_OPS",
+      "role": "ambient_npc",
+      "anchor": "ops_npc",
+      "script": "RC_SCRIPT_DEPLOY_OPS",
+      "local_id": 1,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_RIGHT",
+        "id": 10
+      }
+    },
+    {
+      "id": "RC_NPC_DEPLOY_BUSINESS",
+      "role": "ambient_npc",
+      "anchor": "business_npc",
+      "script": "RC_SCRIPT_DEPLOY_BUSINESS",
+      "local_id": 2,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_BUSINESSMAN",
+        "id": 50,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
+    },
+    {
+      "id": "RC_NPC_DEPLOY_COORDINATOR",
+      "role": "ambient_npc",
+      "anchor": "release_coordinator",
+      "script": "RC_SCRIPT_DEPLOY_COORDINATOR",
+      "local_id": 3,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WOMAN_2",
+        "id": 18,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_UP",
+        "id": 7
+      }
+    }
+  ],
   "interactions": [
     {
       "id": "RC_INTERACT_RELEASE_GATE",
