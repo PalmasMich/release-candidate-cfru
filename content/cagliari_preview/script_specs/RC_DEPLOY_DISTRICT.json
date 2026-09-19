@@ -82,6 +82,72 @@
           "op": "end"
         }
       ]
+    },
+    {
+      "id": "RC_SCRIPT_DEPLOY_OPS",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DEPLOY_NPC_OPS",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_DEPLOY_BUSINESS",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DEPLOY_NPC_BUSINESS",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_DEPLOY_COORDINATOR",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DEPLOY_NPC_RELEASE",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
     }
   ]
 }
