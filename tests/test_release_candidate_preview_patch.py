@@ -154,6 +154,25 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Port Link custom encounter"):
             patcher.validate_preview_patch(patched)
 
+    def test_opening_audit_signatures_are_removed_by_preview_patch(self):
+        patcher = load_patcher()
+        fixture = build_preview_fixture(patcher)
+        patched = build_patched_fixture(patcher)
+        forbidden = [
+            "Welcome to the world of POKéMON!",
+            "My name is OAK.",
+            "People affectionately refer to me",
+            "This is my grandson.",
+            "He's been your rival since you both",
+            "Your very own POKéMON legend is about",
+            "A world of dreams and adventures",
+            "with POKéMON awaits! Let's go!",
+        ]
+        for text in forbidden:
+            encoded = patcher.encode_text(text)
+            self.assertIn(encoded, fixture)
+            self.assertNotIn(encoded, patched)
+
     def test_file_patch_preserves_input_and_writes_complete_preview(self):
         patcher = load_patcher()
         with tempfile.TemporaryDirectory() as tmp:
