@@ -87,6 +87,14 @@
     "tester_npc": {
       "x": 7,
       "y": 11
+    },
+    "bug_terminal": {
+      "x": 19,
+      "y": 4
+    },
+    "ramen_corner": {
+      "x": 5,
+      "y": 12
     }
   },
   "objects": [
@@ -164,6 +172,26 @@
       "id": "RC_INTERACT_CASTELLO_GATE",
       "anchor": "castello_access",
       "script": "RC_SCRIPT_CASTELLO_GATE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    },
+    {
+      "id": "RC_INTERACT_MARINA_BUG_TERMINAL",
+      "anchor": "bug_terminal",
+      "script": "RC_SCRIPT_MARINA_BUG_TERMINAL",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    },
+    {
+      "id": "RC_INTERACT_RAMEN_STOP",
+      "anchor": "ramen_corner",
+      "script": "RC_SCRIPT_RAMEN_STOP",
       "elevation": 3,
       "bg_kind": {
         "symbol": "BG_EVENT_PLAYER_FACING_ANY",
