@@ -87,7 +87,7 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
             "Welcome to Release Candidate!",
             "Three resources are ready.",
             "KPI check: show velocity!",
-            "Dashboard says GREEN!",
+            "KPI is GREEN!",
             "PORT LINK\nCAGLIARI - MARINA PORTO",
             "I'm covering Port Link today.\nScope says five minutes.",
             "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE",
