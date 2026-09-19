@@ -80,6 +80,20 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         self.assertIn(patcher.MAP_NAME_REPLACEMENT[1], patched)
         self.assertIn(patcher.LAB_SIGN_REPLACEMENT[1], patched)
 
+    def test_thick_preview_exposes_cagliari_corporate_identity(self):
+        patcher = load_patcher()
+        patched = build_patched_fixture(patcher)
+        for text in (
+            "Welcome to Release Candidate!",
+            "Three resources are ready.",
+            "KPI check: show velocity!",
+            "Dashboard says GREEN!",
+            "PORT LINK\nCAGLIARI - MARINA PORTO",
+            "I'm covering Port Link today.\nScope says five minutes.",
+            "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE",
+        ):
+            self.assertIn(patcher.encode_text(text), patched)
+
     def test_route1_wild_table_matches_preview_distribution(self):
         patcher = load_patcher()
         payload = bytearray(b"prefix" + patcher.ROUTE1_WILD_SIGNATURE + b"suffix")
