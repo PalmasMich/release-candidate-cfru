@@ -26,10 +26,6 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "02 02 10 00 02 02 13 00 03 03 10 00 03 03 13 00 "
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
-# FireRed grass slots carry weights 20/20/10/10/10/10/5/5/4/4/1/1.
-# Assigning the first four slots to Mistrillo, the next three to Wingull and
-# the remaining five to Meowth therefore yields the manifest's exact 60/25/15
-# encounter probability, even though the species occupy 4/3/5 physical slots.
 GRASS_SLOT_WEIGHTS = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)
 ROUTE1_PREVIEW_SPECIES = (
     MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
@@ -58,6 +54,10 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("He's been your rival since you both"), encode_text("He's tracked your KPI since day one")),
     (encode_text("were babies."), encode_text("onboarding.")),
     (encode_text("as the POKéMON PROFESSOR."), encode_text("on this project.")),
+    (encode_text("There are three POKéMON here."), encode_text("Three resources are ready.")),
+    (encode_text("You can have one.\nGo on, choose!"), encode_text("Pick one now.\nFirst task starts!")),
+    (encode_text("OAK: Now, {PLAYER}."), encode_text("LEAD: Now, {PLAYER}.")),
+    (encode_text("Which one will you choose for\nyourself?"), encode_text("Which resource joins your\nfirst sprint?")),
     (encode_text("I see! BULBASAUR is your choice."), encode_text("TARTREK is your new partner!")),
     (encode_text("Hm! SQUIRTLE is your choice."), encode_text("FROBYTE is your new partner!")),
     (encode_text("Ah! CHARMANDER is your choice."), encode_text("EMBERFOX is your new partner!")),
@@ -65,14 +65,17 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("the GRASS POKéMON BULBASAUR?"), encode_text("the GRASS/GROUND TARTREK?")),
     (encode_text("the WATER POKéMON SQUIRTLE?"), encode_text("the WATER/ELECTRIC FROBYTE?")),
     (encode_text("FIRE POKéMON CHARMANDER?"), encode_text("FIRE/DARK EMBERFOX?")),
+    (encode_text("{RIVAL}: My POKéMON looks a lot\ntougher than yours."), encode_text("{RIVAL}: My KPI already looks\nbetter than yours.")),
     (encode_text("Come on, I'll take you on!"), encode_text("KPI check: show velocity!")),
+    (encode_text("{RIVAL}: Yeah!\nAm I great or what?"), encode_text("{RIVAL}: Yeah!\nDashboard says GREEN!")),
     (encode_text("PALLET TOWN\nShades of your journey await!"), encode_text("CAGLIARI\nFirst sprint starts here!")),
     (encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"), encode_text("PORT LINK\nCAGLIARI - MARINA PORTO")),
-    (encode_text("There are three POKéMON here."), encode_text("Three resources are ready.")),
-    (encode_text("You can have one.\nGo on, choose!"), encode_text("Pick one now.\nFirst task starts!")),
     (encode_text("Hi!\nI work at a POKéMON MART."), encode_text("Hi!\nI work on Delivery.")),
+    (encode_text("It's part of a convenient chain\nselling all sorts of items."), encode_text("I'm covering Port Link today.\nScope says five minutes.")),
     (encode_text("Please, visit us in VIRIDIAN CITY."), encode_text("Please, report at MARINA PORTO.")),
     (encode_text("I know, I'll give you a sample.\nHere you go!"), encode_text("Quick handoff: take this.\nUse it well!")),
+    (encode_text("Please come see us if you need\nPOKé BALLS for catching POKéMON."), encode_text("Ping Delivery if you need\nmore field-test supplies.")),
+    (encode_text("You can get back to PALLET TOWN\nquicker that way."), encode_text("You can get back to CAGLIARI\nquicker that way.")),
     (encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"), encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE")),
 )
 MAP_NAME_REPLACEMENT = (
@@ -249,16 +252,16 @@ def patch_rom(source: Path, output: Path) -> Path:
     original = source.read_bytes()
     patched = patch_preview_starters(bytearray(original))
     patched, rival_party_patched = patch_oak_lab_rival_parties(patched)
-    patched, applied_texts, map_names_applied, lab_label_applied = patch_visible_preview_text(patched)
+    patched, applied_texts, city_applied, lab_applied = patch_visible_preview_text(patched)
     patched = patch_route1_wild_encounters(patched)
-    validate_preview_patch(patched, rival_party_required=rival_party_patched, applied_texts=applied_texts, map_names_required=map_names_applied, lab_label_required=lab_label_applied)
+    validate_preview_patch(patched, rival_party_required=rival_party_patched, applied_texts=applied_texts, map_names_required=city_applied, lab_label_required=lab_applied)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
         raise RuntimeError("Preview patch changed ROM size unexpectedly.")
-    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+PORT_LINK")
+    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+MISTRILLO_ROUTE1")
     print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}")
-    print("RC_PREVIEW_PORT_LINK=MISTRILLO_60+WINGULL_25+MEOWTH_15")
+    print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_OUTPUT={output}")
     return output
 
