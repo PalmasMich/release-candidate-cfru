@@ -63,35 +63,49 @@ def verify_dpe_tartrek_symbols(dpe_root: Path) -> None:
 
 
 def activate_rc_learnset_pointers(cfru_root: Path) -> bytes:
-    """Repair the preview-only pointer tail in the private build workspace.
+    """Activate all RC learnset pointers transactionally in the private build workspace.
 
-    A previous source edit left Tartrek's pointer immediately before the end of
-    an upstream block comment. Rather than rewriting this very large generated
-    CFRU table in Git, the build makes the one-line correction transactionally
-    and restores the checkout afterward.
+    The upstream CFRU pointer table closes immediately before the RC extension.
+    Keep the repository source easy to rebase, but make the private build use one
+    coherent table containing Tartrek, Frobyte, Emberfox and Mistrillo. The
+    caller restores the original file in its finally block.
     """
     table = Path(cfru_root) / RC_LEARNSET_TABLE
     original = table.read_bytes()
     text = original.decode("utf-8")
-    active = "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n\t[SPECIES_RC_CAGLIARI_WILD_01]"
-    if active in text:
+    required = (
+        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,",
+        "\t[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,",
+        "\t[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,",
+        "\t[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,",
+    )
+    active_tail = "\n".join(required) + "\n};\n\n#endif"
+    if active_tail in text:
         return original
-    anchor = "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n};\n*/\n\t[SPECIES_RC_CAGLIARI_WILD_01]"
-    replacement = "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n};\n*/\n\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n\t[SPECIES_RC_CAGLIARI_WILD_01]"
-    if anchor not in text:
+
+    legacy_tail = (
+        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n"
+        "};\n*/\n"
+        "\t[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,\n"
+        "\t[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,\n"
+        "\t[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,\n"
+        "};\n\n#endif"
+    )
+    replacement = (
+        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n"
+        "};\n*/\n"
+        + active_tail
+    )
+    if legacy_tail not in text:
         raise RuntimeError("Could not locate the RC learnset pointer tail; refusing an ambiguous CFRU build.")
-    table.write_text(text.replace(anchor, replacement, 1), encoding="utf-8")
-    print("CFRU_RC_LEARNSET_POINTERS=ACTIVE")
+    table.write_text(text.replace(legacy_tail, replacement, 1), encoding="utf-8")
+    print("CFRU_RC_LEARNSET_POINTERS=ACTIVE:4")
     return original
 
 
 def default_run_preflight() -> None:
     print("\n== Chapter 1 source preflight ==")
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "preflight_chapter1.py")],
-        cwd=ROOT,
-        check=True,
-    )
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "preflight_chapter1.py")], cwd=ROOT, check=True)
 
 
 def default_run_build(label: str, cwd: Path) -> None:
@@ -121,11 +135,7 @@ def default_prepare_delivery_hub_map(output_path: Path) -> int:
 
 def default_apply_custom_maps(source: Path, output: Path) -> int:
     print("\n== Release Candidate custom maps patch ==")
-    return subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "patch_rc_custom_maps.py"), str(source), str(output)],
-        cwd=ROOT,
-        check=False,
-    ).returncode
+    return subprocess.run([sys.executable, str(ROOT / "scripts" / "patch_rc_custom_maps.py"), str(source), str(output)], cwd=ROOT, check=False).returncode
 
 
 def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
@@ -141,27 +151,19 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
     dpe_output, cfru_output = dpe_root / "test.gba", cfru_root / "test.gba"
     learnset_table = cfru_root / RC_LEARNSET_TABLE
     verify_rom(cfru_rom)
-    if not (dpe_root / "scripts" / "make.py").is_file():
-        raise FileNotFoundError(f"DPE build entrypoint not found under {dpe_root}")
-    if not (cfru_root / "scripts" / "make.py").is_file():
-        raise FileNotFoundError(f"CFRU build entrypoint not found under {cfru_root}")
-    original_rom = cfru_rom.read_bytes()
-    original_learnsets = learnset_table.read_bytes()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    sync_dpe(dpe_root)
+    if not (dpe_root / "scripts" / "make.py").is_file(): raise FileNotFoundError(f"DPE build entrypoint not found under {dpe_root}")
+    if not (cfru_root / "scripts" / "make.py").is_file(): raise FileNotFoundError(f"CFRU build entrypoint not found under {cfru_root}")
+    original_rom = cfru_rom.read_bytes(); original_learnsets = learnset_table.read_bytes()
+    output_path.parent.mkdir(parents=True, exist_ok=True); sync_dpe(dpe_root)
     try:
         for path in (dpe_rom, dpe_output, cfru_output):
             if path.exists(): path.unlink()
-        shutil.copy2(cfru_rom, dpe_rom)
-        pristine_hash = sha1_file(dpe_rom)
-        run_build("DPE", dpe_root)
-        verify_dpe_symbols(dpe_root)
+        shutil.copy2(cfru_rom, dpe_rom); pristine_hash = sha1_file(dpe_rom)
+        run_build("DPE", dpe_root); verify_dpe_symbols(dpe_root)
         if not dpe_output.exists(): raise RuntimeError("DPE build finished without test.gba")
         dpe_hash = sha1_file(dpe_output)
         if dpe_hash == pristine_hash: raise RuntimeError("DPE test.gba is identical to the pristine input")
-        shutil.copy2(dpe_output, cfru_rom)
-        activate_rc_learnset_pointers(cfru_root)
-        run_build("CFRU", cfru_root)
+        shutil.copy2(dpe_output, cfru_rom); activate_rc_learnset_pointers(cfru_root); run_build("CFRU", cfru_root)
         if not cfru_output.exists(): raise RuntimeError("CFRU build finished without test.gba")
         cfru_hash = sha1_file(cfru_output)
         if cfru_hash == dpe_hash: raise RuntimeError("CFRU test.gba is identical to the DPE input")
@@ -172,44 +174,32 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         if output_hash == cfru_hash: raise RuntimeError("Preview output is identical to the CFRU input")
         discovery_status = discover_port_link(output_path)
         if discovery_status == 0:
-            print("PORT_LINK_DISCOVERY_STATUS=READY")
-            trainer_output = output_path.with_name(output_path.stem + "_trainer" + output_path.suffix)
+            print("PORT_LINK_DISCOVERY_STATUS=READY"); trainer_output = output_path.with_name(output_path.stem + "_trainer" + output_path.suffix)
             if trainer_output.exists(): trainer_output.unlink()
             try:
                 trainer_patch_status = apply_port_link_trainer(output_path, trainer_output)
-                if trainer_patch_status == 0 and trainer_output.exists():
-                    shutil.move(str(trainer_output), str(output_path)); output_hash = sha1_file(output_path)
-                    print("PORT_LINK_TRAINER_STATUS=APPLIED")
+                if trainer_patch_status == 0 and trainer_output.exists(): shutil.move(str(trainer_output), str(output_path)); output_hash = sha1_file(output_path); print("PORT_LINK_TRAINER_STATUS=APPLIED")
                 else: print(f"PORT_LINK_TRAINER_STATUS=PENDING:{trainer_patch_status}")
             finally:
                 if trainer_output.exists(): trainer_output.unlink()
         else:
-            print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}")
-            print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
+            print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}"); print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
         delivery_hub_status = prepare_delivery_hub_map(output_path)
         print("DELIVERY_HUB_MAP_PLAN_STATUS=READY" if delivery_hub_status == 0 else f"DELIVERY_HUB_MAP_PLAN_STATUS=PENDING:{delivery_hub_status}")
-
         if delivery_hub_status == 0:
             maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
             if maps_output.exists(): maps_output.unlink()
             try:
                 custom_maps_status = apply_custom_maps(output_path, maps_output)
-                if custom_maps_status == 0 and maps_output.exists():
-                    shutil.move(str(maps_output), str(output_path))
-                    output_hash = sha1_file(output_path)
-                    print("RC_CUSTOM_MAPS_STATUS=APPLIED")
-                else:
-                    print(f"RC_CUSTOM_MAPS_STATUS=PENDING:{custom_maps_status}")
+                if custom_maps_status == 0 and maps_output.exists(): shutil.move(str(maps_output), str(output_path)); output_hash = sha1_file(output_path); print("RC_CUSTOM_MAPS_STATUS=APPLIED")
+                else: print(f"RC_CUSTOM_MAPS_STATUS=PENDING:{custom_maps_status}")
             finally:
                 if maps_output.exists(): maps_output.unlink()
-        else:
-            print("RC_CUSTOM_MAPS_STATUS=PENDING:MAP_PLAN")
-
+        else: print("RC_CUSTOM_MAPS_STATUS=PENDING:MAP_PLAN")
         print(f"\nDPE_SHA1={dpe_hash}\nCFRU_SHA1={cfru_hash}\nOUTPUT={output_path}\nOUTPUT_SHA1={output_hash}")
         return output_path
     finally:
-        cfru_rom.write_bytes(original_rom)
-        learnset_table.write_bytes(original_learnsets)
+        cfru_rom.write_bytes(original_rom); learnset_table.write_bytes(original_learnsets)
         for path in (dpe_rom, dpe_output, cfru_output):
             if path.exists(): path.unlink()
 
@@ -218,18 +208,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build Release Candidate safely in one command: pristine FireRed -> DPE -> CFRU.")
     parser.add_argument("--dpe-path", default=str(ROOT.parent / "release-candidate-dpe"), help="Path to the release-candidate-dpe checkout.")
     parser.add_argument("--output", default=str(ROOT / DEFAULT_OUTPUT_NAME), help="Private output ROM path. *.gba remains git-ignored.")
-    args = parser.parse_args()
-    print("Release Candidate one-command build")
-    print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}")
-    print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH")
-    print(f"BASE_SHA1={EXPECTED_SHA1}")
-    try:
-        run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
-    except (FileNotFoundError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
-        print(f"ERROR: {exc}", file=sys.stderr); return 1
-    print("BUILD_STATUS=SUCCESS\nPristine CFRU BPRE0.gba and generated learnset table restored after build.")
-    return 0
+    args = parser.parse_args(); print("Release Candidate one-command build"); print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}"); print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH"); print(f"BASE_SHA1={EXPECTED_SHA1}")
+    try: run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
+    except (FileNotFoundError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc: print(f"ERROR: {exc}", file=sys.stderr); return 1
+    print("BUILD_STATUS=SUCCESS\nPristine CFRU BPRE0.gba and generated learnset table restored after build."); return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())
