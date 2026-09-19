@@ -1,0 +1,26 @@
+{
+  "map": "RC_CASTELLO_ASCENT",
+  "scripts": [
+    {
+      "id": "RC_SCRIPT_DEPLOY_DISTRICT_GATE",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "warp",
+          "target_map": "RC_DEPLOY_DISTRICT",
+          "warp_id": 255,
+          "x": 11,
+          "y": 13
+        },
+        {
+          "op": "end"
+        }
+      ]
+    }
+  ]
+}

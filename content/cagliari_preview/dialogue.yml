@@ -1,0 +1,187 @@
+{
+  "scenes": [
+    {
+      "id": "RC_DIALOGUE_OPENING",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato.",
+        "Non abbiamo molto tempo per l'onboarding, quindi andiamo al punto."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Queste sono le risorse attualmente disponibili.",
+        "Scegline una per l'assegnazione. Le altre due andranno su attività parallele."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_INTRO",
+      "speaker": "Rivale",
+      "lines": [
+        "Io tengo traccia di tutto: KPI, velocity, story point e tempi di chiusura.",
+        "Non è una gara, ovviamente. Però ho già preparato la classifica."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_INTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Scusa, sei tu la nuova risorsa? Ho una verifica veloce da chiudere.",
+        "Dicono che bastino cinque minuti. Quindi preparati."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Ok, verifica chiusa. La segno completata al primo tentativo.",
+        "Se chiedono, non abbiamo mai avuto un blocker."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_TEASER",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Piccolo aggiornamento: il Deploy è bloccato.",
+        "Dicono che sia una cosa semplice. È sempre così che comincia."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_TARTREK_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Tartrek entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_FROBYTE_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Frobyte entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_EMBERFOX_CONFIRM",
+      "speaker": "System",
+      "lines": [
+        "Emberfox entra nel team.",
+        "Primo task assegnato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_STARTER_ALREADY_ASSIGNED",
+      "speaker": "System",
+      "lines": [
+        "Hai già una risorsa assegnata.",
+        "Cambiare ora richiede una change request."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_BEFORE_STARTER",
+      "speaker": "Rivale",
+      "lines": [
+        "Prima fatti assegnare una risorsa.",
+        "Poi possiamo confrontare la velocity."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RIVAL_REPEAT",
+      "speaker": "Rivale",
+      "lines": [
+        "Sto già aggiornando la dashboard.",
+        "Non è una gara. La classifica però esiste."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Cambio requisiti: il deploy non può più passare da qui.",
+        "Serve una validazione al Castello. Ovviamente era urgente da ieri."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_SCOPE_CHANGE_REPEAT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Il nuovo scope è confermato.",
+        "Vai verso il Castello. Io provo a capire chi l'ha approvato."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_LINK_HINT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Prima chiudi la verifica al Port Link.",
+        "Poi torniamo a parlare del Deploy."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_TRAINER_DEFEAT",
+      "speaker": "Consulente Junior",
+      "lines": [
+        "Ok. Verifica chiusa."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
+      "speaker": "System",
+      "lines": [
+        "Test sul campo: prova il nuovo partner nell'erba.",
+        "Il Port Link è il posto giusto per una verifica rapida."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Accesso al Castello non previsto dallo scope corrente.",
+        "Serve una change request."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_GO_NO_GO_START",
+      "speaker": "System",
+      "lines": [
+        "Go/No-Go avviato.",
+        "Tutti aspettano una decisione che nessuno vuole prendere."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
+      "speaker": "Release Manager",
+      "lines": [
+        "Siamo al Go/No-Go.",
+        "Se vuoi il deploy, dimostra che il pacchetto regge davvero."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT",
+      "speaker": "Release Manager",
+      "lines": [
+        "Ok. Questa passa.",
+        "Segno GO, ma non abituarti."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_COMPLETE",
+      "speaker": "System",
+      "lines": [
+        "DEPLOY 01 COMPLETATO.",
+        "La Release Candidate è passata in produzione."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_DEPLOY_ROOM_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Il Go/No-Go non è ancora iniziato.",
+        "Torna quando tutti avranno deciso di non decidere."
+      ]
+    }
+  ]
+}

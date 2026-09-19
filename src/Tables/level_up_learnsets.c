@@ -18942,6 +18942,38 @@ static const struct LevelUpMove sStunfiskGLevelUpLearnset[] = {
 };		
 */
 
+static const struct LevelUpMove sRCTartrekLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_TACKLE),
+	LEVEL_UP_MOVE( 1, MOVE_WITHDRAW),
+	LEVEL_UP_MOVE( 5, MOVE_VINEWHIP),
+	LEVEL_UP_MOVE( 7, MOVE_MUDSLAP),
+	LEVEL_UP_END,
+};
+
+static const struct LevelUpMove sRCMistrilloLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_GUST),
+	LEVEL_UP_MOVE( 1, MOVE_GROWL),
+	LEVEL_UP_MOVE( 4, MOVE_QUICKATTACK),
+	LEVEL_UP_MOVE( 7, MOVE_SANDATTACK),
+	LEVEL_UP_END,
+};
+
+static const struct LevelUpMove sRCFrobyteLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_POUND),
+	LEVEL_UP_MOVE( 1, MOVE_GROWL),
+	LEVEL_UP_MOVE( 5, MOVE_WATERGUN),
+	LEVEL_UP_MOVE( 7, MOVE_THUNDERSHOCK),
+	LEVEL_UP_END,
+};
+
+static const struct LevelUpMove sRCEmberfoxLevelUpLearnset[] = {
+	LEVEL_UP_MOVE( 1, MOVE_SCRATCH),
+	LEVEL_UP_MOVE( 1, MOVE_TAILWHIP),
+	LEVEL_UP_MOVE( 5, MOVE_EMBER),
+	LEVEL_UP_MOVE( 7, MOVE_BITE),
+	LEVEL_UP_END,
+};
+
 const struct LevelUpMove* const gLevelUpLearnsets[] =
 {
 	[SPECIES_NONE] = sEmptyMoveset,
@@ -20209,8 +20241,12 @@ const struct LevelUpMove* const gLevelUpLearnsets[] =
 	[SPECIES_DURALUDON_GIGA] = sDuraludonLevelUpLearnset,
 	[SPECIES_URSHIFU_SINGLE_GIGA] = sUrshifuLevelUpLearnset,
 	[SPECIES_URSHIFU_RAPID_GIGA] = sUrshifuRapidLevelUpLearnset,
+	[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,
 };
 */
+	[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,
+	[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,
+	[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,
 };
 
 #endif

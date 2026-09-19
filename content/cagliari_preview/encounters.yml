@@ -1,0 +1,14 @@
+{
+  "tables": [
+    {
+      "id": "RC_PORT_CONNECTION_GRASS",
+      "map": "RC_PORT_CONNECTION",
+      "method": "grass",
+      "slots": [
+        {"species": "SPECIES_RC_CAGLIARI_WILD_01", "min_level": 3, "max_level": 5, "weight": 60},
+        {"species": "SPECIES_WINGULL", "min_level": 3, "max_level": 4, "weight": 25},
+        {"species": "SPECIES_MEOWTH", "min_level": 3, "max_level": 4, "weight": 15}
+      ]
+    }
+  ]
+}
