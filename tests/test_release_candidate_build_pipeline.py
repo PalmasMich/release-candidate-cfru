@@ -83,6 +83,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         base = root / "BPRE0.gba"; base.write_bytes(b"pristine")
         output = root / "release_candidate_test.gba"
         original_table = (root / builder.RC_LEARNSET_TABLE).read_bytes()
+        validated_dpe_roots = []
         def fake_run(label, cwd):
             if label == "DPE": (cwd / "test.gba").write_bytes(b"dpe-expanded")
             else:
@@ -100,7 +101,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output,
                       run_preflight=lambda: None, run_build=fake_run,
                       verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None,
-                      validate_starter_runtime=lambda: None, apply_preview_patch=patch, audit_opening=lambda _p: None, discover_port_link=lambda _p: discovery,
+                      validate_starter_runtime=lambda selected: validated_dpe_roots.append(selected), apply_preview_patch=patch, audit_opening=lambda _p: None, discover_port_link=lambda _p: discovery,
                       apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub,
                       apply_custom_maps=custom_patch)
         if fail_cfru:
@@ -109,6 +110,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         self.assertEqual(base.read_bytes(), b"pristine")
         self.assertEqual((root / builder.RC_LEARNSET_TABLE).read_bytes(), original_table)
         self.assertFalse((dpe / "BPRE0.gba").exists())
+        self.assertEqual(validated_dpe_roots, [dpe.resolve()])
         return output
 
     def test_preflight_runs_before_dpe_build(self):
@@ -138,7 +140,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
                 verify_rom=lambda _p: "test",
                 sync_dpe=lambda _p: None,
                 verify_dpe_symbols=lambda _p: None,
-                validate_starter_runtime=lambda: None,
+                validate_starter_runtime=lambda _dpe: None,
                 apply_preview_patch=lambda source, destination: destination.write_bytes(
                     source.read_bytes() + b"-preview"
                 ),

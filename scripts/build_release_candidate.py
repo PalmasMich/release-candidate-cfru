@@ -99,10 +99,10 @@ def default_run_build(label: str, cwd: Path) -> None:
     subprocess.run([sys.executable, "scripts/make.py"], cwd=cwd, check=True)
 
 
-def default_validate_starter_runtime() -> None:
+def default_validate_starter_runtime(dpe_root: Path) -> None:
     print("\n== Release Candidate starter runtime audit ==")
     subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "validate_rc_starter_runtime.py")],
+        [sys.executable, str(ROOT / "scripts" / "validate_rc_starter_runtime.py"), "--dpe-path", str(dpe_root)],
         cwd=ROOT,
         check=True,
     )
@@ -179,7 +179,7 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         if dpe_hash == pristine_hash: raise RuntimeError("DPE test.gba is identical to the pristine input")
         shutil.copy2(dpe_output, cfru_rom)
         activate_rc_learnset_pointers(cfru_root)
-        validate_starter_runtime()
+        validate_starter_runtime(dpe_root)
         run_build("CFRU", cfru_root)
         if not cfru_output.exists(): raise RuntimeError("CFRU build finished without test.gba")
         cfru_hash = sha1_file(cfru_output)
