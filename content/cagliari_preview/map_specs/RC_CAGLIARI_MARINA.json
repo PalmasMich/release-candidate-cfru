@@ -196,7 +196,9 @@
       "bg_kind": {
         "symbol": "BG_EVENT_PLAYER_FACING_ANY",
         "id": 0
-      }
+      },
+      "display_name": "Locanda del Molo",
+      "sublocation": "RC_SUBLOCATION_LOCANDA_DEL_MOLO"
     }
   ],
   "warps": [
@@ -232,7 +234,30 @@
     "must_not_look_like": [
       "sevii_prototype_reskin",
       "pallet_reskin"
+    ],
+    "required_landmarks": [
+      "visible_harbor_water",
+      "limestone_prommenade",
+      "boat_masts",
+      "palms_or_coastal_greenery",
+      "locanda_del_molo_frontage",
+      "uphill_castello_direction"
     ]
   },
-  "metatile_profile": "RC_CAGLIARI_MARINA_GENERAL_BOOTSTRAP"
+  "metatile_profile": "RC_CAGLIARI_MARINA_GENERAL_BOOTSTRAP",
+  "sublocations": [
+    {
+      "id": "RC_SUBLOCATION_LOCANDA_DEL_MOLO",
+      "display_name": "Locanda del Molo",
+      "anchor": "ramen_corner",
+      "role": "optional_rest_and_character_moment",
+      "art_notes": [
+        "warm_wood_frontage",
+        "lantern_amber",
+        "compact_ramen_counter",
+        "harbor_promende_context",
+        "fictional_original_branding"
+      ]
+    }
+  ]
 }
