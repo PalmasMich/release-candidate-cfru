@@ -87,6 +87,52 @@
           "op": "end"
         }
       ]
+    },
+    {
+      "id": "RC_SCRIPT_CASTELLO_VIEWPOINT",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_CASTELLO_VIEWPOINT_SEEN"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "repeat"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_CASTELLO_VIEWPOINT_FIRST",
+          "type": 4
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_CASTELLO_VIEWPOINT_SEEN"
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "repeat"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_CASTELLO_VIEWPOINT_REPEAT",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
     }
   ]
 }
