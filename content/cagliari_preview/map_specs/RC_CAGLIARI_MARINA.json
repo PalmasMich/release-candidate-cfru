@@ -75,6 +75,18 @@
     "castello_access": {
       "x": 18,
       "y": 5
+    },
+    "local_npc": {
+      "x": 3,
+      "y": 5
+    },
+    "consultant_npc": {
+      "x": 17,
+      "y": 12
+    },
+    "tester_npc": {
+      "x": 7,
+      "y": 11
     }
   },
   "objects": [
@@ -93,6 +105,57 @@
       "movement_type": {
         "symbol": "MOVEMENT_TYPE_FACE_LEFT",
         "id": 9
+      }
+    },
+    {
+      "id": "RC_NPC_MARINA_LOCAL",
+      "role": "ambient_npc",
+      "anchor": "local_npc",
+      "script": "RC_SCRIPT_MARINA_LOCAL",
+      "local_id": 2,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WOMAN_2",
+        "id": 18,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_RIGHT",
+        "id": 10
+      }
+    },
+    {
+      "id": "RC_NPC_MARINA_CONSULTANT",
+      "role": "ambient_npc",
+      "anchor": "consultant_npc",
+      "script": "RC_SCRIPT_MARINA_CONSULTANT",
+      "local_id": 3,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_BUSINESSMAN",
+        "id": 50,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
+    },
+    {
+      "id": "RC_NPC_MARINA_TESTER",
+      "role": "ambient_npc",
+      "anchor": "tester_npc",
+      "script": "RC_SCRIPT_MARINA_TESTER",
+      "local_id": 4,
+      "elevation": 3,
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_F",
+        "id": 48,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_UP",
+        "id": 7
       }
     }
   ],
