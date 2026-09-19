@@ -180,6 +180,27 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertIn({"op": "msgbox", "dialogue": "RC_DIALOGUE_OPENING", "type": 4}, ops)
         self.assertIn({"op": "setflag", "flag": "RC_FLAG_ARRIVAL_DONE"}, ops)
 
+    def test_custom_starter_assignment_is_single_and_flagged_after_givemon(self):
+        hub = json.loads((CONTENT / "script_specs" / "RC_DELIVERY_HUB.json").read_text(encoding="utf-8"))
+        scripts = {item["id"]: item for item in hub["scripts"]}
+        expected = {
+            "RC_SCRIPT_STARTER_TARTREK": "SPECIES_RC_TURTLE_01",
+            "RC_SCRIPT_STARTER_FROBYTE": "SPECIES_RC_FROG_01",
+            "RC_SCRIPT_STARTER_EMBERFOX": "SPECIES_RC_FIREFOX_01",
+        }
+        for script_id, species in expected.items():
+            ops = scripts[script_id]["ops"]
+            givemon_positions = [i for i, op in enumerate(ops) if op.get("op") == "givemon"]
+            self.assertEqual(len(givemon_positions), 1, script_id)
+            give_pos = givemon_positions[0]
+            self.assertEqual(ops[give_pos]["species"], species)
+            flag_positions = [
+                i for i, op in enumerate(ops)
+                if op.get("op") == "setflag" and op.get("flag") == "RC_FLAG_STARTER_CHOSEN"
+            ]
+            self.assertEqual(len(flag_positions), 1, script_id)
+            self.assertGreater(flag_positions[0], give_pos, script_id)
+
     def test_preview_story_binds_wild_trainer_and_deploy_teaser(self):
         events = {item["id"]: item for item in load("events.yml")["flow"]}
         self.assertEqual(
