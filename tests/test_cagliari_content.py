@@ -73,6 +73,29 @@ class CagliariPreviewContentTest(unittest.TestCase):
             lines,
         )
 
+    def test_chapter_one_dialogue_is_full_rewrite_scaffold(self):
+        dialogue = load("dialogue.yml")
+        ids = {scene["id"] for scene in dialogue["scenes"]}
+        required = {
+            "RC_DIALOGUE_OPENING",
+            "RC_DIALOGUE_PLAYER_NAME",
+            "RC_DIALOGUE_DELIVERY_HUB_WELCOME",
+            "RC_DIALOGUE_STARTER",
+            "RC_DIALOGUE_RIVAL_CHALLENGE",
+            "RC_DIALOGUE_FIRST_ASSIGNMENT",
+            "RC_DIALOGUE_MARINA_ARRIVAL",
+            "RC_DIALOGUE_PORT_TRAINER_INTRO",
+            "RC_DIALOGUE_SCOPE_CHANGE",
+            "RC_DIALOGUE_CASTELLO_NPC_STAKEHOLDER",
+            "RC_DIALOGUE_DEPLOY_DISTRICT_ARRIVAL",
+            "RC_DIALOGUE_GO_NO_GO_START",
+            "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
+            "RC_DIALOGUE_DEPLOY_COMPLETE",
+            "RC_DIALOGUE_NEXT_CHAPTER_TEASER",
+        }
+        self.assertTrue(required.issubset(ids))
+        self.assertGreaterEqual(len(dialogue["scenes"]), 45)
+
     def test_original_wild_species_is_in_encounters(self):
         encounters = load("encounters.yml")
         species = {
