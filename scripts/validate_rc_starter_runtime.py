@@ -23,6 +23,7 @@ def validate() -> list[str]:
     scripts = {s["id"]: s for s in hub["scripts"]}
     species_text = SPECIES.read_text(encoding="utf-8")
     learnset_text = LEARNSETS.read_text(encoding="utf-8")
+    active_learnset_text = re.sub(r"/\\*.*?\\*/", "", learnset_text, flags=re.DOTALL)
 
     ids = {}
     for script_id, (species_name, learnset_symbol) in STARTERS.items():
@@ -47,8 +48,8 @@ def validate() -> list[str]:
             errors.append(f"missing learnset definition {learnset_symbol}")
 
         active_entry = f"[{species_name}] = {learnset_symbol},"
-        if active_entry not in learnset_text:
-            errors.append(f"missing learnset table entry {active_entry}")
+        if active_entry not in active_learnset_text:
+            errors.append(f"missing active learnset table entry {active_entry}")
 
     if len(ids) == len(STARTERS):
         ordered = [ids[x[0]] for x in STARTERS.values()]
