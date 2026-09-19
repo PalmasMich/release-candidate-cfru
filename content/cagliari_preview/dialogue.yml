@@ -461,6 +461,65 @@
         "Destinazione: Milano.",
         "Scope: da definire."
       ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_BUG_REPORT_START",
+      "speaker": "Tester",
+      "lines": [
+        "Ho un bug che compare solo qui a Marina.",
+        "Se trovi il terminale vicino al molo, prova a replicarlo.",
+        "Sì, la descrizione è davvero questa precisa."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_BUG_REPORT_DONE",
+      "speaker": "System",
+      "lines": [
+        "Bug riprodotto.",
+        "Passi per riprodurlo: ancora poco chiari.",
+        "Il Tester però sembra stranamente felice."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_MARINA_BUG_REPORT_REPEAT",
+      "speaker": "Tester",
+      "lines": [
+        "Perfetto. Ora che lo hai riprodotto possiamo chiamarlo noto.",
+        "Fix previsto: da pianificare."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RAMEN_STOP_FIRST",
+      "speaker": "Oste",
+      "lines": [
+        "Ti serve una pausa.",
+        "Ramen caldo, niente call e nessuna agenda.",
+        "Per dieci minuti il progetto può sopravvivere senza di te."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_RAMEN_STOP_REPEAT",
+      "speaker": "Oste",
+      "lines": [
+        "Bentornato.",
+        "Qui il backlog resta fuori dalla porta."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_VIEWPOINT_FIRST",
+      "speaker": "System",
+      "lines": [
+        "Dal Castello vedi Marina, il porto e quasi tutto il percorso fatto.",
+        "Per un attimo anche lo scope sembra chiaro."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_CASTELLO_VIEWPOINT_REPEAT",
+      "speaker": "System",
+      "lines": [
+        "Il panorama non è cambiato.",
+        "Lo scope probabilmente sì."
+      ]
     }
   ]
 }
