@@ -96,6 +96,27 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertTrue(required.issubset(ids))
         self.assertGreaterEqual(len(dialogue["scenes"]), 45)
 
+    def test_all_custom_script_dialogue_refs_resolve(self):
+        dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
+        script_dir = CONTENT / "script_specs"
+        refs = set()
+        for path in script_dir.glob("*.json"):
+            spec = json.loads(path.read_text(encoding="utf-8"))
+            for script in spec.get("scripts", []):
+                for op in script.get("ops", []):
+                    for key in ("dialogue", "intro_dialogue", "defeat_dialogue"):
+                        if key in op:
+                            refs.add(op[key])
+        self.assertTrue(refs)
+        self.assertTrue(refs.issubset(dialogue_ids), sorted(refs - dialogue_ids))
+
+    def test_custom_chapter_dialogue_contains_no_visible_firered_story_terms(self):
+        dialogue = load("dialogue.yml")
+        text = "\n".join(line for scene in dialogue["scenes"] for line in scene["lines"])
+        forbidden = ("PALLET", "VIRIDIAN", "OAK", "BULBASAUR", "SQUIRTLE", "CHARMANDER")
+        for term in forbidden:
+            self.assertNotIn(term, text.upper())
+
     def test_original_wild_species_is_in_encounters(self):
         encounters = load("encounters.yml")
         species = {
