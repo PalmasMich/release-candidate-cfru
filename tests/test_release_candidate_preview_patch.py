@@ -77,6 +77,25 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         for old_text, new_text in patcher.VISIBLE_TEXT_REPLACEMENTS:
             self.assertLessEqual(len(new_text), len(old_text))
 
+    def test_opening_rewrite_covers_identity_name_and_launch_beats(self):
+        patcher = load_patcher()
+        replacements = dict(patcher.VISIBLE_TEXT_REPLACEMENTS)
+        required_sources = [
+            patcher.encode_text("Hello, there!\nGlad to meet you!"),
+            patcher.encode_text("My name is OAK."),
+            patcher.encode_text("Let's begin with your name."),
+            patcher.encode_text("This is my grandson."),
+            patcher.encode_text("A world of dreams and adventures"),
+        ]
+        for source in required_sources:
+            self.assertIn(source, replacements)
+
+    def test_opening_rewrite_destinations_do_not_reintroduce_stock_story_names(self):
+        patcher = load_patcher()
+        destinations = b"\n".join(new for _, new in patcher.VISIBLE_TEXT_REPLACEMENTS)
+        for term in ("OAK", "PALLET", "VIRIDIAN", "BULBASAUR", "SQUIRTLE", "CHARMANDER"):
+            self.assertNotIn(patcher.encode_text(term), destinations)
+
     def test_visible_preview_labels_are_patched(self):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)
