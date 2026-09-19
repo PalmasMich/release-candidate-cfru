@@ -27,13 +27,14 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
 GRASS_SLOT_WEIGHTS = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)
+# The two 20% slots plus the first two 10% slots guarantee that the first
+# Port Link field test is overwhelmingly likely to showcase the custom mon,
+# while preserving a small coastal mix for repeat encounters.
 ROUTE1_PREVIEW_SPECIES = (
     MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
     WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
     MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID,
 )
-# Keep the inherited Route 1 slot structure but make the authored preview contract
-# explicit: Mistrillo 3-5, Wingull 3-4, Meowth 3-4.
 ROUTE1_PREVIEW_LEVELS = (
     (3, 3), (4, 4), (3, 3), (5, 5),
     (3, 3), (4, 4), (3, 3),
