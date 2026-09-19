@@ -113,6 +113,20 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("You can get back to PALLET TOWN\nquicker that way."), encode_text("You can get back to CAGLIARI\nquicker that way.")),
     (encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"), encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE")),
 )
+
+# These replacements define the minimum visible identity promised by Preview 0.1.
+# Optional flavour can remain best-effort across upstream CFRU/DPE revisions, but the
+# build must not silently ship if any of these anchors disappears.
+REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in (
+    "Welcome to Release Candidate!",
+    "CAGLIARI\nFirst sprint starts here!",
+    "DELIVERY HUB - CAGLIARI",
+    "Three resources are ready.",
+    "KPI check: show velocity!",
+    "PORT LINK\nCAGLIARI - MARINA PORTO",
+    "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE",
+))
+
 MAP_NAME_REPLACEMENT = (
     encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF",
     encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF",
@@ -245,6 +259,9 @@ def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True
     for new in applied_texts or []:
         if new not in data:
             raise RuntimeError("An applied Release Candidate visible-text replacement is missing.")
+    missing_identity = [text for text in REQUIRED_VISIBLE_TEXTS if text not in data]
+    if missing_identity:
+        raise RuntimeError(f"Core Cagliari preview identity is incomplete: {len(missing_identity)} required visible anchor(s) missing.")
     if map_names_required and MAP_NAME_REPLACEMENT[1] not in data:
         raise RuntimeError("Applied Cagliari map-name replacement is missing.")
     if lab_label_required and LAB_SIGN_REPLACEMENT[1] not in data:
