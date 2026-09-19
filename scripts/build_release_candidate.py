@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
+PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_STARTER_RUNTIME", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
 RC_LEARNSET_TABLE = Path("src/Tables/level_up_learnsets.c")
 
 
@@ -99,6 +99,15 @@ def default_run_build(label: str, cwd: Path) -> None:
     subprocess.run([sys.executable, "scripts/make.py"], cwd=cwd, check=True)
 
 
+def default_validate_starter_runtime() -> None:
+    print("\n== Release Candidate starter runtime audit ==")
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "validate_rc_starter_runtime.py")],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def default_apply_preview_patch(source: Path, output: Path) -> None:
     print("\n== Release Candidate preview patch ==")
     subprocess.run([sys.executable, str(ROOT / "scripts" / "apply_release_candidate_preview_patch.py"), str(source), str(output)], cwd=ROOT, check=True)
@@ -140,7 +149,7 @@ def default_apply_custom_maps(source: Path, output: Path) -> int:
 def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
                  run_preflight=default_run_preflight, run_build=default_run_build,
                  verify_rom=verify_pristine_rom, sync_dpe=sync_dpe_checkout,
-                 verify_dpe_symbols=verify_dpe_tartrek_symbols, apply_preview_patch=default_apply_preview_patch,
+                 verify_dpe_symbols=verify_dpe_tartrek_symbols, validate_starter_runtime=default_validate_starter_runtime, apply_preview_patch=default_apply_preview_patch,
                  audit_opening=default_audit_opening, discover_port_link=default_discover_port_link, apply_port_link_trainer=default_apply_port_link_trainer,
                  prepare_delivery_hub_map=default_prepare_delivery_hub_map,
                  apply_custom_maps=default_apply_custom_maps) -> Path:
@@ -170,6 +179,7 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         if dpe_hash == pristine_hash: raise RuntimeError("DPE test.gba is identical to the pristine input")
         shutil.copy2(dpe_output, cfru_rom)
         activate_rc_learnset_pointers(cfru_root)
+        validate_starter_runtime()
         run_build("CFRU", cfru_root)
         if not cfru_output.exists(): raise RuntimeError("CFRU build finished without test.gba")
         cfru_hash = sha1_file(cfru_output)
@@ -231,7 +241,7 @@ def main() -> int:
     args = parser.parse_args()
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}")
-    print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH")
+    print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_STARTER_RUNTIME -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH")
     print(f"BASE_SHA1={EXPECTED_SHA1}")
     try:
         run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
