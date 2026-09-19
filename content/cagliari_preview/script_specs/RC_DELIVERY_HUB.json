@@ -11,8 +11,59 @@
           "op": "faceplayer"
         },
         {
+          "op": "checkflag",
+          "flag": "RC_FLAG_STARTER_CHOSEN"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "after_starter"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DELIVERY_HUB_WELCOME",
+          "type": 4
+        },
+        {
           "op": "msgbox",
           "dialogue": "RC_DIALOGUE_STARTER",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "after_starter"
+        },
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_RIVAL_INTRO_DONE"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "assigned"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_RIVAL_BEFORE_STARTER",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "assigned"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_FIRST_ASSIGNMENT",
           "type": 4
         },
         {
@@ -37,6 +88,11 @@
           "op": "goto_if",
           "condition": true,
           "label": "already"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_STARTER_TARTREK_INFO",
+          "type": 4
         },
         {
           "op": "givemon",
@@ -90,6 +146,11 @@
           "label": "already"
         },
         {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_STARTER_FROBYTE_INFO",
+          "type": 4
+        },
+        {
           "op": "givemon",
           "species": "SPECIES_RC_FROG_01",
           "level": 5
@@ -139,6 +200,11 @@
           "op": "goto_if",
           "condition": true,
           "label": "already"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_STARTER_EMBERFOX_INFO",
+          "type": 4
         },
         {
           "op": "givemon",
