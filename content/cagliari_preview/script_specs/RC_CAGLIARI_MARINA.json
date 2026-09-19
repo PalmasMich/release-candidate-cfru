@@ -147,6 +147,72 @@
           "op": "end"
         }
       ]
+    },
+    {
+      "id": "RC_SCRIPT_MARINA_LOCAL",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_NPC_LOCAL",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_MARINA_CONSULTANT",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_NPC_CONSULTANT",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_MARINA_TESTER",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_MARINA_NPC_TESTER",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
     }
   ]
 }
