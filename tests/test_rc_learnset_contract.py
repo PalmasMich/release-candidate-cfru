@@ -1,9 +1,19 @@
 from pathlib import Path
+import importlib.util
 import re
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 LEARNSETS = ROOT / "src" / "Tables" / "level_up_learnsets.c"
+BUILDER = ROOT / "scripts" / "build_release_candidate.py"
+
+
+def load_builder():
+    spec = importlib.util.spec_from_file_location("rc_builder_learnsets", BUILDER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 class ReleaseCandidateLearnsetContractTest(unittest.TestCase):
@@ -22,6 +32,7 @@ class ReleaseCandidateLearnsetContractTest(unittest.TestCase):
         body = match.group(1)
         for level, move in moves:
             self.assertIn(f"LEVEL_UP_MOVE({level:2d}, {move})", body)
+        self.assertIn("LEVEL_UP_END", body)
 
     def test_tartrek_has_playable_opening_moves(self):
         self._assert_learnset(
@@ -47,15 +58,30 @@ class ReleaseCandidateLearnsetContractTest(unittest.TestCase):
             [(1, "MOVE_GUST"), (1, "MOVE_GROWL"), (4, "MOVE_QUICKATTACK"), (7, "MOVE_SANDATTACK")],
         )
 
-    def test_rc_species_are_registered_in_pointer_table(self):
-        expected = {
-            "SPECIES_RC_TURTLE_01": "sRCTartrekLevelUpLearnset",
-            "SPECIES_RC_FROG_01": "sRCFrobyteLevelUpLearnset",
-            "SPECIES_RC_FIREFOX_01": "sRCEmberfoxLevelUpLearnset",
-            "SPECIES_RC_CAGLIARI_WILD_01": "sRCMistrilloLevelUpLearnset",
-        }
-        for species, learnset in expected.items():
-            self.assertIn(f"[{species}] = {learnset}", self.source)
+    def test_build_overlay_activates_every_rc_pointer(self):
+        """A pointer written inside CFRU's large upstream comment is not active C.
+
+        Exercise the exact transactional overlay used by the private build and
+        inspect only the source after the closing block-comment marker.
+        """
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / builder.RC_LEARNSET_TABLE
+            target.parent.mkdir(parents=True)
+            target.write_text(self.source, encoding="utf-8")
+            original = builder.activate_rc_learnset_pointers(root)
+            self.assertEqual(original.decode("utf-8"), self.source)
+            active_tail = target.read_text(encoding="utf-8").split("*/", 1)[1]
+            expected = {
+                "SPECIES_RC_TURTLE_01": "sRCTartrekLevelUpLearnset",
+                "SPECIES_RC_FROG_01": "sRCFrobyteLevelUpLearnset",
+                "SPECIES_RC_FIREFOX_01": "sRCEmberfoxLevelUpLearnset",
+                "SPECIES_RC_CAGLIARI_WILD_01": "sRCMistrilloLevelUpLearnset",
+            }
+            for species, learnset in expected.items():
+                pointer = f"[{species}] = {learnset}"
+                self.assertEqual(active_tail.count(pointer), 1, f"Inactive or duplicate pointer: {pointer}")
 
 
 if __name__ == "__main__":
