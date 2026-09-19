@@ -40,20 +40,14 @@ def build_patched_fixture(patcher):
 class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_wires_all_three_original_starters(self):
         patcher = load_patcher()
-        payload = bytearray(
-            b"prefix" + patcher.BULBASAUR_STARTER_SIGNATURE + b"|"
-            + patcher.SQUIRTLE_STARTER_SIGNATURE + b"|"
-            + patcher.CHARMANDER_STARTER_SIGNATURE + b"suffix"
-        )
+        payload = bytearray(b"prefix" + patcher.BULBASAUR_STARTER_SIGNATURE + b"|" + patcher.SQUIRTLE_STARTER_SIGNATURE + b"|" + patcher.CHARMANDER_STARTER_SIGNATURE + b"suffix")
         patched = patcher.patch_preview_starters(payload)
         for signature, player_species, rival_species in (
             (patcher.BULBASAUR_STARTER_SIGNATURE, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID),
             (patcher.SQUIRTLE_STARTER_SIGNATURE, patcher.FROBYTE_SPECIES_ID, patcher.TARTREK_SPECIES_ID),
             (patcher.CHARMANDER_STARTER_SIGNATURE, patcher.EMBERFOX_SPECIES_ID, patcher.FROBYTE_SPECIES_ID),
         ):
-            expected = patcher.patched_starter_signature(
-                signature, player_species, rival_species
-            )
+            expected = patcher.patched_starter_signature(signature, player_species, rival_species)
             self.assertEqual(patched.count(expected), 1)
 
     def test_starter_patch_fails_closed_when_a_slot_is_missing(self):
@@ -94,9 +88,13 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         for record, species in enumerate(patcher.ROUTE1_PREVIEW_SPECIES):
             species_pos = base + (record * 4) + 2
             self.assertEqual(patched[species_pos:species_pos + 2], species.to_bytes(2, "little"))
-        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.MISTRILLO_SPECIES_ID), 4)
-        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.WINGULL_SPECIES_ID), 3)
-        self.assertEqual(patcher.ROUTE1_PREVIEW_SPECIES.count(patcher.MEOWTH_SPECIES_ID), 5)
+        weighted = {}
+        for species, weight in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.GRASS_SLOT_WEIGHTS):
+            weighted[species] = weighted.get(species, 0) + weight
+        self.assertEqual(sum(patcher.GRASS_SLOT_WEIGHTS), 100)
+        self.assertEqual(weighted[patcher.MISTRILLO_SPECIES_ID], 60)
+        self.assertEqual(weighted[patcher.WINGULL_SPECIES_ID], 25)
+        self.assertEqual(weighted[patcher.MEOWTH_SPECIES_ID], 15)
 
     def test_validator_accepts_complete_playable_contract(self):
         patcher = load_patcher()
@@ -105,11 +103,7 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_validator_rejects_corrupted_starter_wiring(self):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)
-        expected = patcher.patched_starter_signature(
-            patcher.BULBASAUR_STARTER_SIGNATURE,
-            patcher.TARTREK_SPECIES_ID,
-            patcher.EMBERFOX_SPECIES_ID,
-        )
+        expected = patcher.patched_starter_signature(patcher.BULBASAUR_STARTER_SIGNATURE, patcher.TARTREK_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID)
         pos = patched.find(expected)
         patched[pos + patcher.PLAYER_SPECIES_VALUE_OFFSET:pos + patcher.PLAYER_SPECIES_VALUE_OFFSET + 2] = b"\x01\x00"
         with self.assertRaisesRegex(RuntimeError, "Tartrek starter wiring"):
