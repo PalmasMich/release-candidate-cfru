@@ -84,28 +84,42 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)
         for text in (
-            "Welcome to Release Candidate!",
-            "YOUR ID?",
-            "TEAMMATE ID?",
-            "CAGLIARI\nFirst sprint starts here!",
-            "Delivery is incredible!",
-            "We can now track every task",
-            "and blocker on one dashboard.",
-            "I'm on this project, too.",
-            "DELIVERY HUB - CAGLIARI",
-            "Those are team slots.\nResources inside!",
-            "Press START for your dashboard!",
-            "Save before each release.\nRollback matters.",
-            "Three resources are ready.",
-            "LEAD: Field test starts outside.",
-            "Use your partner on Port Link.",
-            "KPI check: show velocity!",
-            "KPI is GREEN!",
+            "Welcome to Release Candidate!", "YOUR ID?", "TEAMMATE ID?",
+            "CAGLIARI\nFirst sprint starts here!", "Delivery is incredible!",
+            "We can now track every task", "and blocker on one dashboard.",
+            "I'm on this project, too.", "DELIVERY HUB - CAGLIARI",
+            "Those are team slots.\nResources inside!", "Press START for your dashboard!",
+            "Save before each release.\nRollback matters.", "Three resources are ready.",
+            "LEAD: Field test starts outside.", "Use your partner on Port Link.",
+            "KPI check: show velocity!", "KPI is GREEN!",
             "PORT LINK\nCAGLIARI - MARINA PORTO",
             "I'm covering Port Link today.\nScope says five minutes.",
             "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE",
         ):
             self.assertIn(patcher.encode_text(text), patched)
+
+    def test_required_identity_gate_covers_preview_pillars(self):
+        patcher = load_patcher()
+        expected = {
+            patcher.encode_text("Welcome to Release Candidate!"),
+            patcher.encode_text("CAGLIARI\nFirst sprint starts here!"),
+            patcher.encode_text("DELIVERY HUB - CAGLIARI"),
+            patcher.encode_text("Three resources are ready."),
+            patcher.encode_text("KPI check: show velocity!"),
+            patcher.encode_text("PORT LINK\nCAGLIARI - MARINA PORTO"),
+            patcher.encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE"),
+        }
+        self.assertEqual(set(patcher.REQUIRED_VISIBLE_TEXTS), expected)
+
+    def test_validator_rejects_missing_core_visible_identity(self):
+        patcher = load_patcher()
+        patched = build_patched_fixture(patcher)
+        anchor = patcher.encode_text("DELIVERY HUB - CAGLIARI")
+        pos = patched.find(anchor)
+        self.assertGreaterEqual(pos, 0)
+        patched[pos:pos + len(anchor)] = b"\x00" * len(anchor)
+        with self.assertRaisesRegex(RuntimeError, "Core Cagliari preview identity"):
+            patcher.validate_preview_patch(patched)
 
     def test_route1_wild_table_matches_preview_distribution_and_levels(self):
         patcher = load_patcher()
