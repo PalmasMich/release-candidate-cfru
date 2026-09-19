@@ -26,6 +26,11 @@ ROUTE1_WILD_SIGNATURE = bytes.fromhex(
     "02 02 10 00 02 02 13 00 03 03 10 00 03 03 13 00 "
     "04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00"
 )
+# FireRed grass slots carry weights 20/20/10/10/10/10/5/5/4/4/1/1.
+# Assigning the first four slots to Mistrillo, the next three to Wingull and
+# the remaining five to Meowth therefore yields the manifest's exact 60/25/15
+# encounter probability, even though the species occupy 4/3/5 physical slots.
+GRASS_SLOT_WEIGHTS = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)
 ROUTE1_PREVIEW_SPECIES = (
     MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID,
     WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
@@ -107,12 +112,8 @@ def patch_preview_starters(data: bytearray) -> bytearray:
 
 def patched_starter_signature(signature: bytes, player_species: int, rival_species: int) -> bytes:
     patched = bytearray(signature)
-    patched[
-        PLAYER_SPECIES_VALUE_OFFSET:PLAYER_SPECIES_VALUE_OFFSET + 2
-    ] = player_species.to_bytes(2, "little")
-    patched[
-        RIVAL_SPECIES_VALUE_OFFSET:RIVAL_SPECIES_VALUE_OFFSET + 2
-    ] = rival_species.to_bytes(2, "little")
+    patched[PLAYER_SPECIES_VALUE_OFFSET:PLAYER_SPECIES_VALUE_OFFSET + 2] = player_species.to_bytes(2, "little")
+    patched[RIVAL_SPECIES_VALUE_OFFSET:RIVAL_SPECIES_VALUE_OFFSET + 2] = rival_species.to_bytes(2, "little")
     return bytes(patched)
 
 
@@ -124,20 +125,13 @@ def patch_oak_lab_rival_parties(data: bytearray) -> tuple[bytearray, bool]:
             break
         positions.append(pos)
         start = pos + 1
-
     if len(positions) == 0:
         print("RC_PREVIEW_KPI_RIVAL_PARTY=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
         return data, False
     if len(positions) != 1:
-        raise ValueError(
-            f"Expected at most one Oak Lab rival party signature, found {len(positions)}."
-        )
-
+        raise ValueError(f"Expected at most one Oak Lab rival party signature, found {len(positions)}.")
     pos = positions[0]
-    for rel, species in zip(
-        RIVAL_PARTY_SPECIES_OFFSETS,
-        (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
-    ):
+    for rel, species in zip(RIVAL_PARTY_SPECIES_OFFSETS, (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)):
         data[pos + rel:pos + rel + 2] = species.to_bytes(2, "little")
     print("RC_PREVIEW_KPI_RIVAL_PARTY=APPLIED")
     return data, True
@@ -171,19 +165,15 @@ def patch_route1_wild_encounters(data: bytearray) -> bytearray:
 
 def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes], bool, bool]:
     applied_texts = []
-
     for index, (old, new) in enumerate(VISIBLE_TEXT_REPLACEMENTS):
         count = _replace_size_preserving(data, old, new, expected=None)
         if count == 0:
             print(f"RC_PREVIEW_TEXT_{index:02d}=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
             continue
         if count != 1:
-            raise ValueError(
-                f"Expected at most one legacy visible-text signature {index}, found {count}."
-            )
+            raise ValueError(f"Expected at most one legacy visible-text signature {index}, found {count}.")
         applied_texts.append(new)
         print(f"RC_PREVIEW_TEXT_{index:02d}=APPLIED")
-
     old_city, new_city = MAP_NAME_REPLACEMENT
     if len(old_city) != len(new_city):
         raise ValueError("Map-name replacement must preserve byte length.")
@@ -196,7 +186,6 @@ def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes],
         city_applied = True
     else:
         raise ValueError(f"Expected at most one legacy map-name signature, found {city_count}.")
-
     old_lab, new_lab = LAB_SIGN_REPLACEMENT
     positions, start = [], 0
     while True:
@@ -214,26 +203,12 @@ def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes],
         print("RC_PREVIEW_DELIVERY_HUB_LABEL=APPLIED")
         lab_applied = True
     else:
-        # This is a legacy visual fallback only. Never patch multiple matching
-        # locations blindly: the permanent Delivery Hub uses its custom map.
-        print(
-            "RC_PREVIEW_DELIVERY_HUB_LABEL="
-            f"PENDING:AMBIGUOUS_SIGNATURE:{len(positions)}"
-        )
+        print("RC_PREVIEW_DELIVERY_HUB_LABEL=" f"PENDING:AMBIGUOUS_SIGNATURE:{len(positions)}")
         lab_applied = False
-
     return data, applied_texts, city_applied, lab_applied
 
 
-def validate_preview_patch(
-    data: bytearray,
-    *,
-    rival_party_required: bool = True,
-    applied_texts: list[bytes] | None = None,
-    map_names_required: bool = False,
-    lab_label_required: bool = False,
-) -> None:
-    """Validate gameplay wiring and any legacy preview patches that were applied."""
+def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True, applied_texts: list[bytes] | None = None, map_names_required: bool = False, lab_label_required: bool = False) -> None:
     for new in applied_texts or []:
         if new not in data:
             raise RuntimeError("An applied Release Candidate visible-text replacement is missing.")
@@ -241,10 +216,6 @@ def validate_preview_patch(
         raise RuntimeError("Applied Cagliari map-name replacement is missing.")
     if lab_label_required and LAB_SIGN_REPLACEMENT[1] not in data:
         raise RuntimeError("Applied Delivery Hub identity label is missing.")
-
-    # Validate the complete post-patch script signatures. Prefix-only matching
-    # is unsafe in a full CFRU ROM because common setvar prefixes occur in
-    # unrelated scripts.
     for signature, label, player_species, rival_species in (
         (BULBASAUR_STARTER_SIGNATURE, "Tartrek starter", TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID),
         (SQUIRTLE_STARTER_SIGNATURE, "Frobyte starter", FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID),
@@ -259,23 +230,11 @@ def validate_preview_patch(
             positions.append(pos)
             start = pos + 1
         if len(positions) != 1:
-            raise RuntimeError(
-                f"{label} wiring is incorrect: expected exactly one patched script, "
-                f"found {len(positions)}."
-            )
-
-    # The Oak Lab rival party is now only a legacy bootstrap fallback. The
-    # permanent Chapter 1 path uses RC custom-map scripts, so a missing legacy
-    # signature must not block the private build.
+            raise RuntimeError(f"{label} wiring is incorrect: expected exactly one patched script, found {len(positions)}.")
     if rival_party_required:
-        rival_party = b"".join(
-            b"\x00\x00\x05\x00" + species.to_bytes(2, "little")
-            for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID)
-        )
+        rival_party = b"".join(b"\x00\x00\x05\x00" + species.to_bytes(2, "little") for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID))
         if rival_party not in data:
             raise RuntimeError("Oak Lab KPI-rival party wiring is incomplete.")
-
-    # Confirm the full Port Link table, including original encounter levels.
     expected_route = bytearray(ROUTE1_WILD_SIGNATURE)
     for record, species in enumerate(ROUTE1_PREVIEW_SPECIES):
         expected_route[record * 4 + 2:record * 4 + 4] = species.to_bytes(2, "little")
@@ -292,13 +251,7 @@ def patch_rom(source: Path, output: Path) -> Path:
     patched, rival_party_patched = patch_oak_lab_rival_parties(patched)
     patched, applied_texts, map_names_applied, lab_label_applied = patch_visible_preview_text(patched)
     patched = patch_route1_wild_encounters(patched)
-    validate_preview_patch(
-        patched,
-        rival_party_required=rival_party_patched,
-        applied_texts=applied_texts,
-        map_names_required=map_names_applied,
-        lab_label_required=lab_label_applied,
-    )
+    validate_preview_patch(patched, rival_party_required=rival_party_patched, applied_texts=applied_texts, map_names_required=map_names_applied, lab_label_required=lab_label_applied)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
