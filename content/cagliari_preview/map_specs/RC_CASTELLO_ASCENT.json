@@ -73,6 +73,10 @@
     "senior_consultant": {
       "x": 3,
       "y": 3
+    },
+    "viewpoint": {
+      "x": 15,
+      "y": 2
     }
   },
   "objects": [
@@ -133,6 +137,16 @@
       "id": "RC_INTERACT_DEPLOY_DISTRICT_GATE",
       "anchor": "summit_gate",
       "script": "RC_SCRIPT_DEPLOY_DISTRICT_GATE",
+      "elevation": 3,
+      "bg_kind": {
+        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
+        "id": 0
+      }
+    },
+    {
+      "id": "RC_INTERACT_CASTELLO_VIEWPOINT",
+      "anchor": "viewpoint",
+      "script": "RC_SCRIPT_CASTELLO_VIEWPOINT",
       "elevation": 3,
       "bg_kind": {
         "symbol": "BG_EVENT_PLAYER_FACING_ANY",
