@@ -32,6 +32,13 @@ ROUTE1_PREVIEW_SPECIES = (
     WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID,
     MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID,
 )
+# Keep the inherited Route 1 slot structure but make the authored preview contract
+# explicit: Mistrillo 3-5, Wingull 3-4, Meowth 3-4.
+ROUTE1_PREVIEW_LEVELS = (
+    (3, 3), (4, 4), (3, 3), (5, 5),
+    (3, 3), (4, 4), (3, 3),
+    (4, 4), (3, 3), (4, 4), (3, 3), (4, 4),
+)
 
 CHARMAP = {
     **{chr(ord("A") + i): 0xBB + i for i in range(26)},
@@ -83,7 +90,7 @@ MAP_NAME_REPLACEMENT = (
     encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF",
 )
 LAB_SIGN_REPLACEMENT = (
-    b"\xCA\xC9\xC5\x1B\xC7\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC",
+    b"\xCA\xC9\xC5\x1B\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC",
     encode_text("DELIVERY HUB"),
 )
 
@@ -160,9 +167,10 @@ def _replace_size_preserving(data: bytearray, old: bytes, new: bytes, *, expecte
 
 def patch_route1_wild_encounters(data: bytearray) -> bytearray:
     base = _find_exactly_one(data, ROUTE1_WILD_SIGNATURE, "FireRed Route 1 wild encounter")
-    for record, species in enumerate(ROUTE1_PREVIEW_SPECIES):
-        species_pos = base + (record * 4) + 2
-        data[species_pos:species_pos + 2] = species.to_bytes(2, "little")
+    for record, (species, levels) in enumerate(zip(ROUTE1_PREVIEW_SPECIES, ROUTE1_PREVIEW_LEVELS)):
+        record_pos = base + (record * 4)
+        data[record_pos:record_pos + 2] = bytes(levels)
+        data[record_pos + 2:record_pos + 4] = species.to_bytes(2, "little")
     return data
 
 
@@ -239,8 +247,10 @@ def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True
         if rival_party not in data:
             raise RuntimeError("Oak Lab KPI-rival party wiring is incomplete.")
     expected_route = bytearray(ROUTE1_WILD_SIGNATURE)
-    for record, species in enumerate(ROUTE1_PREVIEW_SPECIES):
-        expected_route[record * 4 + 2:record * 4 + 4] = species.to_bytes(2, "little")
+    for record, (species, levels) in enumerate(zip(ROUTE1_PREVIEW_SPECIES, ROUTE1_PREVIEW_LEVELS)):
+        record_pos = record * 4
+        expected_route[record_pos:record_pos + 2] = bytes(levels)
+        expected_route[record_pos + 2:record_pos + 4] = species.to_bytes(2, "little")
     if bytes(expected_route) not in data:
         raise RuntimeError("Port Link custom encounter table is incomplete.")
 
@@ -259,7 +269,7 @@ def patch_rom(source: Path, output: Path) -> Path:
     output.write_bytes(patched)
     if output.stat().st_size != source.stat().st_size:
         raise RuntimeError("Preview patch changed ROM size unexpectedly.")
-    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+MISTRILLO_ROUTE1")
+    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_LABELS+KPI_RIVAL+PORT_LINK_ENCOUNTERS")
     print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}")
     print(f"RC_PREVIEW_OUTPUT={output}")
