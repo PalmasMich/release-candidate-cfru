@@ -4,9 +4,9 @@
       "id": "RC_DIALOGUE_OPENING",
       "speaker": "Delivery Lead",
       "lines": [
-        "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato.",
-        "Il kickoff è passato, le scadenze no.",
-        "Io sono il Delivery Lead. Ti spiego il minimo indispensabile e poi partiamo."
+        "Benvenuto su Release Candidate.",
+        "Il progetto è già partito. Le scadenze pure.",
+        "Io coordino la delivery. Ti spiego quello che serve e poi partiamo."
       ]
     },
     {
@@ -21,11 +21,11 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_INTRO",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
-        "Finalmente sei arrivato.",
-        "Io tengo traccia di KPI, velocity e tempi di chiusura.",
-        "Non è una gara. Però ho già preparato la classifica."
+        "Io tengo traccia di tutto quello che può diventare un grafico.",
+        "Non è una gara.",
+        "Però ho già preparato la classifica."
       ]
     },
     {
