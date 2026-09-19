@@ -45,10 +45,24 @@ CHARMAP = {
     " ": 0x00, "!": 0xAB, "?": 0xAC, ".": 0xAD, "-": 0xAE,
     ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4, "é": 0x1B, "\n": 0xFE,
 }
+PLACEHOLDERS = {"{PLAYER}": b"\xFD\x01", "{RIVAL}": b"\xFD\x06"}
 
 
 def encode_text(text: str) -> bytes:
-    return bytes(CHARMAP[ch] for ch in text)
+    out = bytearray()
+    i = 0
+    while i < len(text):
+        matched = False
+        for token, encoded in PLACEHOLDERS.items():
+            if text.startswith(token, i):
+                out.extend(encoded)
+                i += len(token)
+                matched = True
+                break
+        if not matched:
+            out.append(CHARMAP[text[i]])
+            i += 1
+    return bytes(out)
 
 
 VISIBLE_TEXT_REPLACEMENTS = (
@@ -74,6 +88,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("FIRE POKéMON CHARMANDER?"), encode_text("FIRE/DARK EMBERFOX?")),
     (encode_text("{RIVAL}: My POKéMON looks a lot\ntougher than yours."), encode_text("{RIVAL}: My KPI already looks\nbetter than yours.")),
     (encode_text("Come on, I'll take you on!"), encode_text("KPI check: show velocity!")),
+    (encode_text("WHAT?\nUnbelievable!\nI picked the wrong POKéMON!"), encode_text("WHAT?\nKPI variance!\nI need a new baseline!")),
     (encode_text("{RIVAL}: Yeah!\nAm I great or what?"), encode_text("{RIVAL}: Yeah!\nKPI is GREEN!")),
     (encode_text("PALLET TOWN\nShades of your journey await!"), encode_text("CAGLIARI\nFirst sprint starts here!")),
     (encode_text("Technology is incredible!"), encode_text("Delivery is incredible!")),
@@ -148,7 +163,7 @@ def patch_oak_lab_rival_parties(data: bytearray) -> tuple[bytearray, bool]:
             break
         positions.append(pos)
         start = pos + 1
-    if len(positions) == 0:
+    if not positions:
         print("RC_PREVIEW_KPI_RIVAL_PARTY=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
         return data, False
     if len(positions) != 1:
@@ -190,7 +205,7 @@ def patch_route1_wild_encounters(data: bytearray) -> bytearray:
 def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes], bool, bool]:
     applied_texts = []
     for index, (old, new) in enumerate(VISIBLE_TEXT_REPLACEMENTS):
-        count = _replace_size_preserving(data, old, new, expected=None)
+        count = _replace_size_preserving(data, old, new)
         if count == 0:
             print(f"RC_PREVIEW_TEXT_{index:02d}=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
             continue
@@ -201,15 +216,11 @@ def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes],
     old_city, new_city = MAP_NAME_REPLACEMENT
     if len(old_city) != len(new_city):
         raise ValueError("Map-name replacement must preserve byte length.")
-    city_count = _replace_size_preserving(data, old_city, new_city, expected=None)
-    if city_count == 0:
-        print("RC_PREVIEW_MAP_NAMES=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
-        city_applied = False
-    elif city_count == 1:
-        print("RC_PREVIEW_MAP_NAMES=APPLIED")
-        city_applied = True
-    else:
+    city_count = _replace_size_preserving(data, old_city, new_city)
+    if city_count > 1:
         raise ValueError(f"Expected at most one legacy map-name signature, found {city_count}.")
+    city_applied = city_count == 1
+    print("RC_PREVIEW_MAP_NAMES=" + ("APPLIED" if city_applied else "PENDING:LEGACY_SIGNATURE_NOT_FOUND"))
     old_lab, new_lab = LAB_SIGN_REPLACEMENT
     positions, start = [], 0
     while True:
@@ -218,17 +229,15 @@ def patch_visible_preview_text(data: bytearray) -> tuple[bytearray, list[bytes],
             break
         positions.append(pos)
         start = pos + 1
-    if len(positions) == 0:
-        print("RC_PREVIEW_DELIVERY_HUB_LABEL=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
-        lab_applied = False
-    elif len(positions) == 1:
+    lab_applied = len(positions) == 1
+    if lab_applied:
         pos = positions[0]
         data[pos:pos + len(old_lab)] = new_lab + (b"\x00" * (len(old_lab) - len(new_lab)))
         print("RC_PREVIEW_DELIVERY_HUB_LABEL=APPLIED")
-        lab_applied = True
+    elif not positions:
+        print("RC_PREVIEW_DELIVERY_HUB_LABEL=PENDING:LEGACY_SIGNATURE_NOT_FOUND")
     else:
-        print("RC_PREVIEW_DELIVERY_HUB_LABEL=" f"PENDING:AMBIGUOUS_SIGNATURE:{len(positions)}")
-        lab_applied = False
+        print(f"RC_PREVIEW_DELIVERY_HUB_LABEL=PENDING:AMBIGUOUS_SIGNATURE:{len(positions)}")
     return data, applied_texts, city_applied, lab_applied
 
 
@@ -246,15 +255,8 @@ def validate_preview_patch(data: bytearray, *, rival_party_required: bool = True
         (CHARMANDER_STARTER_SIGNATURE, "Emberfox starter", EMBERFOX_SPECIES_ID, FROBYTE_SPECIES_ID),
     ):
         expected = patched_starter_signature(signature, player_species, rival_species)
-        positions, start = [], 0
-        while True:
-            pos = data.find(expected, start)
-            if pos < 0:
-                break
-            positions.append(pos)
-            start = pos + 1
-        if len(positions) != 1:
-            raise RuntimeError(f"{label} wiring is incorrect: expected exactly one patched script, found {len(positions)}.")
+        if data.count(expected) != 1:
+            raise RuntimeError(f"{label} wiring is incorrect: expected exactly one patched script, found {data.count(expected)}.")
     if rival_party_required:
         rival_party = b"".join(b"\x00\x00\x05\x00" + species.to_bytes(2, "little") for species in (FROBYTE_SPECIES_ID, TARTREK_SPECIES_ID, EMBERFOX_SPECIES_ID))
         if rival_party not in data:
