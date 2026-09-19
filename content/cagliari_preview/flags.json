@@ -2,7 +2,7 @@
   "source_contract": {
     "file": "include/constants/flags.h",
     "reserved_from": "0x0AF",
-    "reserved_to": "0x0B9",
+    "reserved_to": "0x0BC",
     "upstream_status": "unused_range"
   },
   "flags": {
@@ -16,6 +16,9 @@
     "RC_FLAG_CASTELLO_UNLOCKED": "0x0B6",
     "RC_FLAG_GO_NO_GO_STARTED": "0x0B7",
     "RC_FLAG_RELEASE_MANAGER_DEFEATED": "0x0B8",
-    "RC_FLAG_DEPLOY_01_COMPLETE": "0x0B9"
+    "RC_FLAG_DEPLOY_01_COMPLETE": "0x0B9",
+    "RC_FLAG_MARINA_BUG_REPORT_DONE": "0x0BA",
+    "RC_FLAG_RAMEN_STOP_VISITED": "0x0BB",
+    "RC_FLAG_CASTELLO_VIEWPOINT_SEEN": "0x0BC"
   }
 }
