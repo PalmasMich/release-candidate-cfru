@@ -95,7 +95,8 @@
         "RC_FLAG_SCOPE_CHANGE_REVEALED",
         "RC_FLAG_CASTELLO_UNLOCKED"
       ],
-      "scope": "chapter_01"
+      "scope": "chapter_01",
+      "dialogue": "RC_DIALOGUE_SCOPE_CHANGE"
     },
     {
       "id": "RC_EVENT_CASTELLO_ASCENT",
@@ -117,7 +118,8 @@
         "RC_FLAG_GO_NO_GO_STARTED"
       ],
       "scope": "chapter_01",
-      "implementation_status": "custom_path_pending_smoke"
+      "implementation_status": "custom_path_pending_smoke",
+      "dialogue": "RC_DIALOGUE_GO_NO_GO_START"
     },
     {
       "id": "RC_EVENT_RELEASE_MANAGER",
@@ -129,7 +131,9 @@
         "RC_FLAG_RELEASE_MANAGER_DEFEATED"
       ],
       "scope": "chapter_01",
-      "implementation_status": "custom_deploy_room_pending_smoke"
+      "implementation_status": "custom_deploy_room_pending_smoke",
+      "intro_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
+      "defeat_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT"
     },
     {
       "id": "RC_EVENT_DEPLOY_01_COMPLETE",
@@ -141,7 +145,8 @@
         "RC_FLAG_DEPLOY_01_COMPLETE"
       ],
       "scope": "chapter_01",
-      "implementation_status": "custom_deploy_room_pending_smoke"
+      "implementation_status": "custom_deploy_room_pending_smoke",
+      "dialogue": "RC_DIALOGUE_DEPLOY_COMPLETE"
     }
   ]
 }
