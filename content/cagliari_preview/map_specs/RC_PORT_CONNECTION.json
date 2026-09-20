@@ -3,17 +3,8 @@
   "chapter": "RC_CHAPTER_01_CAGLIARI",
   "status": "permanent",
   "map_type": "outdoor",
-  "dimensions": {
-    "width": 28,
-    "height": 12
-  },
-  "legend": {
-    "#": "route_boundary",
-    ".": "walkable_path",
-    "\"": "wild_grass",
-    "D": "door",
-    "T": "trainer_tile"
-  },
+  "dimensions": {"width": 28, "height": 12},
+  "legend": {"#": "route_boundary", ".": "walkable_path", "\"": "wild_grass", "D": "door", "T": "trainer_tile"},
   "layout": [
     "############################",
     "#..........................#",
@@ -28,34 +19,12 @@
     "#..\"\"\"\"....................#",
     "############################"
   ],
-  "collision": {
-    "blocked_roles": [
-      "route_boundary"
-    ],
-    "walkable_roles": [
-      "walkable_path",
-      "wild_grass",
-      "door",
-      "trainer_tile"
-    ]
-  },
+  "collision": {"blocked_roles": ["route_boundary"], "walkable_roles": ["walkable_path", "wild_grass", "door", "trainer_tile"]},
   "anchors": {
-    "player_spawn": {
-      "x": 2,
-      "y": 6
-    },
-    "marina_entrance": {
-      "x": 1,
-      "y": 6
-    },
-    "port_trainer": {
-      "x": 20,
-      "y": 6
-    },
-    "wild_tutorial_zone": {
-      "x": 15,
-      "y": 6
-    }
+    "player_spawn": {"x": 2, "y": 6},
+    "marina_entrance": {"x": 1, "y": 6},
+    "field_test_trigger": {"x": 12, "y": 6},
+    "port_trainer": {"x": 20, "y": 6}
   },
   "objects": [
     {
@@ -65,15 +34,8 @@
       "script": "RC_SCRIPT_PORT_TRAINER",
       "local_id": 1,
       "elevation": 3,
-      "graphics": {
-        "symbol": "OBJ_EVENT_GFX_WORKER_M",
-        "id": 47,
-        "status": "bootstrap"
-      },
-      "movement_type": {
-        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
-        "id": 9
-      }
+      "graphics": {"symbol": "OBJ_EVENT_GFX_WORKER_M", "id": 47, "status": "bootstrap"},
+      "movement_type": {"symbol": "MOVEMENT_TYPE_FACE_LEFT", "id": 9}
     }
   ],
   "interactions": [],
@@ -90,21 +52,14 @@
   ],
   "art_contract": {
     "tileset": "RC_TILESET_CAGLIARI_EXTERIORS_01",
-    "palette_notes": [
-      "port_service_lane",
-      "mediterranean_light",
-      "grass_edge"
-    ],
-    "must_not_look_like": [
-      "route1_reskin",
-      "sevii_prototype_reskin"
-    ]
+    "palette_notes": ["port_service_lane", "mediterranean_light", "grass_edge"],
+    "must_not_look_like": ["route1_reskin", "sevii_prototype_reskin"]
   },
   "metatile_profile": "RC_PORT_LINK_GENERAL_BOOTSTRAP",
   "coord_events": [
     {
-      "id": "RC_COORD_WILD_TUTORIAL",
-      "anchor": "wild_tutorial_zone",
+      "id": "RC_COORD_FIRST_FIELD_TEST",
+      "anchor": "field_test_trigger",
       "elevation": 3,
       "var_id": "0x4001",
       "var_value": 0,
