@@ -79,6 +79,40 @@ class CagliariPreviewContractTest(unittest.TestCase):
         self.assertEqual(totals[patcher.MEOWTH_SPECIES_ID], 15)
         self.assertEqual(sum(totals.values()), 100)
 
+    def test_port_link_manifest_matches_binary_patch_weights_and_levels(self):
+        patcher = load_patcher()
+        table = next(t for t in load("encounters.yml")["tables"] if t["id"] == "RC_PORT_CONNECTION_GRASS")
+        expected = {
+            "SPECIES_RC_CAGLIARI_WILD_01": patcher.MISTRILLO_SPECIES_ID,
+            "SPECIES_WINGULL": patcher.WINGULL_SPECIES_ID,
+            "SPECIES_MEOWTH": patcher.MEOWTH_SPECIES_ID,
+        }
+        self.assertEqual(table["map"], "RC_PORT_CONNECTION")
+        self.assertEqual(table["method"], "grass")
+        self.assertEqual(sum(slot["weight"] for slot in table["slots"]), 100)
+        for slot in table["slots"]:
+            species = expected[slot["species"]]
+            weighted_slots = [
+                (weight, levels)
+                for patched_species, weight, levels in zip(
+                    patcher.ROUTE1_PREVIEW_SPECIES,
+                    patcher.GRASS_SLOT_WEIGHTS,
+                    patcher.ROUTE1_PREVIEW_LEVELS,
+                )
+                if patched_species == species
+            ]
+            self.assertEqual(sum(weight for weight, _ in weighted_slots), slot["weight"])
+            self.assertGreaterEqual(min(levels[0] for _, levels in weighted_slots), slot["min_level"])
+            self.assertLessEqual(max(levels[1] for _, levels in weighted_slots), slot["max_level"])
+
+    def test_route_trainer_dialogue_contract_is_complete(self):
+        trainer = load("trainers.yml")["route_trainer"]
+        dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
+        self.assertEqual(trainer["role"], "short_battle_before_deploy_teaser")
+        self.assertIn(trainer["intro_dialogue"], dialogue_ids)
+        self.assertIn(trainer["outro_dialogue"], dialogue_ids)
+        self.assertGreaterEqual(len(trainer["party"]), 1)
+
     def test_visible_rom_identity_contains_required_preview_beats(self):
         patcher = load_patcher()
         replacements = [new for _, new in patcher.VISIBLE_TEXT_REPLACEMENTS]
