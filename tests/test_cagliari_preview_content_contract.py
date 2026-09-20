@@ -7,15 +7,15 @@ CONTENT = ROOT / "content" / "cagliari_preview"
 
 
 def load(name):
-    return json.loads((CONTENT / name).read_text())
+    return json.loads((CONTENT / name).read_text(encoding="utf-8"))
 
 
 def load_map_spec(name):
-    return json.loads((CONTENT / "map_specs" / name).read_text())
+    return json.loads((CONTENT / "map_specs" / name).read_text(encoding="utf-8"))
 
 
 def load_script_spec(name):
-    return json.loads((CONTENT / "script_specs" / name).read_text())
+    return json.loads((CONTENT / "script_specs" / name).read_text(encoding="utf-8"))
 
 
 class CagliariPreviewContentContractTest(unittest.TestCase):
@@ -28,6 +28,12 @@ class CagliariPreviewContentContractTest(unittest.TestCase):
             for target in item.get("connects_to", []):
                 self.assertIn(target, ids, f"{item['id']} points to missing map {target}")
 
+    def test_thick_preview_route_is_connected_hub_to_first_field_test(self):
+        maps = {item["id"]: item for item in load("maps.yml")["maps"]}
+        self.assertIn("RC_CAGLIARI_MARINA", maps["RC_DELIVERY_HUB"]["connects_to"])
+        self.assertIn("RC_PORT_CONNECTION", maps["RC_CAGLIARI_MARINA"]["connects_to"])
+        self.assertEqual(maps["RC_PORT_CONNECTION"]["bootstrap_source"], "FIRERED_ROUTE_1")
+
     def test_story_dialogue_references_exist(self):
         dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
         trainers = load("trainers.yml")
@@ -37,7 +43,8 @@ class CagliariPreviewContentContractTest(unittest.TestCase):
                     self.assertIn(trainer[key], dialogue_ids)
         required = {
             "RC_DIALOGUE_OPENING", "RC_DIALOGUE_STARTER", "RC_DIALOGUE_RIVAL_INTRO",
-            "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER", "RC_DIALOGUE_DEPLOY_TEASER",
+            "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER", "RC_DIALOGUE_PORT_LINK_HINT",
+            "RC_DIALOGUE_DEPLOY_TEASER",
         }
         self.assertTrue(required <= dialogue_ids)
 
@@ -48,8 +55,11 @@ class CagliariPreviewContentContractTest(unittest.TestCase):
         }
         trainers = load("trainers.yml")
         matrix = trainers["rival"]["starter_matrix"]
-        self.assertEqual(set(matrix), custom_species - {"SPECIES_RC_CAGLIARI_WILD_01"})
-        self.assertEqual(set(matrix.values()), custom_species - {"SPECIES_RC_CAGLIARI_WILD_01"})
+        starters = custom_species - {"SPECIES_RC_CAGLIARI_WILD_01"}
+        self.assertEqual(set(matrix), starters)
+        self.assertEqual(set(matrix.values()), starters)
+        self.assertTrue(all(player != rival_pick for player, rival_pick in matrix.items()))
+        self.assertEqual(trainers["rival"]["preview_level"], 5)
         for trainer in (trainers["route_trainer"], trainers["release_manager"]):
             party = trainer.get("party", trainer.get("desired_party", []))
             for mon in party:
@@ -78,9 +88,6 @@ class CagliariPreviewContentContractTest(unittest.TestCase):
     def test_first_field_test_is_unconditional_and_one_shot(self):
         port_map = load_map_spec("RC_PORT_CONNECTION.json")
         trigger = next(event for event in port_map["coord_events"] if event["id"] == "RC_COORD_FIRST_FIELD_TEST")
-        # A coord event with a non-zero var id only fires when that variable
-        # equals var_value. The preview must not depend on unrelated vanilla
-        # temp vars, otherwise the first custom encounter can be silently skipped.
         self.assertEqual(trigger["var_id"], "0x0000")
         self.assertEqual(trigger["script"], "RC_SCRIPT_WILD_TUTORIAL_TRIGGER")
 
