@@ -91,6 +91,18 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         for old_text, new_text in patcher.VISIBLE_TEXT_REPLACEMENTS:
             self.assertLessEqual(len(new_text), len(old_text))
 
+    def test_opening_about_yourself_uses_contextual_signature(self):
+        patcher = load_patcher()
+        opening = patcher.encode_text("But first, tell me a little about\nyourself.")
+        unrelated = patcher.encode_text("Please enjoy yourself.")
+        payload = bytearray(opening + b"|" + unrelated)
+
+        patched, applied, _, _ = patcher.patch_visible_preview_text(payload)
+
+        self.assertIn(patcher.encode_text("Prima però devo registrarti.\nPartiamo."), applied)
+        self.assertNotIn(opening, patched)
+        self.assertIn(unrelated, patched)
+
     def test_opening_rewrite_covers_identity_name_and_launch_beats(self):
         patcher = load_patcher()
         replacements = dict(patcher.VISIBLE_TEXT_REPLACEMENTS)

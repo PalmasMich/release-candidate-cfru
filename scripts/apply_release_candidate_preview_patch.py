@@ -57,9 +57,11 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("For some people, POKéMON are pets."), encode_text("Qui ogni partner ha un ruolo.")),
     (encode_text("Others use them for battling."), encode_text("E ogni task ha conseguenze.")),
     (encode_text("I study POKéMON as a profession."), encode_text("Io provo a tenere insieme tutto.")),
-    (encode_text("But first, tell me a little about"), encode_text("Prima però devo registrarti.")),
+    (
+        encode_text("But first, tell me a little about\nyourself."),
+        encode_text("Prima però devo registrarti.\nPartiamo."),
+    ),
     (encode_text("Now tell me. Are you a boy? Or are you a girl?"), encode_text("Dimmi solo come vuoi presentarti.")),
-    (encode_text("yourself."), encode_text("Partiamo.")),
     (encode_text("Let's begin with your name."), encode_text("Cominciamo dal tuo nome.")),
     (encode_text("What is it?"), encode_text("Nome?")),
     (encode_text("This is my grandson."), encode_text("È il collega.")),
