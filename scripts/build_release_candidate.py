@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_STARTER_RUNTIME", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
+PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "RC_STARTER_RUNTIME", "CFRU", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
 RC_LEARNSET_TABLE = Path("src/Tables/level_up_learnsets.c")
 
 
@@ -165,6 +165,7 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         raise FileNotFoundError(f"CFRU build entrypoint not found under {cfru_root}")
     original_rom = cfru_rom.read_bytes()
     original_learnsets = learnset_table.read_bytes()
+    candidate_complete = False
     output_path.parent.mkdir(parents=True, exist_ok=True)
     sync_dpe(dpe_root)
     try:
@@ -208,26 +209,31 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
             print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
         delivery_hub_status = prepare_delivery_hub_map(output_path)
         print("DELIVERY_HUB_MAP_PLAN_STATUS=READY" if delivery_hub_status == 0 else f"DELIVERY_HUB_MAP_PLAN_STATUS=PENDING:{delivery_hub_status}")
+        if delivery_hub_status != 0:
+            raise RuntimeError(f"Delivery Hub map plan failed with status {delivery_hub_status}")
 
-        if delivery_hub_status == 0:
-            maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
+        maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
+        if maps_output.exists(): maps_output.unlink()
+        try:
+            custom_maps_status = apply_custom_maps(output_path, maps_output)
+            if custom_maps_status != 0:
+                print(f"RC_CUSTOM_MAPS_STATUS=BLOCKED:{custom_maps_status}")
+                raise RuntimeError(f"Release Candidate custom map patch failed with status {custom_maps_status}")
+            if not maps_output.exists():
+                print("RC_CUSTOM_MAPS_STATUS=BLOCKED:NO_OUTPUT")
+                raise RuntimeError("Release Candidate custom map patch did not produce an output")
+            shutil.move(str(maps_output), str(output_path))
+            output_hash = sha1_file(output_path)
+            print("RC_CUSTOM_MAPS_STATUS=APPLIED")
+            candidate_complete = True
+        finally:
             if maps_output.exists(): maps_output.unlink()
-            try:
-                custom_maps_status = apply_custom_maps(output_path, maps_output)
-                if custom_maps_status == 0 and maps_output.exists():
-                    shutil.move(str(maps_output), str(output_path))
-                    output_hash = sha1_file(output_path)
-                    print("RC_CUSTOM_MAPS_STATUS=APPLIED")
-                else:
-                    print(f"RC_CUSTOM_MAPS_STATUS=PENDING:{custom_maps_status}")
-            finally:
-                if maps_output.exists(): maps_output.unlink()
-        else:
-            print("RC_CUSTOM_MAPS_STATUS=PENDING:MAP_PLAN")
 
         print(f"\nDPE_SHA1={dpe_hash}\nCFRU_SHA1={cfru_hash}\nOUTPUT={output_path}\nOUTPUT_SHA1={output_hash}")
         return output_path
     finally:
+        if not candidate_complete and output_path.exists():
+            output_path.unlink()
         cfru_rom.write_bytes(original_rom)
         learnset_table.write_bytes(original_learnsets)
         for path in (dpe_rom, dpe_output, cfru_output):
@@ -241,7 +247,7 @@ def main() -> int:
     args = parser.parse_args()
     print("Release Candidate one-command build")
     print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}")
-    print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_STARTER_RUNTIME -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH")
+    print("PIPELINE=" + " -> ".join(PIPELINE))
     print(f"BASE_SHA1={EXPECTED_SHA1}")
     try:
         run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
