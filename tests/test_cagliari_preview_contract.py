@@ -11,12 +11,16 @@ def load(name):
     return json.loads((CONTENT / name).read_text(encoding="utf-8"))
 
 
-def load_patcher():
-    path = ROOT / "scripts" / "apply_release_candidate_preview_patch.py"
-    spec = importlib.util.spec_from_file_location("rc_preview_patcher", path)
+def load_module(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def load_patcher():
+    return load_module(ROOT / "scripts" / "apply_release_candidate_preview_patch.py", "rc_preview_patcher")
 
 
 class CagliariPreviewContractTest(unittest.TestCase):
@@ -36,14 +40,7 @@ class CagliariPreviewContractTest(unittest.TestCase):
         preview = [item for item in load("events.yml")["flow"] if item.get("scope") == "preview"]
         self.assertEqual(
             [item["id"] for item in preview],
-            [
-                "RC_EVENT_ARRIVAL",
-                "RC_EVENT_STARTER_ASSIGNMENT",
-                "RC_EVENT_RIVAL_INTRO",
-                "RC_EVENT_FIRST_WILD",
-                "RC_EVENT_PORT_TRAINER",
-                "RC_EVENT_DEPLOY_TEASER",
-            ],
+            ["RC_EVENT_ARRIVAL", "RC_EVENT_STARTER_ASSIGNMENT", "RC_EVENT_RIVAL_INTRO", "RC_EVENT_FIRST_WILD", "RC_EVENT_PORT_TRAINER", "RC_EVENT_DEPLOY_TEASER"],
         )
         produced = set()
         for event in preview:
@@ -53,11 +50,7 @@ class CagliariPreviewContractTest(unittest.TestCase):
 
     def test_rival_matrix_covers_each_preview_starter_once(self):
         matrix = load("trainers.yml")["rival"]["starter_matrix"]
-        starters = {
-            "SPECIES_RC_TURTLE_01",
-            "SPECIES_RC_FROG_01",
-            "SPECIES_RC_FIREFOX_01",
-        }
+        starters = {"SPECIES_RC_TURTLE_01", "SPECIES_RC_FROG_01", "SPECIES_RC_FIREFOX_01"}
         self.assertEqual(set(matrix), starters)
         self.assertEqual(set(matrix.values()), starters)
         for player, rival in matrix.items():
@@ -65,10 +58,7 @@ class CagliariPreviewContractTest(unittest.TestCase):
 
     def test_rival_matrix_matches_rom_patch_species_ids(self):
         patcher = load_patcher()
-        self.assertEqual(
-            (patcher.TARTREK_SPECIES_ID, patcher.FROBYTE_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID),
-            (0x050E, 0x050F, 0x0510),
-        )
+        self.assertEqual((patcher.TARTREK_SPECIES_ID, patcher.FROBYTE_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID), (0x050E, 0x050F, 0x0510))
         matrix = load("trainers.yml")["rival"]["starter_matrix"]
         self.assertEqual(matrix["SPECIES_RC_TURTLE_01"], "SPECIES_RC_FIREFOX_01")
         self.assertEqual(matrix["SPECIES_RC_FROG_01"], "SPECIES_RC_TURTLE_01")
@@ -92,14 +82,12 @@ class CagliariPreviewContractTest(unittest.TestCase):
     def test_visible_rom_identity_contains_required_preview_beats(self):
         patcher = load_patcher()
         replacements = [new for _, new in patcher.VISIBLE_TEXT_REPLACEMENTS]
-        for phrase in (
-            "Welcome to Release Candidate!",
-            "Three resources are ready.",
-            "KPI check: show velocity!",
-            "PORT LINK\nCAGLIARI - MARINA PORTO",
-            "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE",
-        ):
+        for phrase in ("Welcome to Release Candidate!", "Three resources are ready.", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE"):
             self.assertIn(patcher.encode_text(phrase), replacements)
+
+    def test_acceptance_verifier_passes_current_source_contract(self):
+        verifier = load_module(ROOT / "scripts" / "verify_cagliari_preview_contract.py", "rc_preview_contract")
+        self.assertEqual(verifier.main(), 0)
 
 
 if __name__ == "__main__":
