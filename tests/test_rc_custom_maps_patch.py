@@ -170,14 +170,18 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertEqual(int.from_bytes(patched[0x1004:0x1008],"little"),e["hub_events_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1100:0x1104],"little"),e["marina_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1104:0x1108],"little"),e["marina_events_ptr"])
+        self.assertEqual(patched[0x1119], 0x02)
         self.assertEqual(int.from_bytes(patched[0x1200:0x1204],"little"),e["port_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1204:0x1208],"little"),e["port_events_ptr"])
+        self.assertEqual(patched[0x1219], 0x02)
         self.assertEqual(int.from_bytes(patched[0x1300:0x1304],"little"),e["castello_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1304:0x1308],"little"),e["castello_events_ptr"])
         self.assertEqual(patched[0x130C:0x1310],b"\x00\x00\x00\x00")
+        self.assertEqual(patched[0x1319], 0x02)
         self.assertEqual(int.from_bytes(patched[0x1400:0x1404],"little"),e["deploy_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1404:0x1408],"little"),e["deploy_events_ptr"])
         self.assertEqual(patched[0x140C:0x1410],b"\x00\x00\x00\x00")
+        self.assertEqual(patched[0x1419], 0x02)
         self.assertEqual(int.from_bytes(patched[0x1500:0x1504],"little"),e["room_layout_ptr"])
         self.assertEqual(int.from_bytes(patched[0x1504:0x1508],"little"),e["room_events_ptr"])
 
@@ -187,6 +191,7 @@ class TestCustomMapsPatch(unittest.TestCase):
         self.assertGreater(e["castello_payload_offset"],e["port_payload_offset"])
         self.assertGreater(e["deploy_payload_offset"],e["castello_payload_offset"])
         self.assertGreater(e["room_payload_offset"],e["deploy_payload_offset"])
+        self.assertEqual(e["exterior_map_name_popups"], "disabled_until_authored_names")
 
     def test_blocks_without_guarded_tail_space(self):
         patcher=load(PATCHER,"patcher")
@@ -194,5 +199,20 @@ class TestCustomMapsPatch(unittest.TestCase):
         data[0xC000:]=b"\x00"*(len(data)-0xC000)
         with self.assertRaisesRegex(ValueError,"trailing ROM space"):
             patcher.patch_bytes(bytes(data))
+
+    def test_rejects_header_metadata_changed_after_discovery(self):
+        patcher=load(PATCHER,"patcher_metadata_guard")
+        marina=load(MARINA_DISC,"marina_metadata_guard")
+        data=bytearray(self.fixture())
+        header=marina.analyze_rom(bytes(data))["candidates"][0]
+        data[header["offset"]+25]=0x02
+        with self.assertRaisesRegex(ValueError,"flags expected"):
+            patcher.repoint_header(
+                data,
+                header,
+                layout_ptr=header["layout_ptr"],
+                events_ptr=header["events_ptr"],
+                suppress_map_name=True,
+            )
 
 if __name__=="__main__": unittest.main()

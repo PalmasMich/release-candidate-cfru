@@ -46,12 +46,28 @@ def verify_header_unchanged(data:bytes,header:dict)->None:
       "events_ptr":int.from_bytes(data[o+4:o+8],"little"),
       "scripts_ptr":int.from_bytes(data[o+8:o+12],"little"),
       "connections_ptr":int.from_bytes(data[o+12:o+16],"little"),
+      "music":int.from_bytes(data[o+16:o+18],"little"),
+      "layout_id":int.from_bytes(data[o+18:o+20],"little"),
+      "mapsec":data[o+20],
+      "cave":data[o+21],
+      "weather":data[o+22],
+      "map_type":data[o+23],
+      "biking":data[o+24],
+      "flags":data[o+25],
+      "floor":int.from_bytes(data[o+26:o+27],"little",signed=True),
+      "battle":data[o+27],
+    }
+    expected={
+      **header,
+      "biking":header.get("biking",header.get("biking_allowed")),
+      "floor":header.get("floor",header.get("floor_num")),
+      "battle":header.get("battle",header.get("battle_type")),
     }
     for key in current:
-        if current[key]!=header[key]:
+        if current[key]!=expected[key]:
             raise ValueError(
                 f"map header changed after discovery at 0x{o:X}: "
-                f"{key} expected 0x{header[key]:08X}, got 0x{current[key]:08X}"
+                f"{key} expected 0x{expected[key]:08X}, got 0x{current[key]:08X}"
             )
 
 def repoint_header(
@@ -61,6 +77,7 @@ def repoint_header(
     layout_ptr:int,
     events_ptr:int,
     clear_connections:bool=False,
+    suppress_map_name:bool=False,
 )->None:
     verify_header_unchanged(bytes(data),header)
     o=header["offset"]
@@ -68,6 +85,9 @@ def repoint_header(
     data[o+4:o+8]=int(events_ptr).to_bytes(4,"little")
     if clear_connections:
         data[o+12:o+16]=b"\x00\x00\x00\x00"
+    if suppress_map_name:
+        # Preserve escape/run bits while clearing the map-name popup field.
+        data[o+25]=header["flags"] & 0x03
 
 def build_payloads(data:bytes)->dict:
     hub_discovery=load(HUB_DISCOVERY,"hub_slot")
@@ -276,23 +296,27 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
         out,plan["marina_header"],
         layout_ptr=m["map_layout_address"],
         events_ptr=m["map_events_address"],
+        suppress_map_name=True,
     )
     repoint_header(
         out,plan["port_header"],
         layout_ptr=p["map_layout_address"],
         events_ptr=p["map_events_address"],
+        suppress_map_name=True,
     )
     repoint_header(
         out,plan["castello_header"],
         layout_ptr=cst["map_layout_address"],
         events_ptr=cst["map_events_address"],
         clear_connections=True,
+        suppress_map_name=True,
     )
     repoint_header(
         out,plan["deploy_header"],
         layout_ptr=dep["map_layout_address"],
         events_ptr=dep["map_events_address"],
         clear_connections=True,
+        suppress_map_name=True,
     )
     repoint_header(
         out,plan["room_header"],
@@ -344,6 +368,7 @@ def patch_bytes(data:bytes)->tuple[bytes,dict]:
       "deploy_events_ptr":dep["map_events_address"],
       "room_layout_ptr":room["map_layout_address"],
       "room_events_ptr":room["map_events_address"],
+      "exterior_map_name_popups":"disabled_until_authored_names",
     }
     return out2,evidence
 
@@ -370,6 +395,7 @@ def patch_rom(source:Path,output:Path)->Path:
     print(f"RC_DEPLOY_ROOM_PAYLOAD_OFFSET=0x{e['room_payload_offset']:X}")
     print("RC_ENTRY_WARP_OFFSETS="+",".join(f"0x{x:X}" for x in e["entry_warp_offsets"]))
     print(f"RC_PORT_LINK_WILD_HEADER_OFFSET=0x{e['wild_header_offset']:X}")
+    print("RC_EXTERIOR_MAP_NAME_POPUPS=DISABLED_UNTIL_AUTHORED_NAMES")
     print(f"RC_CUSTOM_MAPS_OUTPUT={output}")
     return output
 
