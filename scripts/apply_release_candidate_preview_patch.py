@@ -50,8 +50,13 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("You need your own POKéMON for\nyour protection."), encode_text("You need a resource for\nthe Port Link test.")),
     (encode_text("I know!\nHere, come with me!"), encode_text("Come on!\nDelivery Hub, now!")),
     (encode_text("There are three POKéMON here."), encode_text("Three resources are ready.")),
+    (encode_text("The POKéMON are held inside\nthese POKé BALLS."), encode_text("The build candidates are inside\nthese three team slots.")),
+    (encode_text("When I was young, I was a serious\nPOKéMON TRAINER."), encode_text("Back then, every release had\none clean requirement.")),
+    (encode_text("But now, in my old age, I have\nonly these three left."), encode_text("Now scope changes daily.\nThese three passed intake.")),
     (encode_text("You can have one.\nGo on, choose!"), encode_text("Pick one now.\nFirst task starts!")),
+    (encode_text("OAK: Be patient, {RIVAL}.\nYou can have one, too!"), encode_text("LEAD: Wait, {RIVAL}.\nYour allocation comes next!")),
     (encode_text("OAK: Now, {PLAYER}."), encode_text("LEAD: Hi, {PLAYER}.")),
+    (encode_text("Inside those three POKé BALLS are\nPOKéMON."), encode_text("Inside these slots are three\nrelease candidates.")),
     (encode_text("Which one will you choose for\nyourself?"), encode_text("Which resource joins your\nfirst sprint?")),
     (encode_text("I see! BULBASAUR is your choice."), encode_text("TARTREK is your new partner!")),
     (encode_text("Hm! SQUIRTLE is your choice."), encode_text("FROBYTE is your new partner!")),
@@ -85,6 +90,8 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("your POKéMON can battle it."), encode_text("Use your partner on Port Link.")),
     (encode_text("With it at your side, you should be"), encode_text("Close one check, then report")),
     (encode_text("able to reach the next town."), encode_text("at Marina Porto.")),
+    (encode_text("OAK: {PLAYER}, raise your young\nPOKéMON by making it battle."), encode_text("LEAD: {PLAYER}, validate your\nresource with field tests.")),
+    (encode_text("It has to battle for it to grow."), encode_text("Evidence beats a status report.")),
     (encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"), encode_text("PORT LINK\nCAGLIARI - MARINA PORTO")),
     (encode_text("Hi!\nI work at a POKéMON MART."), encode_text("Hi!\nI work on Delivery.")),
     (encode_text("It's part of a convenient chain\nselling all sorts of items."), encode_text("MISTRILLO is in this grass.\nField test it now.")),
@@ -102,7 +109,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("VIRIDIAN CITY POKéMON GYM"), encode_text("MARINA PORTO DEPLOY GATE")),
     (encode_text("VIRIDIAN GYM's doors are locked…"), encode_text("DEPLOY GATE locked: scope open.")),
 )
-REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Let's benchmark our resources!", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MISTRILLO is in this grass.\nField test it now.", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
+REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Inside these slots are three\nrelease candidates.", "Let's benchmark our resources!", "KPI check: show velocity!", "LEAD: {PLAYER}, validate your\nresource with field tests.", "PORT LINK\nCAGLIARI - MARINA PORTO", "MISTRILLO is in this grass.\nField test it now.", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
 MAP_NAME_REPLACEMENT = (encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF", encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF")
 LAB_SIGN_REPLACEMENT = (b"\xCA\xC9\xC5\x1B\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC", encode_text("DELIVERY HUB"))
 
