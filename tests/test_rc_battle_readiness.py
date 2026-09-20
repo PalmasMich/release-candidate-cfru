@@ -20,7 +20,7 @@ class RCBattleReadinessTest(unittest.TestCase):
     def test_preview_species_have_cfru_learnset_definitions(self):
         text = LEARNSETS.read_text(encoding="utf-8")
         expected = {
-            "sRCTartrekLevelUpLearnset": ("MOVE_TACKLE", "MOVE_GROWL"),
+            "sRCTartrekLevelUpLearnset": ("MOVE_TACKLE", "MOVE_WITHDRAW"),
             "sRCFrobyteLevelUpLearnset": ("MOVE_POUND", "MOVE_GROWL"),
             "sRCEmberfoxLevelUpLearnset": ("MOVE_SCRATCH", "MOVE_TAILWHIP"),
             "sRCMistrilloLevelUpLearnset": ("MOVE_GUST", "MOVE_GROWL"),
