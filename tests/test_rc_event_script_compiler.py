@@ -33,6 +33,10 @@ class RcEventScriptCompilerTest(unittest.TestCase):
                 "RC_SCRIPT_STARTER_FROBYTE",
                 "RC_SCRIPT_STARTER_EMBERFOX",
                 "RC_SCRIPT_KPI_RIVAL",
+                "RC_SCRIPT_HUB_ARRIVAL",
+                "RC_SCRIPT_HUB_ANALYST",
+                "RC_SCRIPT_HUB_DEVELOPER",
+                "RC_SCRIPT_HUB_PM",
             },
         )
 

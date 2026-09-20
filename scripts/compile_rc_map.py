@@ -128,6 +128,7 @@ def compile_spec(spec: dict) -> dict:
         "anchors": spec["anchors"],
         "objects": spec.get("objects", []),
         "interactions": spec.get("interactions", []),
+        "coord_events": spec.get("coord_events", []),
         "warps": spec.get("warps", []),
         "tileset_contract": spec["art_contract"]["tileset"],
         "source_sha256": source_sha256,

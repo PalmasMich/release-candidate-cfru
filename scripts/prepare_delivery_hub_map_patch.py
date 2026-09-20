@@ -52,7 +52,7 @@ def build_plan(rom_data: bytes) -> dict:
     compiled_script_ids = {script["id"] for script in event_ir["scripts"]}
     bound_script_ids = {
         item["script"]
-        for item in ir["objects"] + ir["interactions"]
+        for item in ir["objects"] + ir["interactions"] + ir["coord_events"]
     }
     missing_scripts = sorted(bound_script_ids - compiled_script_ids)
     if missing_scripts:
@@ -117,6 +117,7 @@ def build_plan(rom_data: bytes) -> dict:
                 len(map_events_ir["map_events_header"]["relocations"])
                 + len(map_events_ir["object_events"]["relocations"])
                 + len(map_events_ir["warp_events"]["relocations"])
+                + len(map_events_ir["coord_events"]["relocations"])
                 + len(map_events_ir["bg_events"]["relocations"])
             ),
             "minimum_payload_bytes": border_bytes + map_cell_bytes + map_events_bytes + script_bytes + dialogue_bytes,

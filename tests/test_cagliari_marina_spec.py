@@ -22,9 +22,12 @@ class TestMarina(unittest.TestCase):
     def test_marina_return_warp_resolves_to_delivery_hub(self):
         m=load(EVENT_COMPILER,"events")
         ir=m.compile_file(SPEC)
-        self.assertEqual(ir["warp_events"]["count"],1)
+        self.assertEqual(ir["warp_events"]["count"],2)
         linked=m.link_map_id_relocations(ir["warp_events"],m.load_map_ids())
-        rel=ir["warp_events"]["relocations"][0]
+        rel=next(
+            item for item in ir["warp_events"]["relocations"]
+            if item["owner"] == "RC_WARP_MARINA_TO_DELIVERY"
+        )
         self.assertEqual(linked[rel["offset"]:rel["offset"]+2],bytes([0,27]))
 
 if __name__=="__main__": unittest.main()

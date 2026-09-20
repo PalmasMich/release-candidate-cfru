@@ -23,25 +23,32 @@ class RcMapEventsCompilerTest(unittest.TestCase):
         self.assertEqual(self.ir["format"], "RC_MAP_EVENTS_IR_V1")
         self.assertEqual(self.ir["map"], "RC_DELIVERY_HUB")
 
-        self.assertEqual(self.ir["object_events"]["count"], 2)
-        self.assertEqual(self.ir["object_events"]["size"], 2 * 0x18)
+        self.assertEqual(self.ir["object_events"]["count"], 5)
+        self.assertEqual(self.ir["object_events"]["size"], 5 * 0x18)
 
         self.assertEqual(self.ir["warp_events"]["count"], 1)
         self.assertEqual(self.ir["warp_events"]["size"], 8)
 
-        self.assertEqual(self.ir["coord_events"]["count"], 0)
+        self.assertEqual(self.ir["coord_events"]["count"], 1)
+        self.assertEqual(self.ir["coord_events"]["size"], 16)
         self.assertEqual(self.ir["bg_events"]["count"], 3)
         self.assertEqual(self.ir["bg_events"]["size"], 3 * 12)
 
         self.assertEqual(self.ir["map_events_header"]["size"], 20)
-        self.assertEqual(self.ir["total_bytes"], 112)
+        self.assertEqual(self.ir["total_bytes"], 200)
 
     def test_object_event_scripts_are_relocatable(self):
         relocs = self.ir["object_events"]["relocations"]
-        self.assertEqual(len(relocs), 2)
+        self.assertEqual(len(relocs), 5)
         self.assertEqual(
             {item["symbol"] for item in relocs},
-            {"RC_SCRIPT_DELIVERY_LEAD", "RC_SCRIPT_KPI_RIVAL"},
+            {
+                "RC_SCRIPT_DELIVERY_LEAD",
+                "RC_SCRIPT_KPI_RIVAL",
+                "RC_SCRIPT_HUB_ANALYST",
+                "RC_SCRIPT_HUB_DEVELOPER",
+                "RC_SCRIPT_HUB_PM",
+            },
         )
         self.assertTrue(all(item["size"] == 4 for item in relocs))
 
@@ -74,11 +81,11 @@ class RcMapEventsCompilerTest(unittest.TestCase):
             bytes([52, 3]),
         )
 
-    def test_map_events_header_has_null_coord_pointer(self):
+    def test_map_events_header_links_all_populated_event_blocks(self):
         header = bytes.fromhex(self.ir["map_events_header"]["bytes_hex"])
-        self.assertEqual(header[0:4], bytes([2, 1, 0, 3]))
+        self.assertEqual(header[0:4], bytes([5, 1, 1, 3]))
         self.assertEqual(header[12:16], b"\x00\x00\x00\x00")
-        self.assertEqual(len(self.ir["map_events_header"]["relocations"]), 3)
+        self.assertEqual(len(self.ir["map_events_header"]["relocations"]), 4)
 
 
 if __name__ == "__main__":

@@ -23,12 +23,54 @@ TAIL_OFFSET = 0x10
 TAIL_SIZE = 0x0C
 
 
-def is_rom_pointer(value: int, rom_size: int) -> bool:
+def is_rom_pointer(value: int, rom_size: int, alignment: int = 4) -> bool:
     if value == 0:
         return False
     if not (GBA_ROM_BASE <= value < GBA_ROM_BASE + rom_size):
         return False
-    return (value - GBA_ROM_BASE) % 4 == 0
+    return (value - GBA_ROM_BASE) % alignment == 0
+
+
+def pointer_offset(value: int, rom_size: int) -> int:
+    if not is_rom_pointer(value, rom_size, alignment=1):
+        raise ValueError("invalid ROM pointer")
+    return value - GBA_ROM_BASE
+
+
+def parse_layout(data: bytes, pointer: int) -> dict:
+    offset = pointer_offset(pointer, len(data))
+    if offset + 0x1C > len(data):
+        raise ValueError("map layout out of bounds")
+
+    def u32(pos: int) -> int:
+        return int.from_bytes(data[offset + pos:offset + pos + 4], "little")
+
+    return {
+        "offset": offset,
+        "width": int.from_bytes(data[offset:offset + 4], "little", signed=True),
+        "height": int.from_bytes(data[offset + 4:offset + 8], "little", signed=True),
+        "border_ptr": u32(0x08),
+        "map_ptr": u32(0x0C),
+        "primary_tileset_ptr": u32(0x10),
+        "secondary_tileset_ptr": u32(0x14),
+        "border_width": data[offset + 0x18],
+        "border_height": data[offset + 0x19],
+    }
+
+
+def matches_house2_layout(layout: dict, rom_size: int) -> bool:
+    return all(
+        (
+            layout["width"] == 11,
+            layout["height"] == 9,
+            layout["border_width"] == 2,
+            layout["border_height"] == 2,
+            is_rom_pointer(layout["border_ptr"], rom_size, alignment=2),
+            is_rom_pointer(layout["map_ptr"], rom_size, alignment=2),
+            is_rom_pointer(layout["primary_tileset_ptr"], rom_size, alignment=4),
+            is_rom_pointer(layout["secondary_tileset_ptr"], rom_size, alignment=4),
+        )
+    )
 
 
 def parse_header(data: bytes, offset: int) -> dict:

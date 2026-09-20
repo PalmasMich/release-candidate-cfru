@@ -8,6 +8,7 @@ SCRIPT_COMPILER=ROOT/"scripts"/"compile_rc_event_scripts.py"
 PAYLOAD_COMPILER=ROOT/"scripts"/"compile_rc_map_payload.py"
 CASTELLO=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_CASTELLO_ASCENT.json"
 MARINA_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CAGLIARI_MARINA.json"
+CASTELLO_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CASTELLO_ASCENT.json"
 
 def load(path,name):
     s=importlib.util.spec_from_file_location(name,path)
@@ -53,7 +54,7 @@ class TestCastelloCustomMap(unittest.TestCase):
         comp=load(PAYLOAD_COMPILER,"payload")
         p=comp.compile_payload(
             map_spec_path=CASTELLO,
-            script_spec_path=None,
+            script_spec_path=CASTELLO_SCRIPTS,
             base_address=0x08970000,
             primary_tileset_ptr=0x08120000,
             secondary_tileset_ptr=0x08130000,

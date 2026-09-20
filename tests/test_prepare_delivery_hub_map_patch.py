@@ -71,9 +71,9 @@ class PrepareDeliveryHubMapPatchTest(unittest.TestCase):
         )
         compiled = plan["compiled_content"]
         self.assertEqual(compiled["event_script_format"], "RC_EVENT_SCRIPT_IR_V1")
-        self.assertEqual(compiled["event_script_count"], 5)
+        self.assertEqual(compiled["event_script_count"], 9)
         self.assertEqual(compiled["map_events_format"], "RC_MAP_EVENTS_IR_V1")
-        self.assertEqual(compiled["map_events_bytes"], 112)
+        self.assertEqual(compiled["map_events_bytes"], 200)
         self.assertGreater(compiled["dialogue_bytes"], 0)
         self.assertGreater(compiled["minimum_payload_bytes"], 112)
         self.assertEqual(
@@ -84,6 +84,10 @@ class PrepareDeliveryHubMapPatchTest(unittest.TestCase):
                 "RC_SCRIPT_STARTER_TARTREK",
                 "RC_SCRIPT_STARTER_FROBYTE",
                 "RC_SCRIPT_STARTER_EMBERFOX",
+                "RC_SCRIPT_HUB_ARRIVAL",
+                "RC_SCRIPT_HUB_ANALYST",
+                "RC_SCRIPT_HUB_DEVELOPER",
+                "RC_SCRIPT_HUB_PM",
             },
         )
 
