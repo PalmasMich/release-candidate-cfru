@@ -45,6 +45,10 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("as the POKéMON PROFESSOR."), encode_text("on this project.")),
     (encode_text("YOUR NAME?"), encode_text("YOUR ID?")),
     (encode_text("RIVAL's NAME?"), encode_text("TEAMMATE ID?")),
+    (encode_text("OAK: Hey! Wait!\nDon't go out!"), encode_text("LEAD: Hey! Wait!\nNo field test yet!")),
+    (encode_text("OAK: It's unsafe!\nWild POKéMON live in tall grass!"), encode_text("LEAD: Scope changed!\nField checks start today!")),
+    (encode_text("You need your own POKéMON for\nyour protection."), encode_text("You need a resource for\nthe Port Link test.")),
+    (encode_text("I know!\nHere, come with me!"), encode_text("Come on!\nDelivery Hub, now!")),
     (encode_text("There are three POKéMON here."), encode_text("Three resources are ready.")),
     (encode_text("You can have one.\nGo on, choose!"), encode_text("Pick one now.\nFirst task starts!")),
     (encode_text("OAK: Now, {PLAYER}."), encode_text("LEAD: Hi, {PLAYER}.")),
@@ -56,10 +60,17 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("the GRASS POKéMON BULBASAUR?"), encode_text("the GRASS/GROUND TARTREK?")),
     (encode_text("the WATER POKéMON SQUIRTLE?"), encode_text("the WATER/ELECTRIC FROBYTE?")),
     (encode_text("FIRE POKéMON CHARMANDER?"), encode_text("FIRE/DARK EMBERFOX?")),
+    (encode_text("{RIVAL}: Heh, I don't need to be\ngreedy like you. I'm mature!"), encode_text("{RIVAL}: I don't chase metrics.\nI just happen to lead them.")),
+    (encode_text("Go ahead and choose, {PLAYER}!"), encode_text("Choose, {PLAYER}. KPI clock is live!")),
+    (encode_text("{RIVAL}: I'll take this one, then!"), encode_text("{RIVAL}: Fine. I'll take this one!")),
     (encode_text("{RIVAL}: My POKéMON looks a lot\ntougher than yours."), encode_text("{RIVAL}: My KPI already looks\nbetter than yours.")),
+    (encode_text("{RIVAL}: Wait, {PLAYER}!"), encode_text("{RIVAL}: Wait, {PLAYER}!")),
+    (encode_text("Let's check out our POKéMON!"), encode_text("Let's benchmark our resources!")),
     (encode_text("Come on, I'll take you on!"), encode_text("KPI check: show velocity!")),
     (encode_text("WHAT?\nUnbelievable!\nI picked the wrong POKéMON!"), encode_text("WHAT?\nKPI variance!\nI need a new baseline!")),
     (encode_text("{RIVAL}: Yeah!\nAm I great or what?"), encode_text("{RIVAL}: Yeah!\nKPI is GREEN!")),
+    (encode_text("{RIVAL}: Okay! I'll make my\nPOKéMON battle to toughen it up!"), encode_text("{RIVAL}: Fine! I'll optimize my\nresource before next review!")),
+    (encode_text("{PLAYER}! Gramps!\nSmell you later!"), encode_text("{PLAYER}! Lead!\nSee you at stand-up!")),
     (encode_text("PALLET TOWN\nShades of your journey await!"), encode_text("CAGLIARI\nFirst sprint starts here!")),
     (encode_text("Technology is incredible!"), encode_text("Delivery is incredible!")),
     (encode_text("You can now store and recall items"), encode_text("We can now track every task")),
@@ -80,6 +91,8 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("Please, visit us in VIRIDIAN CITY."), encode_text("Please, report at MARINA PORTO.")),
     (encode_text("I know, I'll give you a sample.\nHere you go!"), encode_text("Quick handoff: take this.\nUse it well!")),
     (encode_text("Please come see us if you need\nPOKé BALLS for catching POKéMON."), encode_text("Ping Delivery if you need\nmore field-test supplies.")),
+    (encode_text("See those ledges along the road?"), encode_text("See those shortcuts on Port Link?")),
+    (encode_text("It's a bit scary, but you can jump\nfrom them."), encode_text("Use them if the timeline\nstarts slipping.")),
     (encode_text("You can get back to PALLET TOWN\nquicker that way."), encode_text("You can get back to CAGLIARI\nquicker that way.")),
     (encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"), encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE")),
     (encode_text("This POKéMON GYM is always closed."), encode_text("This deploy gate is still closed.")),
@@ -89,7 +102,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("VIRIDIAN CITY POKéMON GYM"), encode_text("MARINA PORTO DEPLOY GATE")),
     (encode_text("VIRIDIAN GYM's doors are locked…"), encode_text("DEPLOY GATE locked: scope open.")),
 )
-REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
+REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Let's benchmark our resources!", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
 MAP_NAME_REPLACEMENT = (encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF", encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF")
 LAB_SIGN_REPLACEMENT = (b"\xCA\xC9\xC5\x1B\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC", encode_text("DELIVERY HUB"))
 
