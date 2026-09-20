@@ -61,7 +61,7 @@
       "id": "RC_COORD_FIRST_FIELD_TEST",
       "anchor": "field_test_trigger",
       "elevation": 3,
-      "var_id": "0x4001",
+      "var_id": "0x0000",
       "var_value": 0,
       "script": "RC_SCRIPT_WILD_TUTORIAL_TRIGGER"
     }
