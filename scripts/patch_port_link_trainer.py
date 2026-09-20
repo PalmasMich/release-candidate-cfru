@@ -10,6 +10,16 @@ ROOT = Path(__file__).resolve().parents[1]
 DISCOVERY_PATH = ROOT / "scripts" / "discover_port_link_trainer_script.py"
 
 TRAINER_DEFEAT_TEXT = "Please, report at MARINA PORTO."
+MEOWTH_SPECIES_ID = 0x0034
+PORT_LINK_TRAINER_LEVEL = 4
+# Vanilla Youngster Ben is two consecutive TrainerMonNoItemDefaultMoves records.
+# Keep the record count stable so the trainer table layout is untouched.
+YOUNGSTER_BEN_PARTY_SIGNATURE = bytes.fromhex(
+    "00 00 0B 00 13 00 "  # Rattata lv11
+    "00 00 0B 00 17 00"   # Ekans lv11
+)
+TRAINER_MON_LEVEL_OFFSETS = (2, 8)
+TRAINER_MON_SPECIES_OFFSETS = (4, 10)
 
 
 def load_discovery():
@@ -52,6 +62,20 @@ def build_trainer_script(discovery, intro_text_offset: int, defeat_text_offset: 
             discovery.CMD_END,
         ])
     )
+
+
+def patch_bootstrap_party(data: bytearray) -> dict:
+    party_start = find_exactly_one(data, YOUNGSTER_BEN_PARTY_SIGNATURE, "Youngster Ben bootstrap party")
+    for level_offset in TRAINER_MON_LEVEL_OFFSETS:
+        data[party_start + level_offset] = PORT_LINK_TRAINER_LEVEL
+    for species_offset in TRAINER_MON_SPECIES_OFFSETS:
+        data[party_start + species_offset:party_start + species_offset + 2] = MEOWTH_SPECIES_ID.to_bytes(2, "little")
+    return {
+        "party_offset": party_start,
+        "party_species": MEOWTH_SPECIES_ID,
+        "party_level": PORT_LINK_TRAINER_LEVEL,
+        "party_count": 2,
+    }
 
 
 def patch_bytes(data: bytes) -> tuple[bytes, dict]:
@@ -99,6 +123,7 @@ def patch_bytes(data: bytes) -> tuple[bytes, dict]:
 
     patched = bytearray(data)
     patched[script_start:script_start + len(replacement)] = replacement
+    party_evidence = patch_bootstrap_party(patched)
 
     evidence = {
         "script_start": script_start,
@@ -107,6 +132,7 @@ def patch_bytes(data: bytes) -> tuple[bytes, dict]:
         "trainer_id": discovery.TRAINER_BOOTSTRAP_ID,
         "intro_text_offset": intro_offsets[0],
         "defeat_text_offset": defeat_offset,
+        **party_evidence,
     }
     return bytes(patched), evidence
 
@@ -129,6 +155,8 @@ def patch_rom(source: Path, output: Path) -> Path:
     print(f"PORT_LINK_SCRIPT_OFFSET=0x{evidence['script_start']:X}")
     print(f"PORT_LINK_INTRO_OFFSET=0x{evidence['intro_text_offset']:X}")
     print(f"PORT_LINK_DEFEAT_OFFSET=0x{evidence['defeat_text_offset']:X}")
+    print(f"PORT_LINK_PARTY_OFFSET=0x{evidence['party_offset']:X}")
+    print(f"PORT_LINK_PARTY=2xMEOWTH_LV{evidence['party_level']}")
     print(f"PORT_LINK_TRAINER_OUTPUT={output}")
     return output
 
