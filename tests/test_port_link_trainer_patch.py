@@ -70,7 +70,7 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         self.assertEqual(script[-2:], bytes([discovery.CMD_RELEASE, discovery.CMD_END]))
         self.assertEqual(len(script), 18)
 
-    def test_patches_guarded_script_and_preview_level_party(self):
+    def test_patches_guarded_script_and_guaranteed_custom_preview_party(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
         original, script_offset, intro_offset, defeat_offset, party_offset = self.build_fixture(discovery, patcher)
@@ -81,12 +81,18 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         self.assertEqual(evidence["intro_text_offset"], intro_offset)
         self.assertEqual(evidence["defeat_text_offset"], defeat_offset)
         self.assertEqual(evidence["party_offset"], party_offset)
+        self.assertTrue(evidence["guaranteed_custom_encounter"])
+        self.assertEqual(tuple(evidence["party_species"]), patcher.PORT_LINK_TRAINER_PARTY)
+        self.assertEqual(patcher.PORT_LINK_TRAINER_PARTY[0], patcher.MISTRILLO_SPECIES_ID)
         expected = patcher.build_trainer_script(discovery, intro_offset, defeat_offset)
         self.assertEqual(patched[script_offset:script_offset + len(expected)], expected)
         for level_offset in patcher.TRAINER_MON_LEVEL_OFFSETS:
             self.assertEqual(patched[party_offset + level_offset], patcher.PORT_LINK_TRAINER_LEVEL)
-        for species_offset in patcher.TRAINER_MON_SPECIES_OFFSETS:
-            self.assertEqual(int.from_bytes(patched[party_offset + species_offset:party_offset + species_offset + 2], "little"), patcher.MEOWTH_SPECIES_ID)
+        for species_offset, species in zip(patcher.TRAINER_MON_SPECIES_OFFSETS, patcher.PORT_LINK_TRAINER_PARTY):
+            self.assertEqual(
+                int.from_bytes(patched[party_offset + species_offset:party_offset + species_offset + 2], "little"),
+                species,
+            )
 
     def test_rejects_rom_without_unique_defeat_text(self):
         discovery = load(DISCOVERY, "port_link_discovery")
