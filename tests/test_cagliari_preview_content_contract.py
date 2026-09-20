@@ -10,6 +10,14 @@ def load(name):
     return json.loads((CONTENT / name).read_text())
 
 
+def load_map_spec(name):
+    return json.loads((CONTENT / "map_specs" / name).read_text())
+
+
+def load_script_spec(name):
+    return json.loads((CONTENT / "script_specs" / name).read_text())
+
+
 class CagliariPreviewContentContractTest(unittest.TestCase):
     def test_map_graph_references_existing_maps(self):
         maps = load("maps.yml")["maps"]
@@ -66,6 +74,23 @@ class CagliariPreviewContentContractTest(unittest.TestCase):
             "max_level": 5,
             "weight": 60,
         })
+
+    def test_first_field_test_is_unconditional_and_one_shot(self):
+        port_map = load_map_spec("RC_PORT_CONNECTION.json")
+        trigger = next(event for event in port_map["coord_events"] if event["id"] == "RC_COORD_FIRST_FIELD_TEST")
+        # A coord event with a non-zero var id only fires when that variable
+        # equals var_value. The preview must not depend on unrelated vanilla
+        # temp vars, otherwise the first custom encounter can be silently skipped.
+        self.assertEqual(trigger["var_id"], "0x0000")
+        self.assertEqual(trigger["script"], "RC_SCRIPT_WILD_TUTORIAL_TRIGGER")
+
+        scripts = load_script_spec("RC_PORT_CONNECTION.json")["scripts"]
+        wild = next(script for script in scripts if script["id"] == "RC_SCRIPT_WILD_TUTORIAL_TRIGGER")
+        ops = wild["ops"]
+        self.assertIn({"op": "checkflag", "flag": "RC_FLAG_WILD_TUTORIAL_DONE"}, ops)
+        self.assertIn({"op": "setwildbattle", "species": "SPECIES_RC_CAGLIARI_WILD_01", "level": 3}, ops)
+        self.assertIn({"op": "dowildbattle"}, ops)
+        self.assertIn({"op": "setflag", "flag": "RC_FLAG_WILD_TUTORIAL_DONE"}, ops)
 
 
 if __name__ == "__main__":
