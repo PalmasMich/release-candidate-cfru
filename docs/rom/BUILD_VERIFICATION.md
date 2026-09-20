@@ -19,8 +19,8 @@ This file records source/build evidence only. No ROM bytes, save files or copyri
 
 Verified source checkpoints before this record:
 
-- CFRU branch `feature/cagliari-preview-0.2-rebuild`, source checkpoint `98fa8997` plus the tileset-contract change recorded here;
-- DPE branch `feature/cagliari-preview-0.1`, commit `a03752f`;
+- CFRU branch `feature/cagliari-preview-0.2-rebuild`, source checkpoint `6ee34233`;
+- DPE branch `feature/cagliari-preview-0.1`, source checkpoint `babd759`;
 - historical V0.1 PR remains untouched; no merge, close, deploy, or `master` change was performed.
 
 The missing-ROM build attempt exits non-zero and emits `BUILD_STATUS=BLOCKED`. It did not produce an output ROM and must not be interpreted as a failed runtime smoke test. Even with the ROM present, this checkpoint intentionally blocks until a private-ROM-derived, uniquely validated structural redirect removes FireRed's rival-name state; text replacement alone is not accepted as proof.
