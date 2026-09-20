@@ -1,0 +1,103 @@
+{
+  "version": "0.2",
+  "policy": {
+    "original_art_only": true,
+    "bootstrap_profiles_are_not_final": true,
+    "required_stage_order": [
+      "visual_blockout",
+      "tile_sheet",
+      "palette",
+      "metatiles",
+      "collision",
+      "integration",
+      "runtime_smoke"
+    ]
+  },
+  "tilesets": [
+    {
+      "id": "RC_TILESET_CAGLIARI_INTERIORS_01",
+      "maps": ["RC_DELIVERY_HUB"],
+      "direction": "warm limestone product workspace with teal accents, release board, windows and three distinct starter stations",
+      "required_motifs": ["limestone", "teal", "release_board", "starter_stations", "terrace_light"],
+      "stages": {
+        "visual_blockout": "bootstrap",
+        "tile_sheet": "pending",
+        "palette": "pending",
+        "metatiles": "bootstrap",
+        "collision": "bootstrap",
+        "integration": "bootstrap",
+        "runtime_smoke": "pending"
+      },
+      "production_ready": false,
+      "review_evidence": null
+    },
+    {
+      "id": "RC_TILESET_CAGLIARI_EXTERIORS_01",
+      "maps": ["RC_CAGLIARI_MARINA", "RC_PORT_CONNECTION"],
+      "direction": "bright Mediterranean waterfront with pale stone, turquoise water, selective palms, boats and port infrastructure",
+      "required_motifs": ["turquoise_water", "limestone_paving", "boats", "palms", "port_service_lane"],
+      "stages": {
+        "visual_blockout": "bootstrap",
+        "tile_sheet": "pending",
+        "palette": "pending",
+        "metatiles": "bootstrap",
+        "collision": "bootstrap",
+        "integration": "bootstrap",
+        "runtime_smoke": "pending"
+      },
+      "production_ready": false,
+      "review_evidence": null
+    },
+    {
+      "id": "RC_TILESET_CAGLIARI_CASTELLO_01",
+      "maps": ["RC_CASTELLO_ASCENT"],
+      "direction": "warm bastion stone, stairs, narrow ascent and panoramic Mediterranean height",
+      "required_motifs": ["bastions", "stairs", "warm_stone", "verticality", "panorama"],
+      "stages": {
+        "visual_blockout": "bootstrap",
+        "tile_sheet": "pending",
+        "palette": "pending",
+        "metatiles": "bootstrap",
+        "collision": "bootstrap",
+        "integration": "bootstrap",
+        "runtime_smoke": "pending"
+      },
+      "production_ready": false,
+      "review_evidence": null
+    },
+    {
+      "id": "RC_TILESET_DEPLOY_DISTRICT_01",
+      "maps": ["RC_DEPLOY_DISTRICT"],
+      "direction": "Mediterranean corporate district at late afternoon with controlled release-red accents",
+      "required_motifs": ["corporate_blocks", "late_light", "release_gate", "monitor_glow", "warm_pavement"],
+      "stages": {
+        "visual_blockout": "bootstrap",
+        "tile_sheet": "pending",
+        "palette": "pending",
+        "metatiles": "bootstrap",
+        "collision": "bootstrap",
+        "integration": "bootstrap",
+        "runtime_smoke": "pending"
+      },
+      "production_ready": false,
+      "review_evidence": null
+    },
+    {
+      "id": "RC_TILESET_DEPLOY_ROOM_01",
+      "maps": ["RC_DEPLOY_ROOM"],
+      "direction": "release control room with dark stone, board surfaces, screens and focused monitor light",
+      "required_motifs": ["control_room", "screens", "release_board", "monitor_light", "boss_staging"],
+      "stages": {
+        "visual_blockout": "bootstrap",
+        "tile_sheet": "pending",
+        "palette": "pending",
+        "metatiles": "bootstrap",
+        "collision": "bootstrap",
+        "integration": "bootstrap",
+        "runtime_smoke": "pending"
+      },
+      "production_ready": false,
+      "review_evidence": null
+    }
+  ]
+}

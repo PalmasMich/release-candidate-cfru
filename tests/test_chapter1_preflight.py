@@ -2,7 +2,9 @@ from pathlib import Path
 import copy
 import importlib.util
 import json
+import io
 import unittest
+from contextlib import redirect_stdout
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +36,13 @@ class Chapter1PreflightTest(unittest.TestCase):
         broken["RC_PORT_CONNECTION"]["warps"][0]["warp_id"] = 0
         with self.assertRaisesRegex(ValueError, "target anchor"):
             load_preflight().validate_warp_contracts(broken)
+
+    def test_preflight_reports_non_final_tileset_art_status(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            result = load_preflight().main()
+        self.assertEqual(result, 0)
+        self.assertIn("RC_TILESET_ART_STATUS=BOOTSTRAP", output.getvalue())
 
 
 if __name__ == "__main__":

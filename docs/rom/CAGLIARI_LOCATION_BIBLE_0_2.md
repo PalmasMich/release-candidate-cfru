@@ -244,6 +244,9 @@ Technical transition rule:
 - a conditioned physical warp must be blocked by a real ObjectEventTemplate whose `flagId` hides it when the story condition is met, or by an equivalently compiled script gate;
 - the Chapter 1 preflight must verify every target `warp_id` exists and lands on the declared `target_anchor`.
 
+Tileset production is tracked in `content/cagliari_preview/tileset_art_manifest.json`.
+`python scripts/validate_rc_tileset_pipeline.py` validates map coverage, stage order, original-art policy, and metatile-profile compatibility. The current `BOOTSTRAP` result is intentional: blockouts and technical profiles are usable for source integration, but none of the five tileset contracts may be called final. `--require-approved` must stay blocked until every stage has approval evidence and no map uses a `bootstrap_only` metatile profile.
+
 ## Naming
 
 Player-facing names for Chapter 1:
