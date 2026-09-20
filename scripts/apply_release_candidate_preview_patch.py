@@ -87,7 +87,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("able to reach the next town."), encode_text("at Marina Porto.")),
     (encode_text("ROUTE 1\nPALLET TOWN - VIRIDIAN CITY"), encode_text("PORT LINK\nCAGLIARI - MARINA PORTO")),
     (encode_text("Hi!\nI work at a POKéMON MART."), encode_text("Hi!\nI work on Delivery.")),
-    (encode_text("It's part of a convenient chain\nselling all sorts of items."), encode_text("I'm covering Port Link today.\nScope says five minutes.")),
+    (encode_text("It's part of a convenient chain\nselling all sorts of items."), encode_text("MISTRILLO is in this grass.\nField test it now.")),
     (encode_text("Please, visit us in VIRIDIAN CITY."), encode_text("Please, report at MARINA PORTO.")),
     (encode_text("I know, I'll give you a sample.\nHere you go!"), encode_text("Quick handoff: take this.\nUse it well!")),
     (encode_text("Please come see us if you need\nPOKé BALLS for catching POKéMON."), encode_text("Ping Delivery if you need\nmore field-test supplies.")),
@@ -102,7 +102,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("VIRIDIAN CITY POKéMON GYM"), encode_text("MARINA PORTO DEPLOY GATE")),
     (encode_text("VIRIDIAN GYM's doors are locked…"), encode_text("DEPLOY GATE locked: scope open.")),
 )
-REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Let's benchmark our resources!", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
+REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Let's benchmark our resources!", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MISTRILLO is in this grass.\nField test it now.", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
 MAP_NAME_REPLACEMENT = (encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF", encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF")
 LAB_SIGN_REPLACEMENT = (b"\xCA\xC9\xC5\x1B\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC", encode_text("DELIVERY HUB"))
 
