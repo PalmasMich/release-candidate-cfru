@@ -63,13 +63,6 @@ def verify_dpe_tartrek_symbols(dpe_root: Path) -> None:
 
 
 def activate_rc_learnset_pointers(cfru_root: Path) -> bytes:
-    """Activate all RC learnset pointers transactionally in the private build workspace.
-
-    The upstream CFRU pointer table closes immediately before the RC extension.
-    Keep the repository source easy to rebase, but make the private build use one
-    coherent table containing Tartrek, Frobyte, Emberfox and Mistrillo. The
-    caller restores the original file in its finally block.
-    """
     table = Path(cfru_root) / RC_LEARNSET_TABLE
     original = table.read_bytes()
     text = original.decode("utf-8")
@@ -82,20 +75,13 @@ def activate_rc_learnset_pointers(cfru_root: Path) -> bytes:
     active_tail = "\n".join(required) + "\n};\n\n#endif"
     if active_tail in text:
         return original
-
     legacy_tail = (
-        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n"
-        "};\n*/\n"
+        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n};\n*/\n"
         "\t[SPECIES_RC_CAGLIARI_WILD_01] = sRCMistrilloLevelUpLearnset,\n"
         "\t[SPECIES_RC_FROG_01] = sRCFrobyteLevelUpLearnset,\n"
-        "\t[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,\n"
-        "};\n\n#endif"
+        "\t[SPECIES_RC_FIREFOX_01] = sRCEmberfoxLevelUpLearnset,\n};\n\n#endif"
     )
-    replacement = (
-        "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n"
-        "};\n*/\n"
-        + active_tail
-    )
+    replacement = "\t[SPECIES_RC_TURTLE_01] = sRCTartrekLevelUpLearnset,\n};\n*/\n" + active_tail
     if legacy_tail not in text:
         raise RuntimeError("Could not locate the RC learnset pointer tail; refusing an ambiguous CFRU build.")
     table.write_text(text.replace(legacy_tail, replacement, 1), encoding="utf-8")
@@ -138,6 +124,11 @@ def default_apply_custom_maps(source: Path, output: Path) -> int:
     return subprocess.run([sys.executable, str(ROOT / "scripts" / "patch_rc_custom_maps.py"), str(source), str(output)], cwd=ROOT, check=False).returncode
 
 
+def _require_stage(status: int, label: str) -> None:
+    if status != 0:
+        raise RuntimeError(f"{label} is required for the playable Cagliari preview (status {status}); refusing a partial BUILD_STATUS=SUCCESS.")
+
+
 def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
                  run_preflight=default_run_preflight, run_build=default_run_build,
                  verify_rom=verify_pristine_rom, sync_dpe=sync_dpe_checkout,
@@ -172,30 +163,36 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         if not output_path.exists(): raise RuntimeError("Release Candidate preview patch did not produce an output ROM")
         output_hash = sha1_file(output_path)
         if output_hash == cfru_hash: raise RuntimeError("Preview output is identical to the CFRU input")
+
         discovery_status = discover_port_link(output_path)
-        if discovery_status == 0:
-            print("PORT_LINK_DISCOVERY_STATUS=READY"); trainer_output = output_path.with_name(output_path.stem + "_trainer" + output_path.suffix)
+        _require_stage(discovery_status, "Port Link script discovery")
+        print("PORT_LINK_DISCOVERY_STATUS=READY")
+        trainer_output = output_path.with_name(output_path.stem + "_trainer" + output_path.suffix)
+        if trainer_output.exists(): trainer_output.unlink()
+        try:
+            trainer_patch_status = apply_port_link_trainer(output_path, trainer_output)
+            _require_stage(trainer_patch_status, "Port Link trainer patch")
+            if not trainer_output.exists(): raise RuntimeError("Port Link trainer patch returned success without an output ROM")
+            shutil.move(str(trainer_output), str(output_path)); output_hash = sha1_file(output_path)
+            print("PORT_LINK_TRAINER_STATUS=APPLIED")
+        finally:
             if trainer_output.exists(): trainer_output.unlink()
-            try:
-                trainer_patch_status = apply_port_link_trainer(output_path, trainer_output)
-                if trainer_patch_status == 0 and trainer_output.exists(): shutil.move(str(trainer_output), str(output_path)); output_hash = sha1_file(output_path); print("PORT_LINK_TRAINER_STATUS=APPLIED")
-                else: print(f"PORT_LINK_TRAINER_STATUS=PENDING:{trainer_patch_status}")
-            finally:
-                if trainer_output.exists(): trainer_output.unlink()
-        else:
-            print(f"PORT_LINK_DISCOVERY_STATUS=PENDING:{discovery_status}"); print("PORT_LINK_TRAINER_STATUS=PENDING:DISCOVERY")
+
         delivery_hub_status = prepare_delivery_hub_map(output_path)
-        print("DELIVERY_HUB_MAP_PLAN_STATUS=READY" if delivery_hub_status == 0 else f"DELIVERY_HUB_MAP_PLAN_STATUS=PENDING:{delivery_hub_status}")
-        if delivery_hub_status == 0:
-            maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
+        _require_stage(delivery_hub_status, "Delivery Hub custom-map plan")
+        print("DELIVERY_HUB_MAP_PLAN_STATUS=READY")
+        maps_output = output_path.with_name(output_path.stem + "_custom_maps" + output_path.suffix)
+        if maps_output.exists(): maps_output.unlink()
+        try:
+            custom_maps_status = apply_custom_maps(output_path, maps_output)
+            _require_stage(custom_maps_status, "Release Candidate custom maps patch")
+            if not maps_output.exists(): raise RuntimeError("Custom-map patch returned success without an output ROM")
+            shutil.move(str(maps_output), str(output_path)); output_hash = sha1_file(output_path)
+            print("RC_CUSTOM_MAPS_STATUS=APPLIED")
+        finally:
             if maps_output.exists(): maps_output.unlink()
-            try:
-                custom_maps_status = apply_custom_maps(output_path, maps_output)
-                if custom_maps_status == 0 and maps_output.exists(): shutil.move(str(maps_output), str(output_path)); output_hash = sha1_file(output_path); print("RC_CUSTOM_MAPS_STATUS=APPLIED")
-                else: print(f"RC_CUSTOM_MAPS_STATUS=PENDING:{custom_maps_status}")
-            finally:
-                if maps_output.exists(): maps_output.unlink()
-        else: print("RC_CUSTOM_MAPS_STATUS=PENDING:MAP_PLAN")
+
+        print("RC_PLAYABLE_PREVIEW_BUILD_GATE=PASS")
         print(f"\nDPE_SHA1={dpe_hash}\nCFRU_SHA1={cfru_hash}\nOUTPUT={output_path}\nOUTPUT_SHA1={output_hash}")
         return output_path
     finally:
