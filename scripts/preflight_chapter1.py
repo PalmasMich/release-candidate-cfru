@@ -32,6 +32,50 @@ EXPECTED_PROGRESSION = (
     ("RC_DEPLOY_DISTRICT", "RC_DEPLOY_ROOM"),
 )
 
+# These checks make the source preflight prove the preview's first playable loop,
+# not merely that each JSON file compiles in isolation.
+PREVIEW_REQUIRED_SCRIPTS = {
+    "RC_DELIVERY_HUB": {
+        "RC_SCRIPT_STARTER_TARTREK",
+        "RC_SCRIPT_STARTER_FROBYTE",
+        "RC_SCRIPT_STARTER_EMBERFOX",
+        "RC_SCRIPT_KPI_RIVAL",
+    },
+    "RC_CAGLIARI_MARINA": {
+        "RC_SCRIPT_MARINA_DELIVERY_LEAD",
+        "RC_SCRIPT_CASTELLO_GATE",
+    },
+    "RC_PORT_CONNECTION": {
+        "RC_SCRIPT_WILD_TUTORIAL_TRIGGER",
+        "RC_SCRIPT_PORT_TRAINER",
+    },
+}
+PREVIEW_REQUIRED_DIALOGUES = {
+    "RC_DIALOGUE_STARTER",
+    "RC_DIALOGUE_STARTER_TARTREK_CONFIRM",
+    "RC_DIALOGUE_STARTER_FROBYTE_CONFIRM",
+    "RC_DIALOGUE_STARTER_EMBERFOX_CONFIRM",
+    "RC_DIALOGUE_RIVAL_INTRO",
+    "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
+    "RC_DIALOGUE_PORT_TRAINER_INTRO",
+    "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+    "RC_DIALOGUE_DEPLOY_TEASER",
+}
+PREVIEW_REQUIRED_FLAGS = {
+    "RC_FLAG_STARTER_CHOSEN",
+    "RC_FLAG_RIVAL_INTRO_DONE",
+    "RC_FLAG_WILD_TUTORIAL_DONE",
+    "RC_FLAG_PORT_TRAINER_DONE",
+    "RC_FLAG_DEPLOY_TEASER_SEEN",
+}
+PREVIEW_REQUIRED_OPS = {
+    "RC_SCRIPT_STARTER_TARTREK": {"givemon", "trainerbattle_single", "setflag"},
+    "RC_SCRIPT_STARTER_FROBYTE": {"givemon", "trainerbattle_single", "setflag"},
+    "RC_SCRIPT_STARTER_EMBERFOX": {"givemon", "trainerbattle_single", "setflag"},
+    "RC_SCRIPT_WILD_TUTORIAL_TRIGGER": {"setwildbattle", "dowildbattle", "setflag"},
+    "RC_SCRIPT_PORT_TRAINER": {"trainerbattle_single", "setflag"},
+}
+
 DUMMY_PRIMARY_TILESET = 0x08100000
 DUMMY_SECONDARY_TILESET = 0x08110000
 DUMMY_BASE_START = 0x08900000
@@ -43,6 +87,75 @@ def load_module(path: Path, name: str):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def validate_preview_contract(dialogue_ids: set[str], raw_scripts_by_map: dict[str, dict]) -> None:
+    missing_dialogue = PREVIEW_REQUIRED_DIALOGUES - dialogue_ids
+    if missing_dialogue:
+        raise ValueError(f"playable preview dialogue missing: {sorted(missing_dialogue)}")
+
+    flags = json.loads((CONTENT / "flags.json").read_text(encoding="utf-8"))["flags"]
+    missing_flags = PREVIEW_REQUIRED_FLAGS - set(flags)
+    if missing_flags:
+        raise ValueError(f"playable preview flags missing: {sorted(missing_flags)}")
+
+    for map_id, required_ids in PREVIEW_REQUIRED_SCRIPTS.items():
+        spec = raw_scripts_by_map.get(map_id)
+        if spec is None:
+            raise ValueError(f"playable preview script spec missing for {map_id}")
+        by_id = {script["id"]: script for script in spec["scripts"]}
+        missing = required_ids - set(by_id)
+        if missing:
+            raise ValueError(f"{map_id}: playable preview scripts missing: {sorted(missing)}")
+        for script_id, required_ops in PREVIEW_REQUIRED_OPS.items():
+            if script_id not in by_id:
+                continue
+            actual_ops = {entry.get("op") for entry in by_id[script_id]["ops"] if entry.get("op")}
+            missing_ops = required_ops - actual_ops
+            if missing_ops:
+                raise ValueError(f"{script_id}: playable preview ops missing: {sorted(missing_ops)}")
+
+    hub = {s["id"]: s for s in raw_scripts_by_map["RC_DELIVERY_HUB"]["scripts"]}
+    expected_starters = {
+        "RC_SCRIPT_STARTER_TARTREK": ("SPECIES_RC_TURTLE_01", 328),
+        "RC_SCRIPT_STARTER_FROBYTE": ("SPECIES_RC_FROG_01", 327),
+        "RC_SCRIPT_STARTER_EMBERFOX": ("SPECIES_RC_FIREFOX_01", 326),
+    }
+    for script_id, (species, trainer_id) in expected_starters.items():
+        ops = hub[script_id]["ops"]
+        gives = [op for op in ops if op.get("op") == "givemon"]
+        battles = [op for op in ops if op.get("op") == "trainerbattle_single"]
+        flags_set = {op.get("flag") for op in ops if op.get("op") == "setflag"}
+        if len(gives) != 1 or gives[0].get("species") != species or int(gives[0].get("level", 0)) != 5:
+            raise ValueError(f"{script_id}: starter grant contract drifted")
+        if len(battles) != 1 or int(battles[0].get("trainer_id", -1)) != trainer_id:
+            raise ValueError(f"{script_id}: KPI rival matrix drifted")
+        if not {"RC_FLAG_STARTER_CHOSEN", "RC_FLAG_RIVAL_INTRO_DONE"} <= flags_set:
+            raise ValueError(f"{script_id}: progression flags incomplete")
+
+    port = {s["id"]: s for s in raw_scripts_by_map["RC_PORT_CONNECTION"]["scripts"]}
+    wild_ops = port["RC_SCRIPT_WILD_TUTORIAL_TRIGGER"]["ops"]
+    wild = [op for op in wild_ops if op.get("op") == "setwildbattle"]
+    if len(wild) != 1 or wild[0].get("species") != "SPECIES_RC_CAGLIARI_WILD_01" or int(wild[0].get("level", 0)) != 3:
+        raise ValueError("Port Link first custom encounter must remain level-3 Mistrillo")
+    if "RC_FLAG_WILD_TUTORIAL_DONE" not in {op.get("flag") for op in wild_ops if op.get("op") == "setflag"}:
+        raise ValueError("Port Link first custom encounter does not close its tutorial flag")
+
+    trainer_ops = port["RC_SCRIPT_PORT_TRAINER"]["ops"]
+    battles = [op for op in trainer_ops if op.get("op") == "trainerbattle_single"]
+    if len(battles) != 1 or int(battles[0].get("trainer_id", -1)) != 89:
+        raise ValueError("Port Link trainer bootstrap id drifted")
+    if "RC_FLAG_PORT_TRAINER_DONE" not in {op.get("flag") for op in trainer_ops if op.get("op") == "setflag"}:
+        raise ValueError("Port Link trainer does not close its progression flag")
+
+    marina = {s["id"]: s for s in raw_scripts_by_map["RC_CAGLIARI_MARINA"]["scripts"]}
+    lead_ops = marina["RC_SCRIPT_MARINA_DELIVERY_LEAD"]["ops"]
+    checked = {op.get("flag") for op in lead_ops if op.get("op") == "checkflag"}
+    set_flags = {op.get("flag") for op in lead_ops if op.get("op") == "setflag"}
+    if not {"RC_FLAG_PORT_TRAINER_DONE", "RC_FLAG_DEPLOY_TEASER_SEEN"} <= checked:
+        raise ValueError("Marina lead no longer gates the deploy teaser behind Port Link")
+    if "RC_FLAG_DEPLOY_TEASER_SEEN" not in set_flags:
+        raise ValueError("Marina lead no longer records deploy teaser completion")
 
 
 def main() -> int:
@@ -65,6 +178,7 @@ def main() -> int:
     compiled = []
     all_script_ids = set()
     progression_edges = set()
+    raw_scripts_by_map = {}
 
     for index, (map_id, map_name, script_name) in enumerate(MAPS):
         map_path = CONTENT / "map_specs" / map_name
@@ -74,6 +188,7 @@ def main() -> int:
             raise ValueError(f"{map_id}: missing reserved map slot")
 
         raw_map = json.loads(map_path.read_text(encoding="utf-8"))
+        raw_scripts_by_map[map_id] = json.loads(script_path.read_text(encoding="utf-8"))
         map_ir = map_comp.compile_file(map_path)
         if map_ir["id"] != map_id:
             raise ValueError(f"{map_id}: map spec id mismatch: {map_ir['id']}")
@@ -148,6 +263,8 @@ def main() -> int:
             "bg_events": event_ir["bg_events"]["count"],
         })
 
+    validate_preview_contract(dialogue_ids, raw_scripts_by_map)
+
     expected_path = [item[0] for item in MAPS]
     if [item["map"] for item in compiled] != expected_path:
         raise ValueError("Chapter 1 map order changed unexpectedly")
@@ -170,6 +287,7 @@ def main() -> int:
 
     total_payload = sum(item["payload_bytes"] for item in compiled)
     print("RC_CHAPTER1_PREFLIGHT=PASS")
+    print("RC_PLAYABLE_PREVIEW_CONTRACT=PASS")
     print(f"RC_CHAPTER1_MAP_COUNT={len(compiled)}")
     print(f"RC_CHAPTER1_SCRIPT_COUNT={len(all_script_ids)}")
     print(f"RC_CHAPTER1_PROGRESSION_EDGES={len(progression_edges)}")
