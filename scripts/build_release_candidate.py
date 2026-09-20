@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
+PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH", "FINAL_PREVIEW_VALIDATE")
 RC_LEARNSET_TABLE = Path("src/Tables/level_up_learnsets.c")
 
 
@@ -124,6 +125,18 @@ def default_apply_custom_maps(source: Path, output: Path) -> int:
     return subprocess.run([sys.executable, str(ROOT / "scripts" / "patch_rc_custom_maps.py"), str(source), str(output)], cwd=ROOT, check=False).returncode
 
 
+def default_validate_final_preview(output_path: Path) -> None:
+    """Fail closed if late map/trainer patches damage the visible Chapter 1 contract."""
+    patcher_path = ROOT / "scripts" / "apply_release_candidate_preview_patch.py"
+    spec = importlib.util.spec_from_file_location("rc_preview_final_validator", patcher_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Could not load final RC preview validator.")
+    patcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(patcher)
+    patcher.validate_preview_patch(bytearray(output_path.read_bytes()))
+    print("FINAL_PREVIEW_IDENTITY_GATE=PASS")
+
+
 def _require_stage(status: int, label: str) -> None:
     if status != 0:
         raise RuntimeError(f"{label} is required for the playable Cagliari preview (status {status}); refusing a partial BUILD_STATUS=SUCCESS.")
@@ -135,7 +148,8 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
                  verify_dpe_symbols=verify_dpe_tartrek_symbols, apply_preview_patch=default_apply_preview_patch,
                  discover_port_link=default_discover_port_link, apply_port_link_trainer=default_apply_port_link_trainer,
                  prepare_delivery_hub_map=default_prepare_delivery_hub_map,
-                 apply_custom_maps=default_apply_custom_maps) -> Path:
+                 apply_custom_maps=default_apply_custom_maps,
+                 validate_final_preview=default_validate_final_preview) -> Path:
     cfru_root, dpe_root, output_path = Path(cfru_root).resolve(), Path(dpe_root).resolve(), Path(output_path).resolve()
     run_preflight()
     cfru_rom, dpe_rom = cfru_root / "BPRE0.gba", dpe_root / "BPRE0.gba"
@@ -192,6 +206,7 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         finally:
             if maps_output.exists(): maps_output.unlink()
 
+        validate_final_preview(output_path)
         print("RC_PLAYABLE_PREVIEW_BUILD_GATE=PASS")
         print(f"\nDPE_SHA1={dpe_hash}\nCFRU_SHA1={cfru_hash}\nOUTPUT={output_path}\nOUTPUT_SHA1={output_hash}")
         return output_path
@@ -205,7 +220,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build Release Candidate safely in one command: pristine FireRed -> DPE -> CFRU.")
     parser.add_argument("--dpe-path", default=str(ROOT.parent / "release-candidate-dpe"), help="Path to the release-candidate-dpe checkout.")
     parser.add_argument("--output", default=str(ROOT / DEFAULT_OUTPUT_NAME), help="Private output ROM path. *.gba remains git-ignored.")
-    args = parser.parse_args(); print("Release Candidate one-command build"); print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}"); print("PIPELINE=CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH"); print(f"BASE_SHA1={EXPECTED_SHA1}")
+    args = parser.parse_args(); print("Release Candidate one-command build"); print(f"CFRU={ROOT}\nDPE={Path(args.dpe_path).expanduser().resolve()}"); print("PIPELINE=" + " -> ".join(PIPELINE)); print(f"BASE_SHA1={EXPECTED_SHA1}")
     try: run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
     except (FileNotFoundError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc: print(f"ERROR: {exc}", file=sys.stderr); return 1
     print("BUILD_STATUS=SUCCESS\nPristine CFRU BPRE0.gba and generated learnset table restored after build."); return 0
