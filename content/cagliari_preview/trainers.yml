@@ -3,11 +3,7 @@
     "id": "RC_RIVAL_KPI",
     "display_name": "Rivale KPI",
     "theme": "competitive_colleague_metrics_obsessed",
-    "starter_matrix": {
-      "SPECIES_RC_TURTLE_01": "SPECIES_RC_FIREFOX_01",
-      "SPECIES_RC_FROG_01": "SPECIES_RC_TURTLE_01",
-      "SPECIES_RC_FIREFOX_01": "SPECIES_RC_FROG_01"
-    },
+    "starter_matrix": {"SPECIES_RC_TURTLE_01":"SPECIES_RC_FIREFOX_01","SPECIES_RC_FROG_01":"SPECIES_RC_TURTLE_01","SPECIES_RC_FIREFOX_01":"SPECIES_RC_FROG_01"},
     "preview_level": 5,
     "intro_dialogue": "RC_DIALOGUE_RIVAL_INTRO"
   },
@@ -15,14 +11,12 @@
     "id": "RC_TRAINER_PORT_01",
     "display_name": "Consulente Junior",
     "role": "short_battle_before_deploy_teaser",
-    "implementation_status": "guarded_bootstrap_trainer_patch",
+    "implementation_status": "guarded_bootstrap_trainer_patch_implemented_pending_private_smoke",
     "bootstrap_trainer_id": 89,
+    "patch_contract": "Patch only after unique Port Link event-script discovery; preserve party record count and ROM size.",
     "intro_dialogue": "RC_DIALOGUE_PORT_TRAINER_INTRO",
     "outro_dialogue": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
-    "party": [
-      {"species": "SPECIES_MEOWTH", "level": 4},
-      {"species": "SPECIES_MEOWTH", "level": 4}
-    ]
+    "party": [{"species":"SPECIES_MEOWTH","level":4},{"species":"SPECIES_MEOWTH","level":4}]
   },
   "release_manager": {
     "id": "RC_TRAINER_RELEASE_MANAGER",
@@ -30,9 +24,6 @@
     "role": "chapter_1_deploy_boss",
     "implementation_status": "bootstrap_trainer_id_pending_final_party_patch",
     "bootstrap_trainer_id": 38,
-    "desired_party": [
-      {"species": "SPECIES_MEOWTH", "level": 7},
-      {"species": "SPECIES_RC_CAGLIARI_WILD_01", "level": 8}
-    ]
+    "desired_party": [{"species":"SPECIES_MEOWTH","level":7},{"species":"SPECIES_RC_CAGLIARI_WILD_01","level":8}]
   }
 }
