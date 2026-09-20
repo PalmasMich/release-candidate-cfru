@@ -1,10 +1,12 @@
 from pathlib import Path
 import importlib.util
+import sys
 import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCHER = ROOT / "scripts" / "apply_release_candidate_preview_patch.py"
+AUDIT = ROOT / "scripts" / "audit_rc_opening.py"
 
 
 def load_patcher():
@@ -12,6 +14,18 @@ def load_patcher():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def load_audit():
+    scripts_path = str(ROOT / "scripts")
+    sys.path.insert(0, scripts_path)
+    try:
+        spec = importlib.util.spec_from_file_location("rc_opening_audit", AUDIT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.path.remove(scripts_path)
 
 
 def build_preview_fixture(patcher):
@@ -95,6 +109,19 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         destinations = b"\n".join(new for _, new in patcher.VISIBLE_TEXT_REPLACEMENTS)
         for term in ("OAK", "PALLET", "VIRIDIAN", "BULBASAUR", "SQUIRTLE", "CHARMANDER"):
             self.assertNotIn(patcher.encode_text(term), destinations)
+
+    def test_opening_rewrite_uses_fixed_kpi_rival_identity(self):
+        patcher = load_patcher()
+        replacements = dict(patcher.VISIBLE_TEXT_REPLACEMENTS)
+        replacement = replacements[patcher.encode_text("What was his name now?")]
+        self.assertIn(patcher.encode_text("KPI Rival"), replacement)
+        self.assertNotIn(patcher.encode_text("Come si chiama?"), replacement)
+
+    def test_opening_audit_rejects_rival_name_prompt(self):
+        audit = load_audit()
+        fixture = b"prefix" + audit.encode_text("What was his name now?") + b"suffix"
+        with self.assertRaisesRegex(RuntimeError, "rival-name"):
+            audit.validate_opening(fixture)
 
     def test_visible_preview_labels_are_patched(self):
         patcher = load_patcher()

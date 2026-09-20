@@ -69,7 +69,7 @@ class CagliariPreviewContentTest(unittest.TestCase):
         dialogue = load("dialogue.yml")
         lines = [line for scene in dialogue["scenes"] for line in scene["lines"]]
         self.assertIn(
-            "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato.",
+            "Benvenuto su Release Candidate.",
             lines,
         )
 
@@ -95,6 +95,12 @@ class CagliariPreviewContentTest(unittest.TestCase):
         }
         self.assertTrue(required.issubset(ids))
         self.assertGreaterEqual(len(dialogue["scenes"]), 45)
+
+    def test_kpi_rival_uses_fixed_authored_speaker_name(self):
+        dialogue = load("dialogue.yml")
+        speakers = {scene["speaker"] for scene in dialogue["scenes"]}
+        self.assertNotIn("Rivale", speakers)
+        self.assertIn("KPI Rival", speakers)
 
     def test_all_custom_script_dialogue_refs_resolve(self):
         dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
@@ -217,7 +223,7 @@ class CagliariPreviewContentTest(unittest.TestCase):
         )
         self.assertEqual(
             events["RC_EVENT_PORT_TRAINER"]["implementation_status"],
-            "bootstrap_route1",
+            "custom_port_link_pending_smoke",
         )
 
     def test_story_continues_beyond_preview_into_deploy_one(self):

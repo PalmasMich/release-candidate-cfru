@@ -20,14 +20,33 @@ FORBIDDEN_OPENING_TEXT = (
     "with POKéMON awaits! Let's go!",
 )
 
+RIVAL_NAME_PROMPTS = (
+    "What was his name now?",
+    "Come si chiama?",
+)
+
+
+def audit_data(data: bytes) -> tuple[list[str], list[str]]:
+    stock_text = [text for text in FORBIDDEN_OPENING_TEXT if encode_text(text) in data]
+    rival_name_prompts = [text for text in RIVAL_NAME_PROMPTS if encode_text(text) in data]
+    return stock_text, rival_name_prompts
+
+
+def validate_opening(data: bytes) -> None:
+    stock_text, rival_name_prompts = audit_data(data)
+    if rival_name_prompts:
+        raise RuntimeError(
+            "rival-name prompt remains in the visible opening: "
+            + ", ".join(rival_name_prompts)
+        )
+    if stock_text:
+        raise RuntimeError("stock opening text remains: " + ", ".join(stock_text))
+
+
 def audit_rom(path: Path) -> list[str]:
-    data = path.read_bytes()
-    remaining = []
-    for text in FORBIDDEN_OPENING_TEXT:
-        encoded = encode_text(text)
-        if encoded in data:
-            remaining.append(text)
-    return remaining
+    stock_text, rival_name_prompts = audit_data(path.read_bytes())
+    return stock_text + rival_name_prompts
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit Release Candidate ROM for stock FireRed opening text.")
@@ -38,14 +57,17 @@ def main() -> int:
         print(f"RC_OPENING_AUDIT=BLOCKED:MISSING_ROM:{args.rom}")
         return 2
 
-    remaining = audit_rom(args.rom)
-    if remaining:
+    stock_text, rival_name_prompts = audit_data(args.rom.read_bytes())
+    if stock_text or rival_name_prompts:
         print("RC_OPENING_AUDIT=FAILED")
-        for text in remaining:
+        for text in stock_text:
             print(f"RC_OPENING_STOCK_TEXT={text}")
+        for text in rival_name_prompts:
+            print(f"RC_OPENING_RIVAL_NAME_PROMPT={text}")
         return 1
 
     print("RC_OPENING_AUDIT=PASS")
+    print("RC_RIVAL_NAME_STRUCTURAL_BYPASS=PENDING:RUNTIME_CONFIRMATION")
     return 0
 
 if __name__ == "__main__":

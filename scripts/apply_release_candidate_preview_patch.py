@@ -37,7 +37,10 @@ CHARMAP = {
     **{chr(ord("a") + i): 0xD5 + i for i in range(26)},
     **{str(i): 0xA1 + i for i in range(10)},
     " ": 0x00, "!": 0xAB, "?": 0xAC, ".": 0xAD, "-": 0xAE,
-    ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4, "é": 0x1B, "\n": 0xFE,
+    ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4,
+    "À": 0x01, "È": 0x05, "É": 0x06, "Ì": 0x09, "Ò": 0x0D, "Ù": 0x11,
+    "à": 0x16, "è": 0x1A, "é": 0x1B, "ì": 0x1E, "ò": 0x22, "ù": 0x26,
+    "\n": 0xFE,
 }
 
 
@@ -60,12 +63,12 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("Let's begin with your name."), encode_text("Cominciamo dal tuo nome.")),
     (encode_text("What is it?"), encode_text("Nome?")),
     (encode_text("This is my grandson."), encode_text("È il collega.")),
-    (encode_text("What was his name now?"), encode_text("Come si chiama?")),
+    (encode_text("What was his name now?"), encode_text("Lui è KPI Rival.")),
     (encode_text("He's been your rival since you both"), encode_text("Tiene i KPI da prima del kickoff")),
     (encode_text("were babies."), encode_text("ama i KPI.")),
     (encode_text("That's right! I remember now!"), encode_text("Perfetto. Accesso registrato.")),
     (encode_text("Your very own POKéMON legend is about"), encode_text("Il tuo primo progetto sta per")),
-    (encode_text("to unfold!"), encode_text("inizia.")),
+    (encode_text("to unfold!"), encode_text("partire!")),
     (encode_text("A world of dreams and adventures"), encode_text("Cagliari ti aspetta.")),
     (encode_text("with POKéMON awaits! Let's go!"), encode_text("Progetto avviato. Vai!")),
     (encode_text("I see! BULBASAUR is your choice."), encode_text("TARTREK è il tuo nuovo partner!")),

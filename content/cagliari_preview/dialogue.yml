@@ -75,7 +75,7 @@
       "speaker": "Delivery Lead",
       "lines": [
         "Emberfox. Fuoco e Buio.",
-        "Intuitivo, aggressivo e allergico ai processi troppo lunghi."
+        "Astuto, sicuro e allergico ai processi troppo lunghi."
       ]
     },
     {
@@ -113,7 +113,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_BEFORE_STARTER",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Prima scegli il tuo partner.",
         "Poi vediamo quanto regge la tua velocity."
@@ -121,7 +121,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_CHALLENGE",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Bene. Hai fatto la tua scelta.",
         "Facciamo un test rapido prima che qualcuno cambi i requisiti.",
@@ -130,7 +130,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_WIN",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Ok. Dato interessante.",
         "Aggiorno la dashboard e faccio finta che il campione sia statisticamente significativo."
@@ -138,7 +138,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_LOSE",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Partenza efficiente.",
         "Tranquillo, nella dashboard metterò solo il risultato."
@@ -146,7 +146,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_REPEAT",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Sto già aggiornando la dashboard.",
         "Non è una gara. La classifica però esiste."
@@ -351,7 +351,7 @@
     },
     {
       "id": "RC_DIALOGUE_RIVAL_CASTELLO",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Ho già recepito il nuovo requisito.",
         "La velocity resta alta se smetti di contare il lavoro rifatto.",
@@ -447,7 +447,7 @@
     },
     {
       "id": "RC_DIALOGUE_POST_DEPLOY_RIVAL",
-      "speaker": "Rivale",
+      "speaker": "KPI Rival",
       "lines": [
         "Bel deploy.",
         "La dashboard dice che siamo quasi pari.",
