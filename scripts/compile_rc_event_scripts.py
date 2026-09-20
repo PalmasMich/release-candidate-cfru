@@ -62,187 +62,111 @@ def emit_u16(buf: bytearray, value: int) -> None:
 
 
 def emit_u16_placeholder(buf: bytearray, relocations: list[dict], relocation: dict) -> None:
-    relocation = dict(relocation)
-    relocation["offset"] = len(buf)
-    relocation["size"] = 2
-    relocations.append(relocation)
-    buf.extend(b"\x00\x00")
+    relocation = dict(relocation); relocation["offset"] = len(buf); relocation["size"] = 2
+    relocations.append(relocation); buf.extend(b"\x00\x00")
 
 
 def emit_u32_placeholder(buf: bytearray, relocations: list[dict], relocation: dict) -> None:
-    relocation = dict(relocation)
-    relocation["offset"] = len(buf)
-    relocation["size"] = 4
-    relocations.append(relocation)
-    buf.extend(b"\x00\x00\x00\x00")
+    relocation = dict(relocation); relocation["offset"] = len(buf); relocation["size"] = 4
+    relocations.append(relocation); buf.extend(b"\x00\x00\x00\x00")
 
 
 def compile_script(script: dict, flags: dict[str, int], species: dict[str, int]) -> dict:
-    buf = bytearray()
-    relocations = []
-    labels = {}
-
+    buf = bytearray(); relocations = []; labels = {}
     for entry in script["ops"]:
         op = entry.get("op")
         if op is None and "label" in entry:
             label = entry["label"]
-            if label in labels:
-                raise ValueError(f"{script['id']}: duplicate label {label}")
-            labels[label] = len(buf)
-            continue
-
-        if op == "end":
-            buf.append(OP_END)
-        elif op == "lockall":
-            buf.append(OP_LOCKALL)
-        elif op == "lock":
-            buf.append(OP_LOCK)
-        elif op == "releaseall":
-            buf.append(OP_RELEASEALL)
-        elif op == "release":
-            buf.append(OP_RELEASE)
-        elif op == "faceplayer":
-            buf.append(OP_FACEPLAYER)
+            if label in labels: raise ValueError(f"{script['id']}: duplicate label {label}")
+            labels[label] = len(buf); continue
+        if op == "end": buf.append(OP_END)
+        elif op == "lockall": buf.append(OP_LOCKALL)
+        elif op == "lock": buf.append(OP_LOCK)
+        elif op == "releaseall": buf.append(OP_RELEASEALL)
+        elif op == "release": buf.append(OP_RELEASE)
+        elif op == "faceplayer": buf.append(OP_FACEPLAYER)
         elif op == "checkflag":
-            name = entry["flag"]
-            if name not in flags:
-                raise ValueError(f"{script['id']}: unknown flag {name}")
-            buf.append(OP_CHECKFLAG)
-            emit_u16(buf, flags[name])
+            name=entry["flag"]
+            if name not in flags: raise ValueError(f"{script['id']}: unknown flag {name}")
+            buf.append(OP_CHECKFLAG); emit_u16(buf,flags[name])
         elif op == "setflag":
-            name = entry["flag"]
-            if name not in flags:
-                raise ValueError(f"{script['id']}: unknown flag {name}")
-            buf.append(OP_SETFLAG)
-            emit_u16(buf, flags[name])
+            name=entry["flag"]
+            if name not in flags: raise ValueError(f"{script['id']}: unknown flag {name}")
+            buf.append(OP_SETFLAG); emit_u16(buf,flags[name])
         elif op == "goto_if":
-            buf.append(OP_GOTO_IF)
-            buf.append(TRUE if entry["condition"] else FALSE)
-            emit_u32_placeholder(buf, relocations, {"kind": "internal_label", "label": entry["label"]})
+            buf.append(OP_GOTO_IF); buf.append(TRUE if entry["condition"] else FALSE)
+            emit_u32_placeholder(buf,relocations,{"kind":"internal_label","label":entry["label"]})
         elif op == "msgbox":
-            buf.extend((OP_LOADWORD, 0x00))
-            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["dialogue"]})
-            buf.extend((OP_CALLSTD, int(entry.get("type", 4))))
+            buf.extend((OP_LOADWORD,0x00)); emit_u32_placeholder(buf,relocations,{"kind":"dialogue","symbol":entry["dialogue"]}); buf.extend((OP_CALLSTD,int(entry.get("type",4))))
         elif op == "warp":
-            x = int(entry["x"])
-            y = int(entry["y"])
-            if not 0 <= x <= 0xFFFF or not 0 <= y <= 0xFFFF:
-                raise ValueError(f"{script['id']}: invalid warp coordinates ({x}, {y})")
-            buf.append(OP_WARP)
-            emit_u16_placeholder(buf, relocations, {"kind": "map_id", "symbol": entry["target_map"]})
-            buf.append(int(entry.get("warp_id", 0xFF)) & 0xFF)
-            emit_u16(buf, x)
-            emit_u16(buf, y)
+            x=int(entry["x"]); y=int(entry["y"])
+            if not 0<=x<=0xFFFF or not 0<=y<=0xFFFF: raise ValueError(f"{script['id']}: invalid warp coordinates ({x}, {y})")
+            buf.append(OP_WARP); emit_u16_placeholder(buf,relocations,{"kind":"map_id","symbol":entry["target_map"]}); buf.append(int(entry.get("warp_id",0xFF))&0xFF); emit_u16(buf,x); emit_u16(buf,y)
         elif op == "trainerbattle_single":
-            trainer_id = int(entry["trainer_id"])
-            local_id = int(entry.get("local_id", 0))
-            if not 0 <= trainer_id <= 0xFFFF:
-                raise ValueError(f"{script['id']}: invalid trainer id {trainer_id}")
-            if not 0 <= local_id <= 0xFFFF:
-                raise ValueError(f"{script['id']}: invalid trainer local id {local_id}")
-            buf.extend((OP_TRAINERBATTLE, 0x00))
-            emit_u16(buf, trainer_id)
-            emit_u16(buf, local_id)
-            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["intro_dialogue"]})
-            emit_u32_placeholder(buf, relocations, {"kind": "dialogue", "symbol": entry["defeat_dialogue"]})
+            trainer_id=int(entry["trainer_id"]); local_id=int(entry.get("local_id",0))
+            if not 0<=trainer_id<=0xFFFF: raise ValueError(f"{script['id']}: invalid trainer id {trainer_id}")
+            if not 0<=local_id<=0xFFFF: raise ValueError(f"{script['id']}: invalid trainer local id {local_id}")
+            buf.extend((OP_TRAINERBATTLE,0x00)); emit_u16(buf,trainer_id); emit_u16(buf,local_id)
+            emit_u32_placeholder(buf,relocations,{"kind":"dialogue","symbol":entry["intro_dialogue"]}); emit_u32_placeholder(buf,relocations,{"kind":"dialogue","symbol":entry["defeat_dialogue"]})
         elif op == "givemon":
-            species_name = entry["species"]
-            if species_name not in species:
-                raise ValueError(f"{script['id']}: unknown species {species_name}")
-            level = int(entry["level"])
-            if not 1 <= level <= 100:
-                raise ValueError(f"{script['id']}: invalid level {level}")
-            item = int(entry.get("item", ITEM_NONE))
-            buf.append(OP_GIVEMON)
-            emit_u16(buf, species[species_name])
-            buf.append(level)
-            emit_u16(buf, item)
-            buf.extend(b"\x00" * 9)
+            species_name=entry["species"]
+            if species_name not in species: raise ValueError(f"{script['id']}: unknown species {species_name}")
+            level=int(entry["level"])
+            if not 1<=level<=100: raise ValueError(f"{script['id']}: invalid level {level}")
+            item=int(entry.get("item",ITEM_NONE)); buf.append(OP_GIVEMON); emit_u16(buf,species[species_name]); buf.append(level); emit_u16(buf,item); buf.extend(b"\x00"*9)
         elif op == "setwildbattle":
-            species_name = entry["species"]
-            if species_name not in species:
-                raise ValueError(f"{script['id']}: unknown species {species_name}")
-            level = int(entry["level"])
-            if not 1 <= level <= 100:
-                raise ValueError(f"{script['id']}: invalid wild level {level}")
-            item = int(entry.get("item", ITEM_NONE))
-            if not 0 <= item <= 0xFFFF:
-                raise ValueError(f"{script['id']}: invalid wild held item {item}")
-            buf.append(OP_SETWILDBATTLE)
-            emit_u16(buf, species[species_name])
-            buf.append(level)
-            emit_u16(buf, item)
-        elif op == "dowildbattle":
-            buf.append(OP_DOWILDBATTLE)
-        else:
-            raise ValueError(f"{script['id']}: unsupported op {op}")
-
+            species_name=entry["species"]
+            if species_name not in species: raise ValueError(f"{script['id']}: unknown species {species_name}")
+            level=int(entry["level"])
+            if not 1<=level<=100: raise ValueError(f"{script['id']}: invalid wild level {level}")
+            item=int(entry.get("item",ITEM_NONE))
+            if not 0<=item<=0xFFFF: raise ValueError(f"{script['id']}: invalid wild held item {item}")
+            buf.append(OP_SETWILDBATTLE); emit_u16(buf,species[species_name]); buf.append(level); emit_u16(buf,item)
+        elif op == "dowildbattle": buf.append(OP_DOWILDBATTLE)
+        else: raise ValueError(f"{script['id']}: unsupported op {op}")
     for relocation in relocations:
         if relocation["kind"] == "internal_label":
-            label = relocation["label"]
-            if label not in labels:
-                raise ValueError(f"{script['id']}: unknown label {label}")
-            relocation["target_offset"] = labels[label]
-
-    return {"id": script["id"], "size": len(buf), "bytes_hex": buf.hex(" "), "labels": labels, "relocations": relocations}
+            label=relocation["label"]
+            if label not in labels: raise ValueError(f"{script['id']}: unknown label {label}")
+            relocation["target_offset"]=labels[label]
+    return {"id":script["id"],"size":len(buf),"bytes_hex":buf.hex(" "),"labels":labels,"relocations":relocations}
 
 
 def compile_spec(spec: dict) -> dict:
-    flags = load_flag_ids()
-    species = load_species_ids()
-    scripts = [compile_script(script, flags, species) for script in spec["scripts"]]
-    ids = [script["id"] for script in scripts]
-    if len(ids) != len(set(ids)):
-        raise ValueError("duplicate event-script ids")
-    return {"format": "RC_EVENT_SCRIPT_IR_V1", "map": spec["map"], "scripts": scripts}
+    flags=load_flag_ids(); species=load_species_ids(); scripts=[compile_script(s,flags,species) for s in spec["scripts"]]
+    ids=[s["id"] for s in scripts]
+    if len(ids)!=len(set(ids)): raise ValueError("duplicate event-script ids")
+    return {"format":"RC_EVENT_SCRIPT_IR_V1","map":spec["map"],"scripts":scripts}
 
 
 def link_script(script_ir: dict, base_address: int, dialogue_addresses: dict[str, int], map_ids: dict[str, tuple[int, int]] | None = None) -> bytes:
-    data = bytearray.fromhex(script_ir["bytes_hex"])
+    data=bytearray.fromhex(script_ir["bytes_hex"])
     for relocation in script_ir["relocations"]:
-        offset = relocation["offset"]
-        if relocation["kind"] == "internal_label":
-            value = base_address + relocation["target_offset"]
+        offset=relocation["offset"]
+        if relocation["kind"] == "internal_label": value=base_address+relocation["target_offset"]
         elif relocation["kind"] == "dialogue":
-            symbol = relocation["symbol"]
-            if symbol not in dialogue_addresses:
-                raise ValueError(f"missing dialogue address for {symbol}")
-            value = dialogue_addresses[symbol]
+            symbol=relocation["symbol"]
+            if symbol not in dialogue_addresses: raise ValueError(f"missing dialogue address for {symbol}")
+            value=dialogue_addresses[symbol]
         elif relocation["kind"] == "map_id":
-            symbol = relocation["symbol"]
-            if map_ids is None or symbol not in map_ids:
-                raise ValueError(f"missing map id for {symbol}")
-            group, num = map_ids[symbol]
-            data[offset:offset + 2] = bytes([group & 0xFF, num & 0xFF])
-            continue
-        else:
-            raise ValueError(f"unsupported relocation kind {relocation['kind']}")
-        data[offset:offset + 4] = int(value).to_bytes(4, "little")
+            symbol=relocation["symbol"]
+            if map_ids is None or symbol not in map_ids: raise ValueError(f"missing map id for {symbol}")
+            group,num=map_ids[symbol]; data[offset:offset+2]=bytes([group&0xFF,num&0xFF]); continue
+        else: raise ValueError(f"unsupported relocation kind {relocation['kind']}")
+        data[offset:offset+4]=int(value).to_bytes(4,"little")
     return bytes(data)
 
 
 def compile_file(source: Path, output: Path | None = None) -> dict:
-    ir = compile_spec(load_json(source))
-    if output is not None:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(ir, indent=2) + "\n", encoding="utf-8")
+    ir=compile_spec(load_json(source))
+    if output is not None: output.parent.mkdir(parents=True,exist_ok=True); output.write_text(json.dumps(ir,indent=2)+"\n",encoding="utf-8")
     return ir
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Compile RC event scripts into relocatable FireRed bytecode IR.")
-    parser.add_argument("source", type=Path)
-    parser.add_argument("--output", type=Path, default=None)
-    args = parser.parse_args()
-    try:
-        ir = compile_file(args.source, args.output)
-    except (FileNotFoundError, ValueError) as exc:
-        print(f"RC_EVENT_SCRIPTS_INVALID: {exc}")
-        return 1
-    print(f"RC_EVENT_SCRIPTS_VALID={ir['map']}")
-    print(f"RC_EVENT_SCRIPT_COUNT={len(ir['scripts'])}")
-    return 0
+    parser=argparse.ArgumentParser(description="Compile RC event scripts into relocatable FireRed bytecode IR."); parser.add_argument("source",type=Path); parser.add_argument("--output",type=Path,default=None); args=parser.parse_args()
+    try: ir=compile_file(args.source,args.output)
+    except (FileNotFoundError,ValueError) as exc: print(f"RC_EVENT_SCRIPTS_INVALID: {exc}"); return 1
+    print(f"RC_EVENT_SCRIPTS_VALID={ir['map']}"); print(f"RC_EVENT_SCRIPT_COUNT={len(ir['scripts'])}"); return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())
