@@ -64,7 +64,13 @@ else
 fi
 
 cd "$DPE_DIR"
-git checkout "$DPE_BRANCH" >/dev/null 2>&1 || true
+git checkout "$DPE_BRANCH" --quiet
+ACTIVE_DPE_BRANCH="$(git branch --show-current)"
+if [ "$ACTIVE_DPE_BRANCH" != "$DPE_BRANCH" ]; then
+  echo "ERROR: DPE checkout is on $ACTIVE_DPE_BRANCH, expected $DPE_BRANCH." >&2
+  exit 1
+fi
+echo "DPE_BRANCH_OK=$ACTIVE_DPE_BRANCH"
 
 cd "$CFRU_DIR"
 python scripts/validate_release_candidate_workspace.py --dpe-path "$DPE_DIR"

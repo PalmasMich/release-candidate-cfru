@@ -8,13 +8,13 @@ The ROM must **never** be committed, pushed, attached to a PR, or stored in repo
 
 Use:
 
-`feature/cagliari-preview-0.1`
+`feature/cagliari-preview-0.2-rebuild`
 
 Do not build from `master` for the current Chapter 1 smoke test.
 
 ## Cloud workspace
 
-GitHub Codespaces can open the repository in a browser-based VS Code environment. Create the codespace from the CFRU repository while the branch selector is on `feature/cagliari-preview-0.1`.
+GitHub Codespaces can open the repository in a browser-based VS Code environment. Create the codespace from the CFRU repository while the branch selector is on `feature/cagliari-preview-0.2-rebuild`.
 
 The DPE repository must be available beside the CFRU checkout as:
 
@@ -69,9 +69,9 @@ From the CFRU repository root:
 python3 scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe
 ```
 
-The build sequence is:
+The high-level build sequence is:
 
-`CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_PREVIEW_PATCH -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH`
+`CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_STARTER_RUNTIME -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH`
 
 The default private output is:
 
@@ -84,7 +84,10 @@ The script restores the pristine CFRU `BPRE0.gba` contents after the build and d
 For the Chapter 1 candidate, look for:
 
 - `RC_CHAPTER1_PREFLIGHT=PASS`
+- `RC_CONTENT_GRAPH=PASS`
+- `RC_TILESET_ART_STATUS=BOOTSTRAP` until reviewed original tilesets replace the technical profiles
 - `DPE_RC_PREVIEW_SYMBOLS=OK`
+- `RC_STARTER_RUNTIME=PASS`
 - `PORT_LINK_DISCOVERY_STATUS=READY` or a documented legacy-bootstrap pending status
 - `DELIVERY_HUB_MAP_PLAN_STATUS=READY`
 - `RC_CUSTOM_MAPS_STATUS=APPLIED`
@@ -96,25 +99,28 @@ If `RC_CUSTOM_MAPS_STATUS` is pending, do **not** treat the Chapter 1 source imp
 
 After a successful custom-map install, test this exact order:
 
-1. enter Delivery Hub;
-2. choose a starter;
-3. KPI Rival;
-4. Marina;
-5. Port Link tutorial;
-6. wild encounter;
-7. Consulente Junior;
-8. back to Marina;
-9. Deploy blocked;
-10. scope change;
-11. Castello unlock;
-12. Castello ascent;
-13. Deploy District;
-14. Go/No-Go trigger;
-15. Deploy Room;
-16. Release Manager;
-17. Deploy 01 complete;
-18. repeat Release Manager interaction;
-19. return warp;
-20. representative save/reload checks.
+1. start New Game with a clean save;
+2. confirm Release Candidate onboarding and badge/workspace naming, with no rival-name prompt;
+3. enter Delivery Hub and choose one starter;
+4. confirm the party opens and save/reload works;
+5. repeat steps 1–4 independently for all three starters;
+6. continue with KPI Rival;
+7. Marina;
+8. Port Link tutorial;
+9. wild encounter;
+10. Consulente Junior;
+11. back to Marina;
+12. Deploy blocked;
+13. scope change;
+14. Castello unlock;
+15. Castello ascent;
+16. Deploy District;
+17. Go/No-Go trigger;
+18. Deploy Room;
+19. Release Manager;
+20. Deploy 01 complete;
+21. repeat Release Manager interaction;
+22. return warp;
+23. representative save/reload checks.
 
 Do not retire the fallback bootstrap until this complete loop passes on the private ROM.

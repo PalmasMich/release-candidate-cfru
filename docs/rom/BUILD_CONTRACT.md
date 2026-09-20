@@ -62,12 +62,13 @@ The validator checks source paths and reports one of:
 
 ## GitHub Codespaces
 
-The branch `feature/cagliari-preview-0.1` contains `.devcontainer/` configuration built on the official `devkitpro/devkitarm` image.
+The CFRU branch `feature/cagliari-preview-0.2-rebuild` contains `.devcontainer/` configuration built on the official `devkitpro/devkitarm` image. Its sibling DPE checkout intentionally remains on `feature/cagliari-preview-0.1`, where the stable RC species IDs are maintained.
 
 When a Codespace is created from this branch, `.devcontainer/bootstrap.sh`:
 
 - verifies Python, Git, `arm-none-eabi-gcc` and `grit`;
 - clones `PalmasMich/release-candidate-dpe` on `feature/cagliari-preview-0.1` beside the CFRU workspace if it is not already present;
+- fails safely if the sibling DPE checkout cannot be switched to that exact branch;
 - runs `scripts/validate_release_candidate_workspace.py`;
 - checks for `BPRE0.gba` in the CFRU root;
 - verifies its SHA-1 against FireRed USA v1.0: `41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc`.

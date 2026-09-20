@@ -25,8 +25,11 @@ class CodespacesContractTest(unittest.TestCase):
 
         script = bootstrap.read_text(encoding="utf-8")
         self.assertIn("release-candidate-dpe", script)
+        self.assertIn('DPE_BRANCH="feature/cagliari-preview-0.1"', script)
         self.assertIn("BPRE0.gba", script)
         self.assertIn("validate_release_candidate_workspace.py", script)
+        self.assertNotIn('git checkout "$DPE_BRANCH" >/dev/null 2>&1 || true', script)
+        self.assertIn("DPE_BRANCH_OK", script)
 
 
 if __name__ == "__main__":
