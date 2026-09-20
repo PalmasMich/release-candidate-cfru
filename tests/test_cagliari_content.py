@@ -105,16 +105,20 @@ class CagliariPreviewContentTest(unittest.TestCase):
             "RC_PORT_CONNECTION_GRASS",
         )
         self.assertEqual(
+            events["RC_EVENT_FIRST_WILD"]["implementation_status"],
+            "rom_patch_implemented_pending_private_smoke",
+        )
+        self.assertEqual(
             events["RC_EVENT_PORT_TRAINER"]["trainer"],
             "RC_TRAINER_PORT_01",
         )
         self.assertEqual(
-            events["RC_EVENT_DEPLOY_TEASER"]["dialogue"],
-            "RC_DIALOGUE_DEPLOY_TEASER",
+            events["RC_EVENT_PORT_TRAINER"]["implementation_status"],
+            "bootstrap_patch_ready_pending_private_smoke",
         )
         self.assertEqual(
-            events["RC_EVENT_PORT_TRAINER"]["implementation_status"],
-            "bootstrap_route1",
+            events["RC_EVENT_DEPLOY_TEASER"]["dialogue"],
+            "RC_DIALOGUE_DEPLOY_TEASER",
         )
 
     def test_story_continues_beyond_preview_into_deploy_one(self):
