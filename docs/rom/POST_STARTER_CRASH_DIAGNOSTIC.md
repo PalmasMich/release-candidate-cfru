@@ -46,26 +46,32 @@ This closes the source-level defect, but it does **not** mark the crash fixed. T
 
 ## Next private smoke matrix
 
-Run from a clean New Game/save state.
+No private ROM was available during the 2026-09-20 source-verification pass. All runtime cells therefore remain `PENDING`; source tests and a successful compiler preflight are not substitutes for these observations.
 
-A. Tartrek
-- select Tartrek;
-- note whether confirmation dialogue appears;
-- note whether party/menu can open before crash if possible.
+Run each row from a clean New Game/save state.
 
-B. Frobyte
-- same observations.
+| Starter | Assignment returns | Confirmation appears | Party opens | Save/reload | KPI Rival/event follows | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| Tartrek `0x050E` | PENDING | PENDING | PENDING | PENDING | PENDING | **PENDING** |
+| Frobyte `0x050F` | PENDING | PENDING | PENDING | PENDING | PENDING | **PENDING** |
+| Emberfox `0x0510` | PENDING | PENDING | PENDING | PENDING | PENDING | **PENDING** |
 
-C. Emberfox
-- same observations.
+For each run, record:
 
-Record crash timing as one of:
-- before starter appears in party;
-- after party creation, before confirmation text;
-- during confirmation text;
-- after confirmation text;
-- only when opening party/menu;
-- only when rival/event follows.
+- CFRU and DPE commit hashes;
+- private output SHA-1 without publishing the ROM;
+- emulator/device and version;
+- whether the intro showed badge/workspace naming and skipped any player-facing rival-name prompt;
+- crash timing as `before party creation`, `before confirmation`, `during confirmation`, `after confirmation`, `party/menu only`, or `next event only`;
+- the last visible dialogue and map/event position.
+
+Exact build command from the CFRU checkout:
+
+```bash
+python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe
+```
+
+Proceed only when it prints `BUILD_STATUS=SUCCESS`. `BUILD_STATUS=BLOCKED` means the build was not produced and no smoke result may be recorded.
 
 ## Diagnostic build strategy
 

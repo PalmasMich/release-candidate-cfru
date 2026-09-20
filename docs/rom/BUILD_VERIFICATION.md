@@ -1,6 +1,69 @@
-# Release Candidate — Cagliari Preview 0.1 Build Verification
+# Release Candidate — Cagliari Preview 0.2 Build Verification
 
 This file records source/build evidence only. No ROM bytes, save files or copyrighted binary data belong here.
+
+## V0.2 source checkpoint — 2026-09-20
+
+| Gate | Evidence | Result |
+| --- | --- | --- |
+| DPE source suite | `python -m unittest discover -s tests -v` in `release-candidate-dpe` | **PASS — 29/29** |
+| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 141/141** |
+| Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — 6 maps, 29 scripts, 10000 payload bytes** |
+| Starter runtime contract | `python scripts/validate_rc_starter_runtime.py --dpe-path ../release-candidate-dpe` | **PASS** |
+| Binary hygiene | `git ls-files '*.gba' '*.sav' '*.srm'` in both repositories | **PASS — no tracked ROM/save files** |
+| Private build | `python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe` | **BLOCKED — private `BPRE0.gba` is absent** |
+| Runtime smoke | clean-save matrix below | **PENDING — no private ROM was available** |
+
+Verified source checkpoints before this record:
+
+- CFRU branch `feature/cagliari-preview-0.2-rebuild`, commit `6d35f7fb`;
+- DPE branch `feature/cagliari-preview-0.1`, commit `eda69acd`;
+- historical V0.1 PR remains untouched; no merge, close, deploy, or `master` change was performed.
+
+The missing-ROM build attempt exits non-zero and emits `BUILD_STATUS=BLOCKED`. It did not produce an output ROM and must not be interpreted as a failed runtime smoke test.
+
+## Exact Codespaces/private-build handoff
+
+Use sibling CFRU and DPE checkouts. A lawfully obtained, clean FireRed v1.0 US base ROM must exist only as the ignored file `release-candidate-cfru/BPRE0.gba`; the build verifies SHA-1 `41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc` before mutation.
+
+```bash
+cd release-candidate-dpe
+git switch feature/cagliari-preview-0.1
+python -m unittest discover -s tests -v
+
+cd ../release-candidate-cfru
+git switch feature/cagliari-preview-0.2-rebuild
+python -m unittest discover -s tests -v
+python scripts/preflight_chapter1.py
+python scripts/validate_rc_starter_runtime.py --dpe-path ../release-candidate-dpe
+git ls-files '*.gba' '*.sav' '*.srm'
+python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe
+```
+
+Only an invocation ending with `BUILD_STATUS=SUCCESS` creates a candidate for runtime testing. Keep `release_candidate_test.gba` and every save private and untracked.
+
+## V0.2 clean-save runtime matrix
+
+Start every starter row from **New Game with no reused save state**. Do not change any cell from `PENDING` without observing it on the private build and recording emulator/device, build commit, output SHA-1, and crash timing if applicable.
+
+| Starter | Confirmation text | Party opens | Save/reload | KPI Rival continues | Result |
+| --- | --- | --- | --- | --- | --- |
+| Tartrek `0x050E` | PENDING | PENDING | PENDING | PENDING | **PENDING** |
+| Frobyte `0x050F` | PENDING | PENDING | PENDING | PENDING | **PENDING** |
+| Emberfox `0x0510` | PENDING | PENDING | PENDING | PENDING | **PENDING** |
+
+After all three rows pass, use a fresh save for the Chapter 1 path:
+
+| Runtime gate | Expected evidence | Result |
+| --- | --- | --- |
+| Opening identity | badge/workspace naming is visible; no player-facing rival-name prompt | PENDING |
+| Hub → Marina → Port Link | warps land at intended anchors; wild tutorial and trainer each run once | PENDING |
+| Locanda del Molo | optional visit sets its flag and does not block the main path | PENDING |
+| Marina → Castello → Deploy District | flag gates, stairs, return warps, and Go/No-Go trigger work | PENDING |
+| Deploy Room | Release Manager battle runs once and sets `0x0B8`, then `0x0B9` | PENDING |
+| Persistence | save/reload preserves starter, map position, and Deploy 01 completion | PENDING |
+
+## Historical V0.1 evidence
 
 ## Repository checkpoint
 

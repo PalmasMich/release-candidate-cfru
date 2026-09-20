@@ -1,7 +1,11 @@
 from pathlib import Path
+from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
+import io
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "build_release_candidate.py"
@@ -180,6 +184,17 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_default_output_is_git_ignored_gba(self):
         builder = load_builder(); self.assertEqual(builder.DEFAULT_OUTPUT_NAME, "release_candidate_test.gba")
         self.assertIn("*.gba", (ROOT / ".gitignore").read_text(encoding="utf-8"))
+
+    def test_main_reports_machine_readable_blocked_status(self):
+        builder = load_builder()
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch.object(builder, "run_pipeline", side_effect=FileNotFoundError("missing private ROM")):
+            with patch.object(sys, "argv", ["build_release_candidate.py"]):
+                with redirect_stdout(stdout), redirect_stderr(stderr):
+                    result = builder.main()
+        self.assertEqual(result, 1)
+        self.assertIn("BUILD_STATUS=BLOCKED", stderr.getvalue())
 
 
 if __name__ == "__main__":

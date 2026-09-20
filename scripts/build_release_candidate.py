@@ -246,7 +246,9 @@ def main() -> int:
     try:
         run_pipeline(cfru_root=ROOT, dpe_root=Path(args.dpe_path).expanduser().resolve(), output_path=Path(args.output).expanduser().resolve())
     except (FileNotFoundError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
-        print(f"ERROR: {exc}", file=sys.stderr); return 1
+        print("BUILD_STATUS=BLOCKED", file=sys.stderr)
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     print("BUILD_STATUS=SUCCESS\nPristine CFRU BPRE0.gba and generated learnset table restored after build.")
     return 0
 
