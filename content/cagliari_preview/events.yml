@@ -14,98 +14,16 @@
     "RC_FLAG_DEPLOY_01_COMPLETE"
   ],
   "flow": [
-    {
-      "id": "RC_EVENT_ARRIVAL",
-      "map": "RC_CAGLIARI_ARRIVAL",
-      "dialogue": "RC_DIALOGUE_OPENING",
-      "sets": ["RC_FLAG_ARRIVAL_DONE"],
-      "scope": "preview",
-      "implementation_status": "bootstrap_text_patch_ready_pending_private_smoke"
-    },
-    {
-      "id": "RC_EVENT_STARTER_ASSIGNMENT",
-      "map": "RC_DELIVERY_HUB",
-      "dialogue": "RC_DIALOGUE_STARTER",
-      "requires": ["RC_FLAG_ARRIVAL_DONE"],
-      "sets": ["RC_FLAG_STARTER_CHOSEN"],
-      "scope": "preview",
-      "implementation_status": "three_starter_rom_patch_ready_pending_private_smoke"
-    },
-    {
-      "id": "RC_EVENT_RIVAL_INTRO",
-      "map": "RC_DELIVERY_HUB",
-      "dialogue": "RC_DIALOGUE_RIVAL_INTRO",
-      "requires": ["RC_FLAG_STARTER_CHOSEN"],
-      "sets": ["RC_FLAG_RIVAL_INTRO_DONE"],
-      "scope": "preview",
-      "implementation_status": "kpi_dialogue_and_party_patch_ready_pending_private_smoke"
-    },
-    {
-      "id": "RC_EVENT_FIRST_WILD",
-      "map": "RC_PORT_CONNECTION",
-      "encounter_table": "RC_PORT_CONNECTION_GRASS",
-      "requires": ["RC_FLAG_RIVAL_INTRO_DONE"],
-      "sets": ["RC_FLAG_WILD_TUTORIAL_DONE"],
-      "scope": "preview",
-      "implementation_status": "rom_patch_implemented_pending_private_smoke",
-      "preview_contract": "Mistrillo is the primary custom encounter on Port Link; weighted table is 60% Mistrillo / 25% Wingull / 15% Meowth."
-    },
-    {
-      "id": "RC_EVENT_PORT_TRAINER",
-      "map": "RC_PORT_CONNECTION",
-      "trainer": "RC_TRAINER_PORT_01",
-      "requires": ["RC_FLAG_WILD_TUTORIAL_DONE"],
-      "sets": ["RC_FLAG_PORT_TRAINER_DONE"],
-      "scope": "preview",
-      "implementation_status": "manifest_ready_rom_trainer_patch_deferred"
-    },
-    {
-      "id": "RC_EVENT_DEPLOY_TEASER",
-      "map": "RC_CAGLIARI_MARINA",
-      "dialogue": "RC_DIALOGUE_DEPLOY_TEASER",
-      "requires": ["RC_FLAG_PORT_TRAINER_DONE"],
-      "sets": ["RC_FLAG_DEPLOY_TEASER_SEEN"],
-      "scope": "preview",
-      "implementation_status": "marina_identity_teaser_patch_ready_pending_private_smoke"
-    },
-    {
-      "id": "RC_EVENT_SCOPE_CHANGE",
-      "map": "RC_CAGLIARI_MARINA",
-      "requires": ["RC_FLAG_DEPLOY_TEASER_SEEN"],
-      "sets": ["RC_FLAG_SCOPE_CHANGE_REVEALED", "RC_FLAG_CASTELLO_UNLOCKED"],
-      "scope": "chapter_01"
-    },
-    {
-      "id": "RC_EVENT_CASTELLO_ASCENT",
-      "map": "RC_CASTELLO_ASCENT",
-      "requires": ["RC_FLAG_CASTELLO_UNLOCKED"],
-      "sets": [],
-      "scope": "chapter_01",
-      "implementation_status": "custom_path_pending_smoke"
-    },
-    {
-      "id": "RC_EVENT_GO_NO_GO",
-      "map": "RC_DEPLOY_DISTRICT",
-      "requires": ["RC_FLAG_SCOPE_CHANGE_REVEALED"],
-      "sets": ["RC_FLAG_GO_NO_GO_STARTED"],
-      "scope": "chapter_01",
-      "implementation_status": "custom_path_pending_smoke"
-    },
-    {
-      "id": "RC_EVENT_RELEASE_MANAGER",
-      "map": "RC_DEPLOY_ROOM_01",
-      "requires": ["RC_FLAG_GO_NO_GO_STARTED"],
-      "sets": ["RC_FLAG_RELEASE_MANAGER_DEFEATED"],
-      "scope": "chapter_01",
-      "implementation_status": "custom_deploy_room_pending_smoke"
-    },
-    {
-      "id": "RC_EVENT_DEPLOY_01_COMPLETE",
-      "map": "RC_DEPLOY_ROOM_01",
-      "requires": ["RC_FLAG_RELEASE_MANAGER_DEFEATED"],
-      "sets": ["RC_FLAG_DEPLOY_01_COMPLETE"],
-      "scope": "chapter_01",
-      "implementation_status": "custom_deploy_room_pending_smoke"
-    }
+    {"id":"RC_EVENT_ARRIVAL","map":"RC_CAGLIARI_ARRIVAL","dialogue":"RC_DIALOGUE_OPENING","sets":["RC_FLAG_ARRIVAL_DONE"],"scope":"preview","implementation_status":"bootstrap_text_patch_ready_pending_private_smoke"},
+    {"id":"RC_EVENT_STARTER_ASSIGNMENT","map":"RC_DELIVERY_HUB","dialogue":"RC_DIALOGUE_STARTER","requires":["RC_FLAG_ARRIVAL_DONE"],"sets":["RC_FLAG_STARTER_CHOSEN"],"scope":"preview","implementation_status":"three_starter_rom_patch_ready_pending_private_smoke"},
+    {"id":"RC_EVENT_RIVAL_INTRO","map":"RC_DELIVERY_HUB","dialogue":"RC_DIALOGUE_RIVAL_INTRO","requires":["RC_FLAG_STARTER_CHOSEN"],"sets":["RC_FLAG_RIVAL_INTRO_DONE"],"scope":"preview","implementation_status":"kpi_dialogue_and_party_patch_ready_pending_private_smoke"},
+    {"id":"RC_EVENT_FIRST_WILD","map":"RC_PORT_CONNECTION","encounter_table":"RC_PORT_CONNECTION_GRASS","requires":["RC_FLAG_RIVAL_INTRO_DONE"],"sets":["RC_FLAG_WILD_TUTORIAL_DONE"],"scope":"preview","implementation_status":"rom_patch_implemented_pending_private_smoke","preview_contract":"Mistrillo is the primary custom encounter on Port Link; weighted table is 60% Mistrillo / 25% Wingull / 15% Meowth."},
+    {"id":"RC_EVENT_PORT_TRAINER","map":"RC_PORT_CONNECTION","trainer":"RC_TRAINER_PORT_01","requires":["RC_FLAG_WILD_TUTORIAL_DONE"],"sets":["RC_FLAG_PORT_TRAINER_DONE"],"scope":"preview","implementation_status":"guarded_rom_trainer_patch_implemented_pending_private_smoke","preview_contract":"A uniquely discovered Port Link dialogue script is replaced with a trainerbattle using bootstrap trainer 89; its party is transactionally rewritten to two level-4 Meowth without changing ROM size."},
+    {"id":"RC_EVENT_DEPLOY_TEASER","map":"RC_CAGLIARI_MARINA","dialogue":"RC_DIALOGUE_DEPLOY_TEASER","requires":["RC_FLAG_PORT_TRAINER_DONE"],"sets":["RC_FLAG_DEPLOY_TEASER_SEEN"],"scope":"preview","implementation_status":"marina_identity_teaser_patch_ready_pending_private_smoke"},
+    {"id":"RC_EVENT_SCOPE_CHANGE","map":"RC_CAGLIARI_MARINA","requires":["RC_FLAG_DEPLOY_TEASER_SEEN"],"sets":["RC_FLAG_SCOPE_CHANGE_REVEALED","RC_FLAG_CASTELLO_UNLOCKED"],"scope":"chapter_01"},
+    {"id":"RC_EVENT_CASTELLO_ASCENT","map":"RC_CASTELLO_ASCENT","requires":["RC_FLAG_CASTELLO_UNLOCKED"],"sets":[],"scope":"chapter_01","implementation_status":"custom_path_pending_smoke"},
+    {"id":"RC_EVENT_GO_NO_GO","map":"RC_DEPLOY_DISTRICT","requires":["RC_FLAG_SCOPE_CHANGE_REVEALED"],"sets":["RC_FLAG_GO_NO_GO_STARTED"],"scope":"chapter_01","implementation_status":"custom_path_pending_smoke"},
+    {"id":"RC_EVENT_RELEASE_MANAGER","map":"RC_DEPLOY_ROOM_01","requires":["RC_FLAG_GO_NO_GO_STARTED"],"sets":["RC_FLAG_RELEASE_MANAGER_DEFEATED"],"scope":"chapter_01","implementation_status":"custom_deploy_room_pending_smoke"},
+    {"id":"RC_EVENT_DEPLOY_01_COMPLETE","map":"RC_DEPLOY_ROOM_01","requires":["RC_FLAG_RELEASE_MANAGER_DEFEATED"],"sets":["RC_FLAG_DEPLOY_01_COMPLETE"],"scope":"chapter_01","implementation_status":"custom_deploy_room_pending_smoke"}
   ]
 }
