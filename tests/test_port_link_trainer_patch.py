@@ -15,7 +15,7 @@ def load(path, name):
 
 
 class PortLinkTrainerPatchTest(unittest.TestCase):
-    def build_fixture(self, discovery):
+    def build_fixture(self, discovery, patcher):
         payload = bytearray(b"\x00" * 1600)
 
         intro = discovery.encode_text(discovery.PORT_LINK_NPC_TEXT)
@@ -25,6 +25,9 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         defeat = discovery.encode_text("Please, report at MARINA PORTO.")
         defeat_offset = 240
         payload[defeat_offset:defeat_offset + len(defeat)] = defeat
+
+        party_offset = 400
+        payload[party_offset:party_offset + len(patcher.YOUNGSTER_BEN_PARTY_SIGNATURE)] = patcher.YOUNGSTER_BEN_PARTY_SIGNATURE
 
         script_offset = 700
         branch_target = discovery.GBA_ROM_BASE + script_offset + 100
@@ -50,14 +53,12 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
             + (b"\x00" * 64)
         )
         payload[script_offset:script_offset + len(script)] = script
-        return bytes(payload), script_offset, intro_offset, defeat_offset
+        return bytes(payload), script_offset, intro_offset, defeat_offset, party_offset
 
     def test_builds_expected_single_trainerbattle_script(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
-
         script = patcher.build_trainer_script(discovery, 0x1234, 0x5678)
-
         self.assertEqual(script[0], discovery.CMD_LOCK)
         self.assertEqual(script[1], discovery.CMD_FACEPLAYER)
         self.assertEqual(script[2], discovery.CMD_TRAINERBATTLE)
@@ -69,52 +70,54 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         self.assertEqual(script[-2:], bytes([discovery.CMD_RELEASE, discovery.CMD_END]))
         self.assertEqual(len(script), 18)
 
-    def test_patches_only_guarded_script_prefix(self):
+    def test_patches_guarded_script_and_preview_level_party(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
-        original, script_offset, intro_offset, defeat_offset = self.build_fixture(discovery)
-
+        original, script_offset, intro_offset, defeat_offset, party_offset = self.build_fixture(discovery, patcher)
         patched, evidence = patcher.patch_bytes(original)
-
         self.assertEqual(len(patched), len(original))
         self.assertEqual(evidence["script_start"], script_offset)
         self.assertEqual(evidence["trainer_id"], discovery.TRAINER_BOOTSTRAP_ID)
         self.assertEqual(evidence["intro_text_offset"], intro_offset)
         self.assertEqual(evidence["defeat_text_offset"], defeat_offset)
-
+        self.assertEqual(evidence["party_offset"], party_offset)
         expected = patcher.build_trainer_script(discovery, intro_offset, defeat_offset)
-        self.assertEqual(
-            patched[script_offset:script_offset + len(expected)],
-            expected,
-        )
-        self.assertEqual(patched[:script_offset], original[:script_offset])
+        self.assertEqual(patched[script_offset:script_offset + len(expected)], expected)
+        for level_offset in patcher.TRAINER_MON_LEVEL_OFFSETS:
+            self.assertEqual(patched[party_offset + level_offset], patcher.PORT_LINK_TRAINER_LEVEL)
+        for species_offset in patcher.TRAINER_MON_SPECIES_OFFSETS:
+            self.assertEqual(int.from_bytes(patched[party_offset + species_offset:party_offset + species_offset + 2], "little"), patcher.MEOWTH_SPECIES_ID)
 
     def test_rejects_rom_without_unique_defeat_text(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
-        original, _, _, defeat_offset = self.build_fixture(discovery)
+        original, _, _, _, _ = self.build_fixture(discovery, patcher)
         payload = bytearray(original)
-
         defeat = discovery.encode_text(patcher.TRAINER_DEFEAT_TEXT)
-        second = 400
+        second = 300
         payload[second:second + len(defeat)] = defeat
-
         with self.assertRaisesRegex(ValueError, "exactly one"):
+            patcher.patch_bytes(bytes(payload))
+
+    def test_rejects_missing_bootstrap_party_signature(self):
+        discovery = load(DISCOVERY, "port_link_discovery")
+        patcher = load(PATCHER, "port_link_patcher")
+        original, _, _, _, party_offset = self.build_fixture(discovery, patcher)
+        payload = bytearray(original)
+        payload[party_offset:party_offset + len(patcher.YOUNGSTER_BEN_PARTY_SIGNATURE)] = b"\xFF" * len(patcher.YOUNGSTER_BEN_PARTY_SIGNATURE)
+        with self.assertRaisesRegex(ValueError, "Youngster Ben bootstrap party"):
             patcher.patch_bytes(bytes(payload))
 
     def test_rejects_unclassified_pointer(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
-
         payload = bytearray(b"\x00" * 900)
         intro = discovery.encode_text(discovery.PORT_LINK_NPC_TEXT)
         intro_offset = 100
         payload[intro_offset:intro_offset + len(intro)] = intro
         payload[500:504] = discovery.gba_pointer_bytes(intro_offset)
-
         defeat = discovery.encode_text(patcher.TRAINER_DEFEAT_TEXT)
         payload[200:200 + len(defeat)] = defeat
-
         with self.assertRaisesRegex(ValueError, "not uniquely safe"):
             patcher.patch_bytes(bytes(payload))
 
