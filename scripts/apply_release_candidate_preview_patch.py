@@ -37,7 +37,10 @@ CHARMAP = {
     **{chr(ord("a") + i): 0xD5 + i for i in range(26)},
     **{str(i): 0xA1 + i for i in range(10)},
     " ": 0x00, "!": 0xAB, "?": 0xAC, ".": 0xAD, "-": 0xAE,
-    ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4, "é": 0x1B, "\n": 0xFE,
+    ",": 0xB8, "/": 0xBA, ":": 0xF0, "'": 0xB4,
+    "À": 0x01, "È": 0x05, "É": 0x06, "Ì": 0x09, "Ò": 0x0D, "Ù": 0x11,
+    "à": 0x16, "è": 0x1A, "é": 0x1B, "ì": 0x1E, "ò": 0x22, "ù": 0x26,
+    "\n": 0xFE,
 }
 
 
@@ -54,9 +57,11 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("For some people, POKéMON are pets."), encode_text("Qui ogni partner ha un ruolo.")),
     (encode_text("Others use them for battling."), encode_text("E ogni task ha conseguenze.")),
     (encode_text("I study POKéMON as a profession."), encode_text("Io provo a tenere insieme tutto.")),
-    (encode_text("But first, tell me a little about"), encode_text("Prima però devo registrarti.")),
+    (
+        encode_text("But first, tell me a little about\nyourself."),
+        encode_text("Prima però devo registrarti.\nPartiamo."),
+    ),
     (encode_text("Now tell me. Are you a boy? Or are you a girl?"), encode_text("Dimmi solo come vuoi presentarti.")),
-    (encode_text("yourself."), encode_text("Partiamo.")),
     (encode_text("Let's begin with your name."), encode_text("Cominciamo dal tuo nome.")),
     (encode_text("What is it?"), encode_text("Nome?")),
     (encode_text("This is my grandson."), encode_text("È il collega.")),
