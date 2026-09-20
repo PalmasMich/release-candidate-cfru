@@ -26,6 +26,10 @@
           "flag": "RC_FLAG_GO_NO_GO_STARTED"
         },
         {
+          "op": "removeobject",
+          "local_id": 4
+        },
+        {
           "op": "releaseall"
         },
         {
@@ -46,29 +50,7 @@
           "op": "lock"
         },
         {
-          "op": "checkflag",
-          "flag": "RC_FLAG_GO_NO_GO_STARTED"
-        },
-        {
-          "op": "goto_if",
-          "condition": false,
-          "label": "locked"
-        },
-        {
-          "op": "release"
-        },
-        {
-          "op": "warp",
-          "target_map": "RC_DEPLOY_ROOM",
-          "warp_id": 255,
-          "x": 8,
-          "y": 9
-        },
-        {
-          "op": "end"
-        },
-        {
-          "label": "locked"
+          "op": "faceplayer"
         },
         {
           "op": "msgbox",

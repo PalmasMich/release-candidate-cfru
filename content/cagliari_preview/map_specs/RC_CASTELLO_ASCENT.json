@@ -134,16 +134,6 @@
   ],
   "interactions": [
     {
-      "id": "RC_INTERACT_DEPLOY_DISTRICT_GATE",
-      "anchor": "summit_gate",
-      "script": "RC_SCRIPT_DEPLOY_DISTRICT_GATE",
-      "elevation": 3,
-      "bg_kind": {
-        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
-        "id": 0
-      }
-    },
-    {
       "id": "RC_INTERACT_CASTELLO_VIEWPOINT",
       "anchor": "viewpoint",
       "script": "RC_SCRIPT_CASTELLO_VIEWPOINT",
@@ -160,9 +150,18 @@
       "id": "RC_WARP_CASTELLO_TO_MARINA",
       "anchor": "marina_return",
       "target_map": "RC_CAGLIARI_MARINA",
-      "target_anchor": "scope_change_stage",
+      "target_anchor": "castello_access",
       "elevation": 3,
       "warp_id": 2,
+      "requires": []
+    },
+    {
+      "id": "RC_WARP_CASTELLO_TO_DEPLOY",
+      "anchor": "summit_gate",
+      "target_map": "RC_DEPLOY_DISTRICT",
+      "target_anchor": "castello_return",
+      "elevation": 3,
+      "warp_id": 0,
       "requires": []
     }
   ],

@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT_ROOT = ROOT / "content" / "cagliari_preview"
 MAP_SPEC_ROOT = CONTENT_ROOT / "map_specs"
+FLAGS_PATH = CONTENT_ROOT / "flags.json"
 
 
 def load_json(path: Path) -> dict:
@@ -63,10 +64,16 @@ def validate_spec(spec: dict) -> None:
         require(role in walkable, f"{map_id}: anchor {name} is on blocked role {role}")
         anchor_positions[name] = (x, y)
 
+    known_flags = set(load_json(FLAGS_PATH)["flags"])
     for obj in spec.get("objects", []):
         anchor = obj.get("anchor")
         require(anchor in anchors, f"{map_id}: object {obj.get('id')} references unknown anchor {anchor}")
         require(obj.get("script"), f"{map_id}: object {obj.get('id')} has no script")
+        visibility_flag = obj.get("visibility_flag")
+        require(
+            visibility_flag is None or visibility_flag in known_flags,
+            f"{map_id}: object {obj.get('id')} has unknown visibility flag {visibility_flag}",
+        )
 
     for interaction in spec.get("interactions", []):
         anchor = interaction.get("anchor")

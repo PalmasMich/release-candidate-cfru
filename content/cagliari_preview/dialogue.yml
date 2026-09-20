@@ -163,6 +163,14 @@
       ]
     },
     {
+      "id": "RC_DIALOGUE_HUB_EXIT_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Uscita sospesa.",
+        "Completa il confronto KPI prima di lasciare il Delivery Hub."
+      ]
+    },
+    {
       "id": "RC_DIALOGUE_HUB_NPC_ANALYST",
       "speaker": "Analista",
       "lines": [
@@ -251,6 +259,14 @@
         "Attraversa il Port Link e chiudi la verifica.",
         "Poi raggiungi Marina Porto.",
         "Per ora lo scope è ancora quello."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PORT_LINK_ACCESS_LOCKED",
+      "speaker": "System",
+      "lines": [
+        "Port Link non assegnato.",
+        "Completa l'onboarding nel Delivery Hub."
       ]
     },
     {

@@ -186,6 +186,36 @@ class CagliariPreviewContentTest(unittest.TestCase):
         self.assertIn({"op": "msgbox", "dialogue": "RC_DIALOGUE_OPENING", "type": 4}, ops)
         self.assertIn({"op": "setflag", "flag": "RC_FLAG_ARRIVAL_DONE"}, ops)
 
+    def test_conditioned_warps_use_real_flagged_blockers(self):
+        hub = load("map_specs/RC_DELIVERY_HUB.json")
+        marina = load("map_specs/RC_CAGLIARI_MARINA.json")
+        district = load("map_specs/RC_DEPLOY_DISTRICT.json")
+        for spec in (hub, marina, district):
+            self.assertFalse(any(warp.get("requires") for warp in spec["warps"]))
+
+        blockers = {
+            obj["id"]: obj
+            for spec in (hub, marina, district)
+            for obj in spec["objects"]
+            if obj.get("visibility_flag")
+        }
+        self.assertEqual(
+            blockers["RC_NPC_HUB_EXIT_GATE"]["visibility_flag"],
+            "RC_FLAG_RIVAL_INTRO_DONE",
+        )
+        self.assertEqual(
+            blockers["RC_NPC_PORT_LINK_GATE"]["visibility_flag"],
+            "RC_FLAG_RIVAL_INTRO_DONE",
+        )
+        self.assertEqual(
+            blockers["RC_NPC_CASTELLO_GATE"]["visibility_flag"],
+            "RC_FLAG_CASTELLO_UNLOCKED",
+        )
+        self.assertEqual(
+            blockers["RC_NPC_RELEASE_GATE"]["visibility_flag"],
+            "RC_FLAG_GO_NO_GO_STARTED",
+        )
+
     def test_custom_starter_assignment_is_single_and_flagged_after_givemon(self):
         hub = json.loads((CONTENT / "script_specs" / "RC_DELIVERY_HUB.json").read_text(encoding="utf-8"))
         scripts = {item["id"]: item for item in hub["scripts"]}

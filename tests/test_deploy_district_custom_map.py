@@ -5,11 +5,13 @@ ROOT=Path(__file__).resolve().parents[1]
 MAP_COMPILER=ROOT/"scripts"/"compile_rc_map.py"
 CELL_COMPILER=ROOT/"scripts"/"compile_rc_map_cells.py"
 SCRIPT_COMPILER=ROOT/"scripts"/"compile_rc_event_scripts.py"
+EVENTS_COMPILER=ROOT/"scripts"/"compile_rc_map_events.py"
 PAYLOAD_COMPILER=ROOT/"scripts"/"compile_rc_map_payload.py"
 
 DEPLOY=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DEPLOY_DISTRICT.json"
 DEPLOY_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DEPLOY_DISTRICT.json"
 CASTELLO_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_CASTELLO_ASCENT.json"
+CASTELLO=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_CASTELLO_ASCENT.json"
 
 def load(path,name):
     s=importlib.util.spec_from_file_location(name,path)
@@ -27,21 +29,13 @@ class TestDeployDistrictCustomMap(unittest.TestCase):
         self.assertEqual(cells["map_bytes"],22*16*2)
         self.assertEqual(cells["profile"],"RC_DEPLOY_DISTRICT_GENERAL_BOOTSTRAP")
 
-    def test_castello_gate_warps_to_deploy_district(self):
-        comp=load(SCRIPT_COMPILER,"scripts")
-        ir=comp.compile_file(CASTELLO_SCRIPTS)
-        gate=next(x for x in ir["scripts"] if x["id"]=="RC_SCRIPT_DEPLOY_DISTRICT_GATE")
-        linked=comp.link_script(
-            gate,
-            0x08980000,
-            {},
-            {"RC_DEPLOY_DISTRICT":(3,51)},
-        )
-        warp=linked.index(bytes([comp.OP_WARP]))
-        self.assertEqual(linked[warp+1:warp+3],bytes([3,51]))
-        self.assertEqual(linked[warp+3],0xFF)
-        self.assertEqual(int.from_bytes(linked[warp+4:warp+6],"little"),11)
-        self.assertEqual(int.from_bytes(linked[warp+6:warp+8],"little"),13)
+    def test_castello_summit_warp_targets_deploy_return_warp(self):
+        events=load(EVENTS_COMPILER,"events")
+        ir=events.compile_file(CASTELLO)
+        linked=events.link_map_id_relocations(ir["warp_events"],events.load_map_ids())
+        warp=linked[8:16]
+        self.assertEqual(warp[5],0)
+        self.assertEqual(warp[6:8],bytes([51,3]))
 
     def test_go_no_go_trigger_sets_story_flag(self):
         comp=load(SCRIPT_COMPILER,"scripts")
@@ -65,6 +59,7 @@ class TestDeployDistrictCustomMap(unittest.TestCase):
 
         warp_off=p["offsets"]["warp_events"]
         warp=p["bytes"][warp_off:warp_off+8]
+        self.assertEqual(warp[5],1)
         self.assertEqual(warp[6:8],bytes([50,3]))
 
         coord_off=p["offsets"]["coord_events"]

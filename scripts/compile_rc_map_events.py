@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAP_SLOTS_PATH = ROOT / "content" / "cagliari_preview" / "map_slots.json"
+FLAGS_PATH = ROOT / "content" / "cagliari_preview" / "flags.json"
 
 
 def load_json(path: Path) -> dict:
@@ -28,7 +29,14 @@ def placeholder(buf: bytearray, relocations: list[dict], relocation: dict, size:
     buf.extend(b"\x00" * size)
 
 
-def compile_object_events(spec: dict) -> dict:
+def load_flag_ids() -> dict[str, int]:
+    return {
+        name: int(value, 16)
+        for name, value in load_json(FLAGS_PATH)["flags"].items()
+    }
+
+
+def compile_object_events(spec: dict, flags: dict[str, int]) -> dict:
     data = bytearray()
     relocations = []
 
@@ -38,6 +46,13 @@ def compile_object_events(spec: dict) -> dict:
         gfx = int(obj["graphics"]["id"])
         movement = int(obj["movement_type"]["id"])
         elevation = int(obj.get("elevation", 3))
+        visibility_flag = obj.get("visibility_flag")
+        if visibility_flag is None:
+            visibility_flag_id = 0
+        elif visibility_flag not in flags:
+            raise ValueError(f"{obj['id']}: unknown visibility flag {visibility_flag}")
+        else:
+            visibility_flag_id = flags[visibility_flag]
 
         data.extend(bytes([local_id, gfx, 0x00, 0x00]))
         data.extend(u16(anchor["x"]))
@@ -54,7 +69,7 @@ def compile_object_events(spec: dict) -> dict:
                 "owner": obj["id"],
             },
         )
-        data.extend(u16(0))
+        data.extend(u16(visibility_flag_id))
         data.extend(b"\x00\x00")
 
     return {
@@ -186,7 +201,7 @@ def link_map_id_relocations(block: dict, map_ids: dict[str, tuple[int, int]]) ->
 
 
 def compile_map_events(spec: dict) -> dict:
-    objects = compile_object_events(spec)
+    objects = compile_object_events(spec, load_flag_ids())
     warps = compile_warps(spec)
     coord = compile_coord_events(spec)
     bg = compile_bg_events(spec)

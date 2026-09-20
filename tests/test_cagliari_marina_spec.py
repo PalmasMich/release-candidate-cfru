@@ -22,7 +22,7 @@ class TestMarina(unittest.TestCase):
     def test_marina_return_warp_resolves_to_delivery_hub(self):
         m=load(EVENT_COMPILER,"events")
         ir=m.compile_file(SPEC)
-        self.assertEqual(ir["warp_events"]["count"],2)
+        self.assertEqual(ir["warp_events"]["count"],3)
         linked=m.link_map_id_relocations(ir["warp_events"],m.load_map_ids())
         rel=next(
             item for item in ir["warp_events"]["relocations"]

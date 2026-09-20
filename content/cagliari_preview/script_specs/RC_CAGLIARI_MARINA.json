@@ -97,6 +97,10 @@
           "flag": "RC_FLAG_CASTELLO_UNLOCKED"
         },
         {
+          "op": "removeobject",
+          "local_id": 6
+        },
+        {
           "op": "release"
         },
         {
@@ -111,29 +115,7 @@
           "op": "lock"
         },
         {
-          "op": "checkflag",
-          "flag": "RC_FLAG_CASTELLO_UNLOCKED"
-        },
-        {
-          "op": "goto_if",
-          "condition": false,
-          "label": "locked"
-        },
-        {
-          "op": "release"
-        },
-        {
-          "op": "warp",
-          "target_map": "RC_CASTELLO_ASCENT",
-          "warp_id": 255,
-          "x": 10,
-          "y": 15
-        },
-        {
-          "op": "end"
-        },
-        {
-          "label": "locked"
+          "op": "faceplayer"
         },
         {
           "op": "msgbox",
@@ -319,6 +301,28 @@
         {
           "op": "msgbox",
           "dialogue": "RC_DIALOGUE_RAMEN_STOP_REPEAT",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_PORT_LINK_ACCESS_GATE",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_PORT_LINK_ACCESS_LOCKED",
           "type": 4
         },
         {

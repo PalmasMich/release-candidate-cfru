@@ -7,8 +7,8 @@ This file records source/build evidence only. No ROM bytes, save files or copyri
 | Gate | Evidence | Result |
 | --- | --- | --- |
 | DPE source suite | `python -m unittest discover -s tests -v` in `release-candidate-dpe` | **PASS — 29/29** |
-| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 141/141** |
-| Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — 6 maps, 29 scripts, 10000 payload bytes** |
+| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 147/147** |
+| Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — 6 maps, 30 scripts, 10204 payload bytes** |
 | Starter runtime contract | `python scripts/validate_rc_starter_runtime.py --dpe-path ../release-candidate-dpe` | **PASS** |
 | Binary hygiene | `git ls-files '*.gba' '*.sav' '*.srm'` in both repositories | **PASS — no tracked ROM/save files** |
 | Private build | `python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe` | **BLOCKED — private `BPRE0.gba` is absent** |
@@ -57,10 +57,10 @@ After all three rows pass, use a fresh save for the Chapter 1 path:
 | Runtime gate | Expected evidence | Result |
 | --- | --- | --- |
 | Opening identity | badge/workspace naming is visible; no player-facing rival-name prompt | PENDING |
-| Hub → Marina → Port Link | warps land at intended anchors; wild tutorial and trainer each run once | PENDING |
+| Hub → Marina → Port Link | flagged blockers enforce `0x0B1`; warps land at intended anchors; wild tutorial and trainer each run once | PENDING |
 | Locanda del Molo | optional visit sets its flag and does not block the main path | PENDING |
-| Marina → Castello → Deploy District | flag gates, stairs, return warps, and Go/No-Go trigger work | PENDING |
-| Deploy Room | Release Manager battle runs once and sets `0x0B8`, then `0x0B9` | PENDING |
+| Marina → Castello → Deploy District | flagged blocker enforces `0x0B6`; validated reciprocal warp indices, stairs, and Go/No-Go trigger work | PENDING |
+| Deploy Room | flagged blocker enforces `0x0B7`; Release Manager battle runs once and sets `0x0B8`, then `0x0B9` | PENDING |
 | Persistence | save/reload preserves starter, map position, and Deploy 01 completion | PENDING |
 
 ## Historical V0.1 evidence

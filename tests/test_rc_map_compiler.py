@@ -67,7 +67,17 @@ class RcMapCompilerTest(unittest.TestCase):
         self.assertEqual(len(ir["warps"]), 1)
         warp = ir["warps"][0]
         self.assertEqual(warp["target_map"], "RC_CAGLIARI_MARINA")
-        self.assertIn("RC_FLAG_RIVAL_INTRO_DONE", warp["requires"])
+        self.assertEqual(warp["requires"], [])
+        blocker = next(obj for obj in ir["objects"] if obj["id"] == "RC_NPC_HUB_EXIT_GATE")
+        self.assertEqual(blocker["anchor"], warp["anchor"])
+        self.assertEqual(blocker["visibility_flag"], "RC_FLAG_RIVAL_INTRO_DONE")
+
+    def test_rejects_unknown_object_visibility_flag(self):
+        broken = copy.deepcopy(self.source)
+        blocker = next(obj for obj in broken["objects"] if obj["id"] == "RC_NPC_HUB_EXIT_GATE")
+        blocker["visibility_flag"] = "RC_FLAG_NOT_REGISTERED"
+        with self.assertRaisesRegex(ValueError, "unknown visibility flag"):
+            self.compiler.compile_spec(broken)
 
     def test_rejects_non_rectangular_layout(self):
         broken = copy.deepcopy(self.source)

@@ -238,6 +238,12 @@ No location is considered visually approved until:
 7. screenshot at GBA scale is visually distinct from vanilla FireRed;
 8. no copyrighted tiles/art have been copied.
 
+Technical transition rule:
+
+- a `requires` field is documentation only and must never be treated as runtime gating;
+- a conditioned physical warp must be blocked by a real ObjectEventTemplate whose `flagId` hides it when the story condition is met, or by an equivalently compiled script gate;
+- the Chapter 1 preflight must verify every target `warp_id` exists and lands on the declared `target_anchor`.
+
 ## Naming
 
 Player-facing names for Chapter 1:

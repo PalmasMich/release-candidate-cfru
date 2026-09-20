@@ -165,19 +165,45 @@
         "symbol": "MOVEMENT_TYPE_FACE_UP",
         "id": 7
       }
+    },
+    {
+      "id": "RC_NPC_PORT_LINK_GATE",
+      "role": "story_gate",
+      "anchor": "port_link_gate",
+      "script": "RC_SCRIPT_PORT_LINK_ACCESS_GATE",
+      "local_id": 5,
+      "elevation": 3,
+      "visibility_flag": "RC_FLAG_RIVAL_INTRO_DONE",
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
+    },
+    {
+      "id": "RC_NPC_CASTELLO_GATE",
+      "role": "story_gate",
+      "anchor": "castello_access",
+      "script": "RC_SCRIPT_CASTELLO_GATE",
+      "local_id": 6,
+      "elevation": 3,
+      "visibility_flag": "RC_FLAG_CASTELLO_UNLOCKED",
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_F",
+        "id": 48,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_LEFT",
+        "id": 9
+      }
     }
   ],
   "interactions": [
-    {
-      "id": "RC_INTERACT_CASTELLO_GATE",
-      "anchor": "castello_access",
-      "script": "RC_SCRIPT_CASTELLO_GATE",
-      "elevation": 3,
-      "bg_kind": {
-        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
-        "id": 0
-      }
-    },
     {
       "id": "RC_INTERACT_MARINA_BUG_TERMINAL",
       "anchor": "bug_terminal",
@@ -218,9 +244,16 @@
       "target_anchor": "marina_entrance",
       "elevation": 3,
       "warp_id": 0,
-      "requires": [
-        "RC_FLAG_RIVAL_INTRO_DONE"
-      ]
+      "requires": []
+    },
+    {
+      "id": "RC_WARP_MARINA_TO_CASTELLO",
+      "anchor": "castello_access",
+      "target_map": "RC_CASTELLO_ASCENT",
+      "target_anchor": "marina_return",
+      "elevation": 3,
+      "warp_id": 0,
+      "requires": []
     }
   ],
   "art_contract": {

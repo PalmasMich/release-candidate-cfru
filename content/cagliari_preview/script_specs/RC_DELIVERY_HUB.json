@@ -317,6 +317,10 @@
           "flag": "RC_FLAG_RIVAL_INTRO_DONE"
         },
         {
+          "op": "removeobject",
+          "local_id": 6
+        },
+        {
           "op": "release"
         },
         {
@@ -408,6 +412,28 @@
         {
           "op": "msgbox",
           "dialogue": "RC_DIALOGUE_HUB_NPC_PM",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    },
+    {
+      "id": "RC_SCRIPT_HUB_EXIT_GATE",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_HUB_EXIT_LOCKED",
           "type": 4
         },
         {

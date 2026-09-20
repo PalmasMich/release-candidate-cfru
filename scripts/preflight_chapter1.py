@@ -37,6 +37,28 @@ def load_module(path: Path, name: str):
     return module
 
 
+def validate_warp_contracts(map_specs: dict[str, dict]) -> None:
+    for source_id, source in map_specs.items():
+        for warp in source.get("warps", []):
+            target_id = warp["target_map"]
+            if target_id not in map_specs:
+                raise ValueError(f"{source_id}: warp {warp['id']} targets unknown map {target_id}")
+            target_warps = map_specs[target_id].get("warps", [])
+            target_index = int(warp["warp_id"])
+            if not 0 <= target_index < len(target_warps):
+                raise ValueError(
+                    f"{source_id}: warp {warp['id']} target warp index {target_index} "
+                    f"is invalid for {target_id} ({len(target_warps)} warp(s))"
+                )
+            actual_anchor = target_warps[target_index]["anchor"]
+            declared_anchor = warp["target_anchor"]
+            if actual_anchor != declared_anchor:
+                raise ValueError(
+                    f"{source_id}: warp {warp['id']} target anchor {declared_anchor} "
+                    f"does not match {target_id} warp {target_index} anchor {actual_anchor}"
+                )
+
+
 def main() -> int:
     map_comp = load_module(MAP_COMPILER_PATH, "rc_map_preflight")
     cell_comp = load_module(CELL_COMPILER_PATH, "rc_cells_preflight")
@@ -53,6 +75,12 @@ def main() -> int:
     map_ids = events_comp.load_map_ids()
     dialogue_ir = dialogue_comp.compile_file()
     dialogue_ids = {scene["id"] for scene in dialogue_ir["scenes"]}
+
+    map_specs = {
+        map_id: json.loads((CONTENT / "map_specs" / map_name).read_text(encoding="utf-8"))
+        for map_id, map_name, _ in MAPS
+    }
+    validate_warp_contracts(map_specs)
 
     compiled = []
     all_script_ids = set()

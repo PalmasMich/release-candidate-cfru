@@ -17,7 +17,7 @@
   },
   "layout": [
     "######################",
-    "#....................#",
+    "#..........G.........#",
     "#..BBBBB.....BBBBB...#",
     "#..B...B.....B...B...#",
     "#..B...B.....B...B...#",
@@ -29,7 +29,7 @@
     "#...B......B.........#",
     "#...B......B.........#",
     "#...BBBBBBBB.........#",
-    "#..........G.........#",
+    "#....................#",
     "#..........D.........#",
     "######################"
   ],
@@ -60,7 +60,7 @@
     },
     "release_gate": {
       "x": 11,
-      "y": 13
+      "y": 1
     },
     "status_terminal": {
       "x": 9,
@@ -130,20 +130,27 @@
         "symbol": "MOVEMENT_TYPE_FACE_UP",
         "id": 7
       }
-    }
-  ],
-  "interactions": [
+    },
     {
-      "id": "RC_INTERACT_RELEASE_GATE",
+      "id": "RC_NPC_RELEASE_GATE",
+      "role": "story_gate",
       "anchor": "release_gate",
       "script": "RC_SCRIPT_RELEASE_GATE",
+      "local_id": 4,
       "elevation": 3,
-      "bg_kind": {
-        "symbol": "BG_EVENT_PLAYER_FACING_ANY",
-        "id": 0
+      "visibility_flag": "RC_FLAG_GO_NO_GO_STARTED",
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_M",
+        "id": 47,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_DOWN",
+        "id": 8
       }
     }
   ],
+  "interactions": [],
   "coord_events": [
     {
       "id": "RC_COORD_GO_NO_GO_START",
@@ -160,6 +167,15 @@
       "anchor": "castello_return",
       "target_map": "RC_CASTELLO_ASCENT",
       "target_anchor": "summit_gate",
+      "elevation": 3,
+      "warp_id": 1,
+      "requires": []
+    },
+    {
+      "id": "RC_WARP_DEPLOY_TO_ROOM",
+      "anchor": "release_gate",
+      "target_map": "RC_DEPLOY_ROOM",
+      "target_anchor": "district_exit",
       "elevation": 3,
       "warp_id": 0,
       "requires": []

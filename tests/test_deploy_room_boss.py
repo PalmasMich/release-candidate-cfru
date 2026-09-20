@@ -5,10 +5,12 @@ ROOT=Path(__file__).resolve().parents[1]
 MAP_COMPILER=ROOT/"scripts"/"compile_rc_map.py"
 CELL_COMPILER=ROOT/"scripts"/"compile_rc_map_cells.py"
 SCRIPT_COMPILER=ROOT/"scripts"/"compile_rc_event_scripts.py"
+EVENTS_COMPILER=ROOT/"scripts"/"compile_rc_map_events.py"
 PAYLOAD_COMPILER=ROOT/"scripts"/"compile_rc_map_payload.py"
 ROOM=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DEPLOY_ROOM.json"
 ROOM_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DEPLOY_ROOM.json"
 DISTRICT_SCRIPTS=ROOT/"content"/"cagliari_preview"/"script_specs"/"RC_DEPLOY_DISTRICT.json"
+DISTRICT=ROOT/"content"/"cagliari_preview"/"map_specs"/"RC_DEPLOY_DISTRICT.json"
 
 def load(path,name):
     s=importlib.util.spec_from_file_location(name,path)
@@ -56,24 +58,24 @@ class TestDeployRoomBoss(unittest.TestCase):
 
         self.assertEqual(flags,[0x0B8,0x0B9])
 
-    def test_release_gate_requires_go_no_go_and_warps_to_room(self):
-        comp=load(SCRIPT_COMPILER,"scripts")
-        ir=comp.compile_file(DISTRICT_SCRIPTS)
-        gate=next(x for x in ir["scripts"] if x["id"]=="RC_SCRIPT_RELEASE_GATE")
-        raw=bytes.fromhex(gate["bytes_hex"])
+    def test_release_gate_uses_flagged_blocker_and_real_room_warp(self):
+        events=load(EVENTS_COMPILER,"events")
+        ir=events.compile_file(DISTRICT)
+        objects=bytes.fromhex(ir["object_events"]["bytes_hex"])
+        gate=objects[3*0x18:4*0x18]
+        self.assertEqual(gate[0],4)
+        self.assertEqual(int.from_bytes(gate[20:22],"little"),0x0B7)
 
-        check=raw.index(bytes([comp.OP_CHECKFLAG]))
-        self.assertEqual(int.from_bytes(raw[check+1:check+3],"little"),0x0B7)
+        linked=events.link_map_id_relocations(ir["warp_events"],events.load_map_ids())
+        warp=linked[8:16]
+        self.assertEqual(warp[5],0)
+        self.assertEqual(warp[6:8],bytes([1,18]))
 
-        linked=comp.link_script(
-            gate,
-            0x089B0000,
-            {"RC_DIALOGUE_DEPLOY_ROOM_LOCKED":0x089C0000},
-            {"RC_DEPLOY_ROOM":(18,1)},
-        )
-        warp=linked.index(bytes([comp.OP_WARP]))
-        self.assertEqual(linked[warp+1:warp+3],bytes([18,1]))
-        self.assertEqual(int.from_bytes(linked[warp+4:warp+6],"little"),8)
-        self.assertEqual(int.from_bytes(linked[warp+6:warp+8],"little"),9)
+        script_comp=load(SCRIPT_COMPILER,"scripts")
+        scripts=script_comp.compile_file(DISTRICT_SCRIPTS)
+        start=next(x for x in scripts["scripts"] if x["id"]=="RC_SCRIPT_GO_NO_GO_START")
+        raw=bytes.fromhex(start["bytes_hex"])
+        remove=raw.index(bytes([script_comp.OP_REMOVEOBJECT]))
+        self.assertEqual(int.from_bytes(raw[remove+1:remove+3],"little"),4)
 
 if __name__=="__main__": unittest.main()

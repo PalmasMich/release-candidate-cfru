@@ -19,6 +19,7 @@ OP_LOADWORD = 0x0F
 OP_SETFLAG = 0x29
 OP_CHECKFLAG = 0x2B
 OP_WARP = 0x39
+OP_REMOVEOBJECT = 0x53
 OP_FACEPLAYER = 0x5A
 OP_TRAINERBATTLE = 0x5C
 OP_LOCKALL = 0x69
@@ -105,6 +106,12 @@ def compile_script(script: dict, flags: dict[str, int], species: dict[str, int])
             buf.append(OP_RELEASE)
         elif op == "faceplayer":
             buf.append(OP_FACEPLAYER)
+        elif op == "removeobject":
+            local_id = int(entry["local_id"])
+            if not 1 <= local_id <= 0xFF:
+                raise ValueError(f"{script['id']}: invalid local object id {local_id}")
+            buf.append(OP_REMOVEOBJECT)
+            emit_u16(buf, local_id)
         elif op == "checkflag":
             name = entry["flag"]
             if name not in flags:

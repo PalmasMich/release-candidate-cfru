@@ -172,6 +172,24 @@
         "symbol": "MOVEMENT_TYPE_FACE_UP",
         "id": 7
       }
+    },
+    {
+      "id": "RC_NPC_HUB_EXIT_GATE",
+      "role": "story_gate",
+      "anchor": "exit_marina",
+      "script": "RC_SCRIPT_HUB_EXIT_GATE",
+      "elevation": 3,
+      "local_id": 6,
+      "visibility_flag": "RC_FLAG_RIVAL_INTRO_DONE",
+      "graphics": {
+        "symbol": "OBJ_EVENT_GFX_WORKER_F",
+        "id": 48,
+        "status": "bootstrap"
+      },
+      "movement_type": {
+        "symbol": "MOVEMENT_TYPE_FACE_UP",
+        "id": 7
+      }
     }
   ],
   "interactions": [
@@ -215,9 +233,7 @@
       "anchor": "exit_marina",
       "target_map": "RC_CAGLIARI_MARINA",
       "target_anchor": "delivery_hub_entrance",
-      "requires": [
-        "RC_FLAG_RIVAL_INTRO_DONE"
-      ],
+      "requires": [],
       "elevation": 3,
       "warp_id": 0
     }

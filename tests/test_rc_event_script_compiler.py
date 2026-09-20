@@ -37,6 +37,7 @@ class RcEventScriptCompilerTest(unittest.TestCase):
                 "RC_SCRIPT_HUB_ANALYST",
                 "RC_SCRIPT_HUB_DEVELOPER",
                 "RC_SCRIPT_HUB_PM",
+                "RC_SCRIPT_HUB_EXIT_GATE",
             },
         )
 
@@ -110,6 +111,12 @@ class RcEventScriptCompilerTest(unittest.TestCase):
             )
             start = pos + 1
         self.assertEqual(occurrences, [0x0B1])
+
+    def test_rival_removes_the_real_exit_blocker_after_intro(self):
+        script = bytes.fromhex(self.by_id["RC_SCRIPT_KPI_RIVAL"]["bytes_hex"])
+        setflag = script.index(bytes([self.compiler.OP_SETFLAG]))
+        remove = script.index(bytes([self.compiler.OP_REMOVEOBJECT]), setflag)
+        self.assertEqual(int.from_bytes(script[remove + 1:remove + 3], "little"), 6)
 
     def test_dialogue_relocations_must_be_resolved(self):
         ir = self.by_id["RC_SCRIPT_DELIVERY_LEAD"]
