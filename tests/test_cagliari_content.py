@@ -1,31 +1,51 @@
 from pathlib import Path
+import copy
+import importlib.util
 import json
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "content" / "cagliari_preview"
+VALIDATOR = ROOT / "scripts" / "validate_cagliari_content.py"
 
 
 def load(name: str):
     return json.loads((CONTENT / name).read_text(encoding="utf-8"))
 
 
+def load_validator():
+    spec = importlib.util.spec_from_file_location("rc_content_validator", VALIDATOR)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 class CagliariPreviewContentTest(unittest.TestCase):
+    def test_content_validator_accepts_canonical_graph(self):
+        load_validator().validate()
+
+    def test_content_validator_rejects_map_graph_drift(self):
+        validator = load_validator()
+        maps = load("maps.yml")
+        broken = copy.deepcopy(maps)
+        broken["maps"][0]["connects_to"] = []
+        specs = [
+            json.loads(path.read_text(encoding="utf-8"))
+            for path in (CONTENT / "map_specs").glob("RC_*.json")
+        ]
+        with self.assertRaisesRegex(ValueError, "compiled warp targets"):
+            validator.validate_map_graph(broken, specs)
+
     def test_chapter_one_has_permanent_original_world_maps(self):
         maps = load("maps.yml")
         self.assertEqual(maps["chapter"]["id"], "RC_CHAPTER_01_CAGLIARI")
 
         by_id = {item["id"]: item for item in maps["maps"]}
-        required = {
-            "RC_CAGLIARI_ARRIVAL",
-            "RC_DELIVERY_HUB",
-            "RC_CAGLIARI_MARINA",
-            "RC_PORT_CONNECTION",
-            "RC_CASTELLO_ASCENT",
-            "RC_DEPLOY_DISTRICT",
-            "RC_DEPLOY_ROOM_01",
+        compiled = {
+            path.stem
+            for path in (CONTENT / "map_specs").glob("RC_*.json")
         }
-        self.assertTrue(required.issubset(by_id))
+        self.assertEqual(set(by_id), compiled)
         self.assertEqual(
             by_id["RC_PORT_CONNECTION"]["status"],
             "bootstrap_replacement_pending",
@@ -40,13 +60,25 @@ class CagliariPreviewContentTest(unittest.TestCase):
             if item.get("status") == "permanent"
         }
         self.assertTrue({
-            "RC_CAGLIARI_ARRIVAL",
             "RC_DELIVERY_HUB",
             "RC_CAGLIARI_MARINA",
             "RC_CASTELLO_ASCENT",
             "RC_DEPLOY_DISTRICT",
-            "RC_DEPLOY_ROOM_01",
+            "RC_DEPLOY_ROOM",
         }.issubset(permanent))
+
+    def test_every_story_event_targets_a_compiled_map(self):
+        compiled = {
+            path.stem
+            for path in (CONTENT / "map_specs").glob("RC_*.json")
+        }
+        events = load("events.yml")
+        targets = {
+            item["map"]
+            for section in ("flow", "optional_flow")
+            for item in events.get(section, [])
+        }
+        self.assertTrue(targets.issubset(compiled), sorted(targets - compiled))
 
     def test_required_story_flags_cover_preview_and_chapter_climax(self):
         events = load("events.yml")

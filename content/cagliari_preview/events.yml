@@ -16,7 +16,7 @@
   "flow": [
     {
       "id": "RC_EVENT_ARRIVAL",
-      "map": "RC_CAGLIARI_ARRIVAL",
+      "map": "RC_DELIVERY_HUB",
       "dialogue": "RC_DIALOGUE_OPENING",
       "sets": [
         "RC_FLAG_ARRIVAL_DONE"
@@ -123,7 +123,7 @@
     },
     {
       "id": "RC_EVENT_RELEASE_MANAGER",
-      "map": "RC_DEPLOY_ROOM_01",
+      "map": "RC_DEPLOY_ROOM",
       "requires": [
         "RC_FLAG_GO_NO_GO_STARTED"
       ],
@@ -137,7 +137,7 @@
     },
     {
       "id": "RC_EVENT_DEPLOY_01_COMPLETE",
-      "map": "RC_DEPLOY_ROOM_01",
+      "map": "RC_DEPLOY_ROOM",
       "requires": [
         "RC_FLAG_RELEASE_MANAGER_DEFEATED"
       ],

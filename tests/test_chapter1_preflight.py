@@ -42,6 +42,7 @@ class Chapter1PreflightTest(unittest.TestCase):
         with redirect_stdout(output):
             result = load_preflight().main()
         self.assertEqual(result, 0)
+        self.assertIn("RC_CONTENT_GRAPH=PASS", output.getvalue())
         self.assertIn("RC_TILESET_ART_STATUS=BOOTSTRAP", output.getvalue())
 
 

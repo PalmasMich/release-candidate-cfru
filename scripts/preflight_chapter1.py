@@ -15,6 +15,7 @@ SCRIPT_COMPILER_PATH = ROOT / "scripts" / "compile_rc_event_scripts.py"
 DIALOGUE_COMPILER_PATH = ROOT / "scripts" / "compile_rc_dialogue.py"
 PAYLOAD_COMPILER_PATH = ROOT / "scripts" / "compile_rc_map_payload.py"
 TILESET_VALIDATOR_PATH = ROOT / "scripts" / "validate_rc_tileset_pipeline.py"
+CONTENT_VALIDATOR_PATH = ROOT / "scripts" / "validate_cagliari_content.py"
 
 MAPS = (
     ("RC_DELIVERY_HUB", "RC_DELIVERY_HUB.json", "RC_DELIVERY_HUB.json"),
@@ -68,6 +69,9 @@ def main() -> int:
     dialogue_comp = load_module(DIALOGUE_COMPILER_PATH, "rc_dialogue_preflight")
     payload_comp = load_module(PAYLOAD_COMPILER_PATH, "rc_payload_preflight")
     tileset_validator = load_module(TILESET_VALIDATOR_PATH, "rc_tileset_preflight")
+    content_validator = load_module(CONTENT_VALIDATOR_PATH, "rc_content_preflight")
+
+    content_validator.validate()
 
     tileset_manifest = tileset_validator.load_manifest()
     tileset_errors = tileset_validator.validate(tileset_manifest)
@@ -196,6 +200,7 @@ def main() -> int:
     print(f"RC_CHAPTER1_MAP_COUNT={len(compiled)}")
     print(f"RC_CHAPTER1_SCRIPT_COUNT={len(all_script_ids)}")
     print(f"RC_CHAPTER1_PAYLOAD_BYTES={total_payload}")
+    print("RC_CONTENT_GRAPH=PASS")
     print(f"RC_TILESET_ART_STATUS={tileset_status}")
     for item in compiled:
         print(

@@ -17,13 +17,12 @@ REQUIRED_FILES = [
 ]
 
 REQUIRED_MAPS = {
-    "RC_CAGLIARI_ARRIVAL",
     "RC_DELIVERY_HUB",
     "RC_CAGLIARI_MARINA",
     "RC_PORT_CONNECTION",
     "RC_CASTELLO_ASCENT",
     "RC_DEPLOY_DISTRICT",
-    "RC_DEPLOY_ROOM_01",
+    "RC_DEPLOY_ROOM",
 }
 
 REQUIRED_PREVIEW_FLAGS = {
@@ -66,6 +65,28 @@ def require_unique(values, label: str):
         raise ValueError(f"duplicate {label}: {values}")
 
 
+def validate_map_graph(maps: dict, map_specs: list[dict]) -> None:
+    declared = {item["id"]: item for item in maps["maps"]}
+    compiled = {item["id"]: item for item in map_specs}
+    if set(declared) != set(compiled):
+        raise ValueError("content map graph does not match compiled map specs")
+
+    for map_id, item in declared.items():
+        declared_targets = set(item.get("connects_to", []))
+        unknown_targets = declared_targets - set(declared)
+        if unknown_targets:
+            raise ValueError(f"{map_id}: unknown map connections {sorted(unknown_targets)}")
+        compiled_targets = {
+            warp["target_map"]
+            for warp in compiled[map_id].get("warps", [])
+        }
+        if declared_targets != compiled_targets:
+            raise ValueError(
+                f"{map_id}: declared connections differ from compiled warp targets; "
+                f"declared={sorted(declared_targets)}, compiled={sorted(compiled_targets)}"
+            )
+
+
 def validate() -> None:
     for name in REQUIRED_FILES:
         if not (CONTENT / name).exists():
@@ -77,9 +98,18 @@ def validate() -> None:
 
     map_ids = [item["id"] for item in maps["maps"]]
     require_unique(map_ids, "map id")
-    missing_maps = REQUIRED_MAPS - set(map_ids)
-    if missing_maps:
-        raise ValueError(f"missing required maps: {sorted(missing_maps)}")
+    if set(map_ids) != REQUIRED_MAPS:
+        missing_maps = REQUIRED_MAPS - set(map_ids)
+        unknown_maps = set(map_ids) - REQUIRED_MAPS
+        raise ValueError(
+            f"content map graph differs from compiled Chapter 1 maps; "
+            f"missing={sorted(missing_maps)}, unknown={sorted(unknown_maps)}"
+        )
+    map_specs = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((CONTENT / "map_specs").glob("RC_*.json"))
+    ]
+    validate_map_graph(maps, map_specs)
 
     bootstrap_maps = [item for item in maps["maps"] if item.get("status") == "bootstrap_replacement_pending"]
     if not bootstrap_maps:
@@ -97,7 +127,7 @@ def validate() -> None:
     require_unique(dialogue_ids, "dialogue id")
     dialogue_id_set = set(dialogue_ids)
     all_lines = [line for scene in dialogue["scenes"] for line in scene["lines"]]
-    opening = "Benvenuto a Cagliari. Il progetto era già iniziato quando sei arrivato."
+    opening = "Benvenuto su Release Candidate."
     if opening not in all_lines:
         raise ValueError("approved opening line is missing")
 

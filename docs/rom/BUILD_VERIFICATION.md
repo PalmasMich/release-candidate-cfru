@@ -7,8 +7,8 @@ This file records source/build evidence only. No ROM bytes, save files or copyri
 | Gate | Evidence | Result |
 | --- | --- | --- |
 | DPE source suite | `python -m unittest discover -s tests -v` in `release-candidate-dpe` | **PASS — 33/33** |
-| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 152/152** |
-| Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — 6 maps, 30 scripts, 10204 payload bytes** |
+| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 155/155** |
+| Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — canonical content graph, 6 maps, 30 scripts, 10204 payload bytes** |
 | Starter runtime contract | `python scripts/validate_rc_starter_runtime.py --dpe-path ../release-candidate-dpe` | **PASS** |
 | Starter art approval | `python scripts/validate_rc_art_pipeline.py` in `release-candidate-dpe` | **BOOTSTRAP — valid contract, not approved art** |
 | Tileset art approval | `python scripts/validate_rc_tileset_pipeline.py` | **BOOTSTRAP — valid contract, not approved art** |

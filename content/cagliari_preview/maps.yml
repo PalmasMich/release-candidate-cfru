@@ -6,20 +6,12 @@
   },
   "maps": [
     {
-      "id": "RC_CAGLIARI_ARRIVAL",
-      "display_name": "Arrivo a Cagliari",
-      "role": "opening_transition",
-      "status": "permanent",
-      "connects_to": ["RC_DELIVERY_HUB"],
-      "visual_cues": ["mediterranean_light", "warm_stone", "city_arrival"]
-    },
-    {
       "id": "RC_DELIVERY_HUB",
       "display_name": "Delivery Hub",
       "role": "opening_and_starter_selection",
       "status": "permanent",
-      "connects_to": ["RC_CAGLIARI_ARRIVAL", "RC_CAGLIARI_MARINA"],
-      "visual_cues": ["warm_limestone", "delivery_signage", "compact_office_lab"]
+      "connects_to": ["RC_CAGLIARI_MARINA"],
+      "visual_cues": ["warm_limestone", "delivery_signage", "product_workspace", "terrace_light"]
     },
     {
       "id": "RC_CAGLIARI_MARINA",
@@ -51,11 +43,11 @@
       "display_name": "Distretto Deploy",
       "role": "go_no_go_and_release_manager",
       "status": "permanent",
-      "connects_to": ["RC_CASTELLO_ASCENT", "RC_DEPLOY_ROOM_01"],
+      "connects_to": ["RC_CASTELLO_ASCENT", "RC_DEPLOY_ROOM"],
       "visual_cues": ["business_district", "controlled_access", "release_signage"]
     },
     {
-      "id": "RC_DEPLOY_ROOM_01",
+      "id": "RC_DEPLOY_ROOM",
       "display_name": "Deploy Room 01",
       "role": "chapter_climax",
       "status": "permanent",
