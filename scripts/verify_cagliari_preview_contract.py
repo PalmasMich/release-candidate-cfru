@@ -61,7 +61,6 @@ def main() -> int:
     ):
         require(required in scenes, f"required preview dialogue missing: {required}")
 
-    # Runtime patch must expose all three original species and the custom wild.
     require(p.TARTREK_SPECIES_ID == 0x050E, "Tartrek runtime ID drifted")
     require(p.FROBYTE_SPECIES_ID == 0x050F, "Frobyte runtime ID drifted")
     require(p.EMBERFOX_SPECIES_ID == 0x0510, "Emberfox runtime ID drifted")
@@ -74,9 +73,18 @@ def main() -> int:
     require(weighted[p.WINGULL_SPECIES_ID] == 25, "Wingull must own 25% of Port Link")
     require(weighted[p.MEOWTH_SPECIES_ID] == 15, "Meowth must own 15% of Port Link")
 
-    # Keep the source encounter manifest honest as the ROM patch evolves.
-    port = encounters.get("RC_ROUTE_PORT_LINK") or encounters.get("port_link")
+    tables = {table["id"]: table for table in encounters["tables"]}
+    port = tables.get("RC_PORT_CONNECTION_GRASS")
     require(port is not None, "Port Link encounter manifest missing")
+    manifest_weights = {slot["species"]: slot["weight"] for slot in port["slots"]}
+    require(
+        manifest_weights == {
+            "SPECIES_RC_CAGLIARI_WILD_01": 60,
+            "SPECIES_WINGULL": 25,
+            "SPECIES_MEOWTH": 15,
+        },
+        "Port Link encounter manifest drifted from runtime patch",
+    )
 
     print("RC_PREVIEW_CONTRACT=PASS")
     print("RC_PREVIEW_FLOW=OPENING>DELIVERY_HUB>STARTER>KPI_RIVAL>PORT_LINK>CUSTOM_WILD>MARINA_PORTO")
