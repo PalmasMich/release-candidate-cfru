@@ -123,6 +123,11 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "rival-name"):
             audit.validate_opening(fixture)
 
+    def test_opening_audit_blocks_without_structural_bypass_evidence(self):
+        audit = load_audit()
+        with self.assertRaisesRegex(RuntimeError, "structural rival-name bypass"):
+            audit.validate_opening(b"RC opening text only")
+
     def test_visible_preview_labels_are_patched(self):
         patcher = load_patcher()
         patched = build_patched_fixture(patcher)

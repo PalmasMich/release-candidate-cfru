@@ -7,13 +7,14 @@ This file records source/build evidence only. No ROM bytes, save files or copyri
 | Gate | Evidence | Result |
 | --- | --- | --- |
 | DPE source suite | `python -m unittest discover -s tests -v` in `release-candidate-dpe` | **PASS — 33/33** |
-| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 155/155** |
+| CFRU source suite | `python -m unittest discover -s tests -v` in `release-candidate-cfru` | **PASS — 159/159** |
 | Chapter 1 preflight | `python scripts/preflight_chapter1.py` | **PASS — canonical content graph, 6 maps, 30 scripts, 10204 payload bytes** |
 | Starter runtime contract | `python scripts/validate_rc_starter_runtime.py --dpe-path ../release-candidate-dpe` | **PASS** |
 | Starter art approval | `python scripts/validate_rc_art_pipeline.py` in `release-candidate-dpe` | **BOOTSTRAP — valid contract, not approved art** |
 | Tileset art approval | `python scripts/validate_rc_tileset_pipeline.py` | **BOOTSTRAP — valid contract, not approved art** |
 | Binary hygiene | `git ls-files '*.gba' '*.sav' '*.srm'` in both repositories | **PASS — no tracked ROM/save files** |
-| Private build | `python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe` | **BLOCKED — private `BPRE0.gba` is absent** |
+| Opening structural gate | `python scripts/audit_rc_opening.py <private-rom>` | **BLOCKED — rival-name control-flow bypass is unverified** |
+| Private build | `python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe` | **BLOCKED — private `BPRE0.gba` is absent; opening gate would also block this checkpoint** |
 | Runtime smoke | clean-save matrix below | **PENDING — no private ROM was available** |
 
 Verified source checkpoints before this record:
@@ -22,7 +23,7 @@ Verified source checkpoints before this record:
 - DPE branch `feature/cagliari-preview-0.1`, commit `a03752f`;
 - historical V0.1 PR remains untouched; no merge, close, deploy, or `master` change was performed.
 
-The missing-ROM build attempt exits non-zero and emits `BUILD_STATUS=BLOCKED`. It did not produce an output ROM and must not be interpreted as a failed runtime smoke test.
+The missing-ROM build attempt exits non-zero and emits `BUILD_STATUS=BLOCKED`. It did not produce an output ROM and must not be interpreted as a failed runtime smoke test. Even with the ROM present, this checkpoint intentionally blocks until a private-ROM-derived, uniquely validated structural redirect removes FireRed's rival-name state; text replacement alone is not accepted as proof.
 
 ## Exact Codespaces/private-build handoff
 
@@ -44,7 +45,7 @@ git ls-files '*.gba' '*.sav' '*.srm'
 python scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe
 ```
 
-Only an invocation ending with `BUILD_STATUS=SUCCESS` creates a candidate for runtime testing. Keep `release_candidate_test.gba` and every save private and untracked.
+Only an invocation ending with `BUILD_STATUS=SUCCESS`, `RC_OPENING_AUDIT=PASS`, and `RC_CUSTOM_MAPS_STATUS=APPLIED` creates a candidate for runtime testing. Keep `release_candidate_test.gba` and every save private and untracked. A failed map plan, map installer, missing map output, or unverified rival-name bypass deletes the incomplete output and blocks the build.
 
 The stricter art gates are approval checks, not build commands. At this checkpoint both `python scripts/validate_rc_art_pipeline.py --require-approved` (DPE) and `python scripts/validate_rc_tileset_pipeline.py --require-approved` (CFRU) must exit non-zero with `*_APPROVAL=BLOCKED`; changing that result requires reviewed original art and recorded evidence.
 

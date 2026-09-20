@@ -133,6 +133,7 @@ class CagliariPreviewContentTest(unittest.TestCase):
         speakers = {scene["speaker"] for scene in dialogue["scenes"]}
         self.assertNotIn("Rivale", speakers)
         self.assertIn("KPI Rival", speakers)
+        self.assertEqual(load("trainers.yml")["rival"]["display_name"], "KPI Rival")
 
     def test_all_custom_script_dialogue_refs_resolve(self):
         dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}

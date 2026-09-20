@@ -97,7 +97,7 @@ Then transition to city reveal.
 Preferred:
 - preserve the existing underlying name-entry engine;
 - replace surrounding text and presentation;
-- bypass/remove rival-name choice from the intended path;
+- bypass/remove rival-name choice from the intended path with a uniquely validated control-flow patch; visible-text replacement is not structural evidence;
 - use a fixed authored rival identity;
 - redirect post-intro destination into RC arrival / Delivery Hub flow.
 

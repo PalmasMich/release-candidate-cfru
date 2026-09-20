@@ -1,7 +1,7 @@
 {
   "rival": {
     "id": "RC_RIVAL_KPI",
-    "display_name": "Rivale KPI",
+    "display_name": "KPI Rival",
     "theme": "competitive_colleague_metrics_obsessed",
     "starter_matrix": {
       "SPECIES_RC_TURTLE_01": "SPECIES_RC_FIREFOX_01",

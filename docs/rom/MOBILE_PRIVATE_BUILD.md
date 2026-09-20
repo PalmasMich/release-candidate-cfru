@@ -71,7 +71,7 @@ python3 scripts/build_release_candidate.py --dpe-path ../release-candidate-dpe
 
 The high-level build sequence is:
 
-`CHAPTER1_PREFLIGHT -> DPE -> CFRU -> RC_STARTER_RUNTIME -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH`
+`CHAPTER1_PREFLIGHT -> DPE -> RC_STARTER_RUNTIME -> CFRU -> RC_PREVIEW_PATCH -> RC_OPENING_AUDIT -> PORT_LINK_DISCOVERY -> PORT_LINK_TRAINER_PATCH -> DELIVERY_HUB_MAP_PLAN -> RC_CUSTOM_MAPS_PATCH`
 
 The default private output is:
 
@@ -88,12 +88,13 @@ For the Chapter 1 candidate, look for:
 - `RC_TILESET_ART_STATUS=BOOTSTRAP` until reviewed original tilesets replace the technical profiles
 - `DPE_RC_PREVIEW_SYMBOLS=OK`
 - `RC_STARTER_RUNTIME=PASS`
+- `RC_OPENING_AUDIT=PASS` only after a uniquely validated structural rival-name bypass exists; the current source checkpoint deliberately reports `BLOCKED:STRUCTURAL_BYPASS_UNVERIFIED`
 - `PORT_LINK_DISCOVERY_STATUS=READY` or a documented legacy-bootstrap pending status
 - `DELIVERY_HUB_MAP_PLAN_STATUS=READY`
 - `RC_CUSTOM_MAPS_STATUS=APPLIED`
 - `BUILD_STATUS=SUCCESS`
 
-If `RC_CUSTOM_MAPS_STATUS` is pending, do **not** treat the Chapter 1 source implementation as runtime-verified. Keep the fallback preview and record the exact failure output.
+The V0.2 command fails unless the map plan succeeds, all six custom maps are installed, and an output exists. It must never emit `BUILD_STATUS=SUCCESS` for a fallback map path.
 
 ## Smoke-test order
 

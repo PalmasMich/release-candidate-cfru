@@ -25,6 +25,8 @@ RIVAL_NAME_PROMPTS = (
     "Come si chiama?",
 )
 
+STRUCTURAL_BYPASS_UNVERIFIED = "structural rival-name bypass is not implemented or verified"
+
 
 def audit_data(data: bytes) -> tuple[list[str], list[str]]:
     stock_text = [text for text in FORBIDDEN_OPENING_TEXT if encode_text(text) in data]
@@ -41,11 +43,15 @@ def validate_opening(data: bytes) -> None:
         )
     if stock_text:
         raise RuntimeError("stock opening text remains: " + ", ".join(stock_text))
+    # Text replacement cannot prove that FireRed's rival naming state machine
+    # was skipped. Keep the candidate blocked until a private-ROM-derived,
+    # uniquely validated control-flow patch and its post-patch signature exist.
+    raise RuntimeError(STRUCTURAL_BYPASS_UNVERIFIED)
 
 
 def audit_rom(path: Path) -> list[str]:
     stock_text, rival_name_prompts = audit_data(path.read_bytes())
-    return stock_text + rival_name_prompts
+    return stock_text + rival_name_prompts + [STRUCTURAL_BYPASS_UNVERIFIED]
 
 
 def main() -> int:
@@ -66,9 +72,9 @@ def main() -> int:
             print(f"RC_OPENING_RIVAL_NAME_PROMPT={text}")
         return 1
 
-    print("RC_OPENING_AUDIT=PASS")
-    print("RC_RIVAL_NAME_STRUCTURAL_BYPASS=PENDING:RUNTIME_CONFIRMATION")
-    return 0
+    print("RC_OPENING_AUDIT=BLOCKED:STRUCTURAL_BYPASS_UNVERIFIED")
+    print("RC_RIVAL_NAME_STRUCTURAL_BYPASS=UNVERIFIED")
+    return 2
 
 if __name__ == "__main__":
     raise SystemExit(main())
