@@ -23,8 +23,9 @@ class ReleaseCandidateLearnsetContractTest(unittest.TestCase):
     def test_tartrek_has_real_level_five_battle_moves(self):
         body = self._body("sRCTartrekLevelUpLearnset")
         self.assertIn("LEVEL_UP_MOVE( 1, MOVE_TACKLE)", body)
-        self.assertIn("LEVEL_UP_MOVE( 1, MOVE_GROWL)", body)
+        self.assertIn("LEVEL_UP_MOVE( 1, MOVE_WITHDRAW)", body)
         self.assertIn("LEVEL_UP_MOVE( 5, MOVE_VINEWHIP)", body)
+        self.assertIn("LEVEL_UP_MOVE( 7, MOVE_MUDSLAP)", body)
         self.assertIn("LEVEL_UP_END", body)
 
     def test_other_preview_starters_are_not_empty(self):
