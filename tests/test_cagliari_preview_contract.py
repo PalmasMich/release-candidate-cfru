@@ -36,17 +36,27 @@ class CagliariPreviewContractTest(unittest.TestCase):
             for flag in event.get("requires", []) + event.get("sets", []):
                 self.assertIn(flag, flags, event["id"])
 
-    def test_thick_preview_is_ordered_and_playable_through_deploy_teaser(self):
-        preview = [item for item in load("events.yml")["flow"] if item.get("scope") == "preview"]
-        self.assertEqual(
-            [item["id"] for item in preview],
-            ["RC_EVENT_ARRIVAL", "RC_EVENT_STARTER_ASSIGNMENT", "RC_EVENT_RIVAL_INTRO", "RC_EVENT_FIRST_WILD", "RC_EVENT_PORT_TRAINER", "RC_EVENT_DEPLOY_TEASER"],
-        )
+    def test_thick_preview_acceptance_path_is_contiguous_and_playable(self):
+        events = load("events.yml")
+        by_id = {item["id"]: item for item in events["flow"]}
+        path = events["preview_acceptance_path"]
+        self.assertEqual(path, ["RC_EVENT_ARRIVAL", "RC_EVENT_STARTER_ASSIGNMENT", "RC_EVENT_RIVAL_INTRO", "RC_EVENT_FIRST_WILD", "RC_EVENT_DEPLOY_TEASER"])
+        self.assertNotIn("RC_EVENT_PORT_TRAINER", path)
         produced = set()
-        for event in preview:
-            self.assertTrue(set(event.get("requires", ())).issubset(produced), event["id"])
+        for event_id in path:
+            event = by_id[event_id]
+            self.assertEqual(event["scope"], "preview")
+            self.assertTrue(set(event.get("requires", ())).issubset(produced), event_id)
             produced.update(event.get("sets", ()))
         self.assertIn("RC_FLAG_DEPLOY_TEASER_SEEN", produced)
+
+    def test_reserved_port_trainer_cannot_block_preview_teaser(self):
+        events = {item["id"]: item for item in load("events.yml")["flow"]}
+        trainer = events["RC_EVENT_PORT_TRAINER"]
+        teaser = events["RC_EVENT_DEPLOY_TEASER"]
+        self.assertEqual(trainer["scope"], "post_preview")
+        self.assertEqual(trainer["implementation_status"], "reserved_not_relocated")
+        self.assertEqual(teaser["requires"], ["RC_FLAG_WILD_TUTORIAL_DONE"])
 
     def test_rival_matrix_covers_each_preview_starter_once(self):
         matrix = load("trainers.yml")["rival"]["starter_matrix"]
@@ -82,36 +92,24 @@ class CagliariPreviewContractTest(unittest.TestCase):
     def test_port_link_manifest_matches_binary_patch_weights_and_levels(self):
         patcher = load_patcher()
         table = next(t for t in load("encounters.yml")["tables"] if t["id"] == "RC_PORT_CONNECTION_GRASS")
-        expected = {
-            "SPECIES_RC_CAGLIARI_WILD_01": patcher.MISTRILLO_SPECIES_ID,
-            "SPECIES_WINGULL": patcher.WINGULL_SPECIES_ID,
-            "SPECIES_MEOWTH": patcher.MEOWTH_SPECIES_ID,
-        }
+        expected = {"SPECIES_RC_CAGLIARI_WILD_01": patcher.MISTRILLO_SPECIES_ID, "SPECIES_WINGULL": patcher.WINGULL_SPECIES_ID, "SPECIES_MEOWTH": patcher.MEOWTH_SPECIES_ID}
         self.assertEqual(table["map"], "RC_PORT_CONNECTION")
         self.assertEqual(table["method"], "grass")
         self.assertEqual(sum(slot["weight"] for slot in table["slots"]), 100)
         for slot in table["slots"]:
             species = expected[slot["species"]]
-            weighted_slots = [
-                (weight, levels)
-                for patched_species, weight, levels in zip(
-                    patcher.ROUTE1_PREVIEW_SPECIES,
-                    patcher.GRASS_SLOT_WEIGHTS,
-                    patcher.ROUTE1_PREVIEW_LEVELS,
-                )
-                if patched_species == species
-            ]
+            weighted_slots = [(weight, levels) for patched_species, weight, levels in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.GRASS_SLOT_WEIGHTS, patcher.ROUTE1_PREVIEW_LEVELS) if patched_species == species]
             self.assertEqual(sum(weight for weight, _ in weighted_slots), slot["weight"])
             self.assertGreaterEqual(min(levels[0] for _, levels in weighted_slots), slot["min_level"])
             self.assertLessEqual(max(levels[1] for _, levels in weighted_slots), slot["max_level"])
 
-    def test_route_trainer_dialogue_contract_is_complete(self):
+    def test_route_trainer_is_reserved_for_later_relocation(self):
         trainer = load("trainers.yml")["route_trainer"]
         dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
-        self.assertEqual(trainer["role"], "short_battle_before_deploy_teaser")
+        self.assertEqual(trainer["role"], "optional_bootstrap_party_reserved_for_later_port_link_event")
         self.assertIn(trainer["intro_dialogue"], dialogue_ids)
         self.assertIn(trainer["outro_dialogue"], dialogue_ids)
-        self.assertGreaterEqual(len(trainer["party"]), 1)
+        self.assertIn("Not required for Preview 0.1", trainer["preview_contract"])
 
     def test_visible_rom_identity_contains_required_preview_beats(self):
         patcher = load_patcher()
