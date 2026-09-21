@@ -1,7 +1,7 @@
 {
   "preview": "Cagliari Preview 0.1",
-  "status": "pre_manual_smoke",
-  "manual_test_gate": "Do not request a new device test until every automated item below is green and a fresh private-ROM build succeeds.",
+  "status": "automated_contract_complete_private_build_pending",
+  "manual_test_gate": "Do not request a new device test until the private-ROM pipeline completes successfully from a legally obtained FireRed 1.0 input. Then execute manual_smoke_checklist.md; do not distribute the ROM.",
   "pillars": {
     "opening_identity": {
       "required": true,
@@ -20,7 +20,8 @@
         "Emberfox occupies the original Charmander choice",
         "all three starter scripts set the matching RC species",
         "Oak Lab rival parties use the RC starter matrix",
-        "Tartrek has a CFRU level-up learnset and usable starting moves"
+        "all three RC starters have CFRU level-up learnsets",
+        "canonical Tartrek smoke path exposes usable starting moves and never an empty battle menu"
       ]
     },
     "rival_flavor": {
@@ -41,6 +42,14 @@
       ],
       "note": "The first random roll is not guaranteed to be Mistrillo; the contract is a dominant first custom encounter opportunity, not a scripted encounter."
     },
+    "preview_endpoint": {
+      "required": true,
+      "checks": [
+        "Marina Porto identity is visible after Port Link",
+        "the preview endpoint exposes DEPLOY BLOCKED - CHECK SCOPE / deploy-gate flavor",
+        "optional future trainer or scripted encounter work cannot block the Preview 0.1 acceptance path"
+      ]
+    },
     "safety": {
       "required": true,
       "checks": [
@@ -50,5 +59,10 @@
         "private build restores pristine CFRU input and removes temporary ROM intermediates"
       ]
     }
+  },
+  "handoff": {
+    "checklist": "content/cagliari_preview/manual_smoke_checklist.md",
+    "canonical_path": "opening -> Delivery Hub -> Tartrek -> KPI rival -> Port Link -> Mistrillo -> Marina Porto teaser",
+    "private_only": true
   }
 }
