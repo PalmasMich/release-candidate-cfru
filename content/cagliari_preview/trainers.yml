@@ -17,7 +17,7 @@
     "intro_dialogue": "RC_DIALOGUE_PORT_TRAINER_INTRO",
     "outro_dialogue": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
     "party": [{"species":"SPECIES_RC_CAGLIARI_WILD_01","level":4},{"species":"SPECIES_MEOWTH","level":4}],
-    "preview_contract": "Not required for Preview 0.1 acceptance. The guaranteed first custom encounter outside Delivery Hub is the Port Link wild Mistrillo table."
+    "preview_contract": "Not required for Preview 0.1 acceptance. Port Link is the first custom encounter opportunity outside Delivery Hub: Mistrillo occupies 60% of the grass encounter weight, with Wingull 25% and Meowth 15%. This is intentionally not described as a guaranteed first roll."
   },
   "release_manager": {
     "id": "RC_TRAINER_RELEASE_MANAGER",
