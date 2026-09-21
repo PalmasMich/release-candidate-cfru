@@ -19,6 +19,12 @@ PLAYER_SPECIES_VALUE_OFFSET = 8
 RIVAL_SPECIES_VALUE_OFFSET = 13
 OAK_LAB_RIVAL_PARTIES_SIGNATURE = bytes.fromhex("00 00 05 00 07 00 00 00 05 00 01 00 00 00 05 00 04 00")
 RIVAL_PARTY_SPECIES_OFFSETS = (4, 10, 16)
+# Trainer 89 / Youngster Ben. Two TrainerMonNoItemDefaultMoves records.
+PORT_TRAINER_PARTY_SIGNATURE = bytes.fromhex("00 00 0B 00 13 00 00 00 0B 00 17 00")
+PORT_TRAINER_PARTY_REPLACEMENT = (
+    b"\x00\x00\x04\x00" + MISTRILLO_SPECIES_ID.to_bytes(2, "little")
+    + b"\x00\x00\x04\x00" + MEOWTH_SPECIES_ID.to_bytes(2, "little")
+)
 ROUTE1_WILD_SIGNATURE = bytes.fromhex("03 03 10 00 03 03 13 00 03 03 10 00 03 03 13 00 02 02 10 00 02 02 13 00 03 03 10 00 03 03 13 00 04 04 10 00 04 04 13 00 05 05 10 00 04 04 13 00")
 GRASS_SLOT_WEIGHTS = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)
 ROUTE1_PREVIEW_SPECIES = (MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, MISTRILLO_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, WINGULL_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID, MEOWTH_SPECIES_ID)
@@ -146,6 +152,11 @@ def patch_oak_lab_rival_parties(data):
     for rel,species in zip(RIVAL_PARTY_SPECIES_OFFSETS,(FROBYTE_SPECIES_ID,TARTREK_SPECIES_ID,EMBERFOX_SPECIES_ID)): data[pos+rel:pos+rel+2]=species.to_bytes(2,"little")
     print("RC_PREVIEW_KPI_RIVAL_PARTY=APPLIED"); return data,True
 
+def patch_port_trainer_party(data):
+    pos=_find_exactly_one(data,PORT_TRAINER_PARTY_SIGNATURE,"trainer 89 bootstrap party")
+    data[pos:pos+len(PORT_TRAINER_PARTY_SIGNATURE)] = PORT_TRAINER_PARTY_REPLACEMENT
+    return data
+
 def _replace_size_preserving(data,old,new,expected=None):
     if len(new)>len(old): raise ValueError("Replacement text cannot exceed the source byte length.")
     positions=[]; start=0
@@ -186,16 +197,17 @@ def validate_preview_patch(data):
         if data.count(patched_starter_signature(signature,player,rival))!=1: raise RuntimeError(f"Preview validation failed: {label} is missing or duplicated.")
     rival_party=b"".join(b"\x00\x00\x05\x00"+s.to_bytes(2,"little") for s in (FROBYTE_SPECIES_ID,TARTREK_SPECIES_ID,EMBERFOX_SPECIES_ID))
     if data.count(rival_party)!=1: raise RuntimeError("Preview validation failed: KPI-rival party is missing or duplicated.")
+    if data.count(PORT_TRAINER_PARTY_REPLACEMENT)!=1: raise RuntimeError("Preview validation failed: Port Link trainer party is missing or duplicated.")
     if data.count(_patched_route1_signature())!=1: raise RuntimeError("Preview validation failed: Port Link custom encounter table is missing or duplicated.")
     if any(anchor not in data for anchor in REQUIRED_VISIBLE_TEXTS): raise RuntimeError("Preview validation failed: Core Cagliari preview identity is incomplete.")
 
 def patch_rom(source,output):
     source,output=Path(source),Path(output)
     if not source.is_file(): raise FileNotFoundError(f"Input ROM not found: {source}")
-    original=source.read_bytes(); patched=patch_preview_starters(bytearray(original)); patched,_=patch_oak_lab_rival_parties(patched); patched,_,_,_=patch_visible_preview_text(patched); patched=patch_route1_wild_encounters(patched); validate_preview_patch(patched)
+    original=source.read_bytes(); patched=patch_preview_starters(bytearray(original)); patched,_=patch_oak_lab_rival_parties(patched); patched=patch_port_trainer_party(patched); patched,_,_,_=patch_visible_preview_text(patched); patched=patch_route1_wild_encounters(patched); validate_preview_patch(patched)
     output.parent.mkdir(parents=True,exist_ok=True); output.write_bytes(patched)
     if output.stat().st_size!=source.stat().st_size: raise RuntimeError("Preview patch changed ROM size unexpectedly.")
-    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_IDENTITY+KPI_RIVAL+PORT_LINK_ENCOUNTERS"); print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}"); print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}"); print(f"RC_PREVIEW_OUTPUT={output}"); return output
+    print("RC_PREVIEW_PATCH=THREE_STARTERS+CAGLIARI_IDENTITY+KPI_RIVAL+PORT_LINK_ENCOUNTERS+PORT_TRAINER_PARTY"); print(f"RC_PREVIEW_STARTERS=0x{TARTREK_SPECIES_ID:04X},0x{FROBYTE_SPECIES_ID:04X},0x{EMBERFOX_SPECIES_ID:04X}"); print(f"RC_PREVIEW_WILD_SPECIES_ID=0x{MISTRILLO_SPECIES_ID:04X}"); print("RC_PREVIEW_PORT_TRAINER=89:MISTRILLO_L4+MEOWTH_L4"); print(f"RC_PREVIEW_OUTPUT={output}"); return output
 
 def main():
     parser=argparse.ArgumentParser(description="Apply the visible Release Candidate Cagliari preview patch to a private CFRU ROM."); parser.add_argument("source",type=Path); parser.add_argument("output",type=Path); args=parser.parse_args()
