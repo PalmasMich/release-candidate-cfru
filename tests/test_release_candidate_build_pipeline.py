@@ -35,7 +35,7 @@ def make_fake_workspace(tmp):
 
 class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
     def test_validates_expected_pristine_rom_hash(self): self.assertEqual(load_builder().EXPECTED_SHA1, EXPECTED_SHA1)
-    def test_pipeline_order(self): self.assertEqual(load_builder().PIPELINE, ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH"))
+    def test_pipeline_order(self): self.assertEqual(load_builder().PIPELINE, ("CHAPTER1_PREFLIGHT", "DPE", "CFRU", "RC_PREVIEW_PATCH", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH", "FINAL_PREVIEW_VALIDATE"))
     def test_dpe_sync_targets_preview_branch(self): self.assertEqual(load_builder().DPE_BRANCH, "feature/cagliari-preview-0.1")
 
     def test_rc_learnset_pointer_overlay_activates_all_preview_species(self):
@@ -85,7 +85,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
         def custom_patch(source, destination):
             if custom == 0: destination.write_bytes(source.read_bytes() + b"-maps")
             return custom
-        kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output, run_preflight=lambda: None, run_build=fake_run, verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None, apply_preview_patch=patch, discover_port_link=lambda _p: discovery, apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub, apply_custom_maps=custom_patch)
+        kwargs = dict(cfru_root=root, dpe_root=dpe, output_path=output, run_preflight=lambda: None, run_build=fake_run, verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None, apply_preview_patch=patch, discover_port_link=lambda _p: discovery, apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: hub, apply_custom_maps=custom_patch, validate_final_preview=lambda _p: None)
         error = expected_error or ("forced CFRU failure" if fail_cfru else None)
         if error:
             with self.assertRaisesRegex(RuntimeError, error): builder.run_pipeline(**kwargs)
@@ -101,7 +101,7 @@ class ReleaseCandidateBuildPipelineTest(unittest.TestCase):
             def fake_run(label, cwd): order.append(label); (cwd / "test.gba").write_bytes(b"dpe-expanded" if label == "DPE" else b"dpe-plus-cfru")
             def trainer_patch(source, destination): destination.write_bytes(source.read_bytes() + b"-trainer"); return 0
             def custom_patch(source, destination): destination.write_bytes(source.read_bytes() + b"-maps"); return 0
-            builder.run_pipeline(cfru_root=root, dpe_root=dpe, output_path=output, run_preflight=preflight, run_build=fake_run, verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None, apply_preview_patch=lambda source, destination: destination.write_bytes(source.read_bytes() + b"-preview"), discover_port_link=lambda _p: 0, apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: 0, apply_custom_maps=custom_patch)
+            builder.run_pipeline(cfru_root=root, dpe_root=dpe, output_path=output, run_preflight=preflight, run_build=fake_run, verify_rom=lambda _p: "test", sync_dpe=lambda _p: None, verify_dpe_symbols=lambda _p: None, apply_preview_patch=lambda source, destination: destination.write_bytes(source.read_bytes() + b"-preview"), discover_port_link=lambda _p: 0, apply_port_link_trainer=trainer_patch, prepare_delivery_hub_map=lambda _p: 0, apply_custom_maps=custom_patch, validate_final_preview=lambda _p: None)
             self.assertGreaterEqual(len(order), 3); self.assertEqual(order[0:3], ["preflight", "DPE", "CFRU"])
 
     def test_pipeline_restores_rom_and_learnset_table_after_failure(self):
