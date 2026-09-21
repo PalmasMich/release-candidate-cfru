@@ -38,27 +38,18 @@ def main() -> int:
     trainers = load_json("trainers.yml")
     dialogue = load_json("dialogue.yml")
     encounters = load_json("encounters.yml")
+    events = load_json("events.yml")
 
     rival = trainers["rival"]
     require(rival["id"] == "RC_RIVAL_KPI", "KPI rival is missing")
-    require(
-        rival["starter_matrix"] == {
-            "SPECIES_RC_TURTLE_01": "SPECIES_RC_FIREFOX_01",
-            "SPECIES_RC_FROG_01": "SPECIES_RC_TURTLE_01",
-            "SPECIES_RC_FIREFOX_01": "SPECIES_RC_FROG_01",
-        },
-        "KPI rival starter matrix drifted",
-    )
+    require(rival["starter_matrix"] == {
+        "SPECIES_RC_TURTLE_01": "SPECIES_RC_FIREFOX_01",
+        "SPECIES_RC_FROG_01": "SPECIES_RC_TURTLE_01",
+        "SPECIES_RC_FIREFOX_01": "SPECIES_RC_FROG_01",
+    }, "KPI rival starter matrix drifted")
 
     scenes = {scene["id"] for scene in dialogue["scenes"]}
-    for required in (
-        "RC_DIALOGUE_OPENING",
-        "RC_DIALOGUE_STARTER",
-        "RC_DIALOGUE_RIVAL_INTRO",
-        "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER",
-        "RC_DIALOGUE_PORT_TRAINER_INTRO",
-        "RC_DIALOGUE_DEPLOY_TEASER",
-    ):
+    for required in ("RC_DIALOGUE_OPENING", "RC_DIALOGUE_STARTER", "RC_DIALOGUE_RIVAL_INTRO", "RC_DIALOGUE_WILD_TUTORIAL_TRIGGER", "RC_DIALOGUE_DEPLOY_TEASER"):
         require(required in scenes, f"required preview dialogue missing: {required}")
 
     require(p.TARTREK_SPECIES_ID == 0x050E, "Tartrek runtime ID drifted")
@@ -77,17 +68,24 @@ def main() -> int:
     port = tables.get("RC_PORT_CONNECTION_GRASS")
     require(port is not None, "Port Link encounter manifest missing")
     manifest_weights = {slot["species"]: slot["weight"] for slot in port["slots"]}
-    require(
-        manifest_weights == {
-            "SPECIES_RC_CAGLIARI_WILD_01": 60,
-            "SPECIES_WINGULL": 25,
-            "SPECIES_MEOWTH": 15,
-        },
-        "Port Link encounter manifest drifted from runtime patch",
-    )
+    require(manifest_weights == {"SPECIES_RC_CAGLIARI_WILD_01": 60, "SPECIES_WINGULL": 25, "SPECIES_MEOWTH": 15}, "Port Link encounter manifest drifted from runtime patch")
+
+    by_id = {event["id"]: event for event in events["flow"]}
+    expected_path = ["RC_EVENT_ARRIVAL", "RC_EVENT_STARTER_ASSIGNMENT", "RC_EVENT_RIVAL_INTRO", "RC_EVENT_FIRST_WILD", "RC_EVENT_DEPLOY_TEASER"]
+    require(events.get("preview_acceptance_path") == expected_path, "Preview acceptance path drifted")
+    require("RC_EVENT_PORT_TRAINER" not in expected_path, "Reserved Port trainer must not block Preview 0.1")
+    produced = set()
+    for event_id in expected_path:
+        event = by_id[event_id]
+        require(event.get("scope") == "preview", f"acceptance event left preview scope: {event_id}")
+        require(set(event.get("requires", ())).issubset(produced), f"unsatisfied acceptance dependency: {event_id}")
+        produced.update(event.get("sets", ()))
+    require("RC_FLAG_DEPLOY_TEASER_SEEN" in produced, "Preview no longer reaches deploy teaser")
+    require(by_id["RC_EVENT_PORT_TRAINER"].get("implementation_status") == "reserved_not_relocated", "Port trainer status is not fail-honest")
 
     print("RC_PREVIEW_CONTRACT=PASS")
     print("RC_PREVIEW_FLOW=OPENING>DELIVERY_HUB>STARTER>KPI_RIVAL>PORT_LINK>CUSTOM_WILD>MARINA_PORTO")
+    print("RC_PREVIEW_OPTIONAL_TRAINER=DEFERRED_NOT_BLOCKING")
     print("RC_PREVIEW_MANUAL_TEST=DEFER_UNTIL_PRIVATE_ROM_BUILD")
     return 0
 
