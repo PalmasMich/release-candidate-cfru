@@ -1,0 +1,54 @@
+{
+  "preview": "Cagliari Preview 0.1",
+  "status": "pre_manual_smoke",
+  "manual_test_gate": "Do not request a new device test until every automated item below is green and a fresh private-ROM build succeeds.",
+  "pillars": {
+    "opening_identity": {
+      "required": true,
+      "checks": [
+        "Release Candidate onboarding is visible before free movement",
+        "CAGLIARI replaces the Pallet Town presentation",
+        "Delivery Hub identity is visible in the opening area",
+        "vanilla Oak exposition is substantially replaced by Delivery Lead/corporate dialogue"
+      ]
+    },
+    "starter": {
+      "required": true,
+      "checks": [
+        "Tartrek occupies the original Bulbasaur choice",
+        "Frobyte occupies the original Squirtle choice",
+        "Emberfox occupies the original Charmander choice",
+        "all three starter scripts set the matching RC species",
+        "Oak Lab rival parties use the RC starter matrix",
+        "Tartrek has a CFRU level-up learnset and usable starting moves"
+      ]
+    },
+    "rival_flavor": {
+      "required": true,
+      "checks": [
+        "rival introduction is KPI/corporate themed",
+        "starter battle uses benchmark/KPI language",
+        "win/loss/exit dialogue no longer reads as vanilla FireRed rival copy"
+      ]
+    },
+    "first_outdoor_encounter": {
+      "required": true,
+      "checks": [
+        "former Route 1 is presented as PORT LINK toward MARINA PORTO",
+        "Mistrillo is the dominant custom wild encounter at 60 percent encounter weight",
+        "remaining preview encounter weight is Wingull 25 percent and Meowth 15 percent",
+        "Delivery NPC explicitly points the player toward Mistrillo field testing"
+      ],
+      "note": "The first random roll is not guaranteed to be Mistrillo; the contract is a dominant first custom encounter opportunity, not a scripted encounter."
+    },
+    "safety": {
+      "required": true,
+      "checks": [
+        "no full ROM binary is committed",
+        "master/main remains untouched",
+        "PR remains Draft",
+        "private build restores pristine CFRU input and removes temporary ROM intermediates"
+      ]
+    }
+  }
+}
