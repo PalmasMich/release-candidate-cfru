@@ -46,12 +46,13 @@ def find_exactly_one(data: bytes, needle: bytes, label: str) -> int:
 
 
 def build_trainer_script(discovery, intro_text_offset: int, defeat_text_offset: int) -> bytes:
-    # FireRed trainerbattle TRAINER_BATTLE_SINGLE:
-    # opcode, type, trainer(u16), local_id(u16), intro_ptr(u32), defeat_ptr(u32)
+    # The discovery point is the vanilla Mart-clerk msgbox inside a longer
+    # Route 1 object script. Do NOT inject lock/faceplayer/release/end here:
+    # those commands belong to the surrounding script. Keeping this replacement
+    # to trainerbattle only lets execution continue into the existing item-gift
+    # tail and avoids corrupting the adjacent AlreadyGotPotion script.
     return (
         bytes([
-            discovery.CMD_LOCK,
-            discovery.CMD_FACEPLAYER,
             discovery.CMD_TRAINERBATTLE,
             discovery.TRAINER_BATTLE_SINGLE,
         ])
@@ -59,10 +60,6 @@ def build_trainer_script(discovery, intro_text_offset: int, defeat_text_offset: 
         + (0).to_bytes(2, "little")
         + (discovery.GBA_ROM_BASE + intro_text_offset).to_bytes(4, "little")
         + (discovery.GBA_ROM_BASE + defeat_text_offset).to_bytes(4, "little")
-        + bytes([
-            discovery.CMD_RELEASE,
-            discovery.CMD_END,
-        ])
     )
 
 
@@ -125,6 +122,8 @@ def patch_bytes(data: bytes) -> tuple[bytes, dict]:
         )
 
     patched = bytearray(data)
+    # Only overwrite the bytes actually needed by trainerbattle. Leaving the
+    # rest of the original script untouched is intentional and safety-critical.
     patched[script_start:script_start + len(replacement)] = replacement
     party_evidence = patch_bootstrap_party(patched)
 
