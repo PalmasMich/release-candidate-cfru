@@ -16,7 +16,8 @@
     "patch_contract": "Patch only after unique Port Link event-script discovery; preserve party record count and ROM size.",
     "intro_dialogue": "RC_DIALOGUE_PORT_TRAINER_INTRO",
     "outro_dialogue": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
-    "party": [{"species":"SPECIES_MEOWTH","level":4},{"species":"SPECIES_MEOWTH","level":4}]
+    "party": [{"species":"SPECIES_RC_CAGLIARI_WILD_01","level":4},{"species":"SPECIES_MEOWTH","level":4}],
+    "preview_contract": "The scripted Port Link trainer guarantees a visible Mistrillo battle even if the player avoids grass encounters."
   },
   "release_manager": {
     "id": "RC_TRAINER_RELEASE_MANAGER",
