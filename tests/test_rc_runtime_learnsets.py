@@ -1,9 +1,12 @@
 from pathlib import Path
+import importlib.util
 import re
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 LEARNSETS = ROOT / "src" / "Tables" / "level_up_learnsets.c"
+BUILD_SCRIPT = ROOT / "scripts" / "build_release_candidate.py"
 
 EXPECTED = {
     "RCTartrek": [(1, "MOVE_TACKLE"), (1, "MOVE_WITHDRAW"), (5, "MOVE_VINEWHIP"), (7, "MOVE_MUDSLAP")],
@@ -20,6 +23,13 @@ SPECIES_BINDINGS = {
 }
 
 
+def load_builder():
+    spec = importlib.util.spec_from_file_location("rc_builder", BUILD_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 class RCRuntimeLearnsetTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -33,19 +43,24 @@ class RCRuntimeLearnsetTest(unittest.TestCase):
                 re.S,
             )
             self.assertIsNotNone(match, f"missing CFRU learnset for {name}")
-            moves = [
-                (int(level), move)
-                for level, move in re.findall(r"LEVEL_UP_MOVE\(\s*(\d+),\s*(MOVE_[A-Z0-9_]+)\)", match.group(1))
-            ]
+            moves = [(int(level), move) for level, move in re.findall(
+                r"LEVEL_UP_MOVE\(\s*(\d+),\s*(MOVE_[A-Z0-9_]+)\)", match.group(1)
+            )]
             self.assertEqual(moves, expected, f"unexpected runtime learnset for {name}")
 
-    def test_preview_species_are_bound_in_runtime_pointer_table(self):
-        for species, learnset in SPECIES_BINDINGS.items():
-            self.assertRegex(
-                self.source,
-                rf"\[{species}\]\s*=\s*{learnset}\s*,",
-                f"{species} would fall through to an invalid/empty CFRU learnset",
-            )
+    def test_build_activation_makes_all_four_pointer_bindings_active(self):
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            table = root / builder.RC_LEARNSET_TABLE
+            table.parent.mkdir(parents=True)
+            table.write_text(self.source, encoding="utf-8")
+            original = builder.activate_rc_learnset_pointers(root)
+            self.assertEqual(original.decode("utf-8"), self.source)
+            activated = table.read_text(encoding="utf-8")
+            active_tail = activated.rsplit("*/", 1)[-1]
+            for species, learnset in SPECIES_BINDINGS.items():
+                self.assertRegex(active_tail, rf"\[{species}\]\s*=\s*{learnset}\s*,")
 
     def test_level_five_starters_enter_first_rival_battle_with_two_moves(self):
         for name in ("RCTartrek", "RCFrobyte", "RCEmberfox"):
