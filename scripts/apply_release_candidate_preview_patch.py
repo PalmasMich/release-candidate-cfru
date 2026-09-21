@@ -102,6 +102,10 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("It's a bit scary, but you can jump\nfrom them."), encode_text("Use them if the timeline\nstarts slipping.")),
     (encode_text("You can get back to PALLET TOWN\nquicker that way."), encode_text("You can get back to CAGLIARI\nquicker that way.")),
     (encode_text("VIRIDIAN CITY \nThe Eternally Green Paradise"), encode_text("MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE")),
+    (encode_text("Those POKé BALLS at your waist!\nYou have POKéMON, don't you?"), encode_text("That build at your side!\nYou're on the release, right?")),
+    (encode_text("It's great that you can carry and\nuse POKéMON anytime, anywhere."), encode_text("Marina Porto is live.\nKeep the package stable.")),
+    (encode_text("Oh, Grandpa!\nDon't be so mean!"), encode_text("Hey, stakeholder!\nScope is still open!")),
+    (encode_text("I'm so sorry.\nHe hasn't had his coffee yet."), encode_text("Sorry. The sign-off\nis still pending.")),
     (encode_text("This POKéMON GYM is always closed."), encode_text("This deploy gate is still closed.")),
     (encode_text("I wonder who the LEADER is?"), encode_text("Stakeholder approval pending.")),
     (encode_text("This is private property!"), encode_text("This scope is out of bounds!")),
@@ -109,7 +113,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("VIRIDIAN CITY POKéMON GYM"), encode_text("MARINA PORTO DEPLOY GATE")),
     (encode_text("VIRIDIAN GYM's doors are locked…"), encode_text("DEPLOY GATE locked: scope open.")),
 )
-REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Inside these slots are three\nrelease candidates.", "Let's benchmark our resources!", "KPI check: show velocity!", "LEAD: {PLAYER}, validate your\nresource with field tests.", "PORT LINK\nCAGLIARI - MARINA PORTO", "MISTRILLO is in this grass.\nField test it now.", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "MARINA PORTO DEPLOY GATE"))
+REQUIRED_VISIBLE_TEXTS = tuple(encode_text(text) for text in ("Welcome to Release Candidate!", "LEAD: Scope changed!\nField checks start today!", "CAGLIARI\nFirst sprint starts here!", "DELIVERY HUB - CAGLIARI", "Three resources are ready.", "Inside these slots are three\nrelease candidates.", "Let's benchmark our resources!", "KPI check: show velocity!", "LEAD: {PLAYER}, validate your\nresource with field tests.", "PORT LINK\nCAGLIARI - MARINA PORTO", "MISTRILLO is in this grass.\nField test it now.", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE", "Marina Porto is live.\nKeep the package stable.", "MARINA PORTO DEPLOY GATE"))
 MAP_NAME_REPLACEMENT = (encode_text("PALLET TOWN") + b"\xFF" + encode_text("VIRIDIAN CITY") + b"\xFF", encode_text("CAGLIARI") + b"\xFF" + (b"\x00" * 3) + encode_text("MARINA PORTO") + b"\x00\xFF")
 LAB_SIGN_REPLACEMENT = (b"\xCA\xC9\xC5\x1B\xC9\xC8\x00\xCC\xBF\xCD\xBF\xBB\xCC\xBD\xC2\x00\xC6\xBB\xBC", encode_text("DELIVERY HUB"))
 
