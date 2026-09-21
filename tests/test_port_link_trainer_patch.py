@@ -55,28 +55,31 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         payload[script_offset:script_offset + len(script)] = script
         return bytes(payload), script_offset, intro_offset, defeat_offset, party_offset
 
-    def test_builds_expected_single_trainerbattle_script(self):
+    def test_builds_expected_inline_trainerbattle_command(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
         script = patcher.build_trainer_script(discovery, 0x1234, 0x5678)
-        self.assertEqual(script[0], discovery.CMD_LOCK)
-        self.assertEqual(script[1], discovery.CMD_FACEPLAYER)
-        self.assertEqual(script[2], discovery.CMD_TRAINERBATTLE)
-        self.assertEqual(script[3], discovery.TRAINER_BATTLE_SINGLE)
-        self.assertEqual(int.from_bytes(script[4:6], "little"), discovery.TRAINER_BOOTSTRAP_ID)
-        self.assertEqual(int.from_bytes(script[6:8], "little"), 0)
-        self.assertEqual(int.from_bytes(script[8:12], "little"), discovery.GBA_ROM_BASE + 0x1234)
-        self.assertEqual(int.from_bytes(script[12:16], "little"), discovery.GBA_ROM_BASE + 0x5678)
-        self.assertEqual(script[-2:], bytes([discovery.CMD_RELEASE, discovery.CMD_END]))
-        self.assertEqual(len(script), 18)
+        self.assertEqual(script[0], discovery.CMD_TRAINERBATTLE)
+        self.assertEqual(script[1], discovery.TRAINER_BATTLE_SINGLE)
+        self.assertEqual(int.from_bytes(script[2:4], "little"), discovery.TRAINER_BOOTSTRAP_ID)
+        self.assertEqual(int.from_bytes(script[4:6], "little"), 0)
+        self.assertEqual(int.from_bytes(script[6:10], "little"), discovery.GBA_ROM_BASE + 0x1234)
+        self.assertEqual(int.from_bytes(script[10:14], "little"), discovery.GBA_ROM_BASE + 0x5678)
+        self.assertEqual(len(script), 14)
+        self.assertNotIn(discovery.CMD_END, script[:2])
 
     def test_patches_guarded_script_and_guaranteed_custom_preview_party(self):
         discovery = load(DISCOVERY, "port_link_discovery")
         patcher = load(PATCHER, "port_link_patcher")
         original, script_offset, intro_offset, defeat_offset, party_offset = self.build_fixture(discovery, patcher)
+        report = discovery.analyze_rom(original)
+        plan = [c for c in report["candidate_contexts"] if c["classification"] == "event_dialogue_script"][0]["patch_plan"]
+        patch_start = plan["script_start_candidate"]
+        original_tail = original[patch_start + 14:patch_start + 24]
+
         patched, evidence = patcher.patch_bytes(original)
         self.assertEqual(len(patched), len(original))
-        self.assertEqual(evidence["script_start"], script_offset)
+        self.assertEqual(evidence["script_start"], patch_start)
         self.assertEqual(evidence["trainer_id"], discovery.TRAINER_BOOTSTRAP_ID)
         self.assertEqual(evidence["intro_text_offset"], intro_offset)
         self.assertEqual(evidence["defeat_text_offset"], defeat_offset)
@@ -85,7 +88,10 @@ class PortLinkTrainerPatchTest(unittest.TestCase):
         self.assertEqual(tuple(evidence["party_species"]), patcher.PORT_LINK_TRAINER_PARTY)
         self.assertEqual(patcher.PORT_LINK_TRAINER_PARTY[0], patcher.MISTRILLO_SPECIES_ID)
         expected = patcher.build_trainer_script(discovery, intro_offset, defeat_offset)
-        self.assertEqual(patched[script_offset:script_offset + len(expected)], expected)
+        self.assertEqual(patched[patch_start:patch_start + len(expected)], expected)
+        # Critical regression guard: the bytes after trainerbattle remain the
+        # original Mart-clerk script, rather than being blanked or terminated.
+        self.assertEqual(patched[patch_start + len(expected):patch_start + 24], original_tail)
         for level_offset in patcher.TRAINER_MON_LEVEL_OFFSETS:
             self.assertEqual(patched[party_offset + level_offset], patcher.PORT_LINK_TRAINER_LEVEL)
         for species_offset, species in zip(patcher.TRAINER_MON_SPECIES_OFFSETS, patcher.PORT_LINK_TRAINER_PARTY):
