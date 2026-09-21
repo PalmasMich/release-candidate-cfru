@@ -10,12 +10,12 @@ def load_patcher():
     spec=importlib.util.spec_from_file_location("rc_preview_patcher",PATCHER); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module); return module
 
 def build_preview_fixture(p):
-    chunks=[b"RCFIXTURE",p.BULBASAUR_STARTER_SIGNATURE,b"|",p.SQUIRTLE_STARTER_SIGNATURE,b"|",p.CHARMANDER_STARTER_SIGNATURE,b"|",p.OAK_LAB_RIVAL_PARTIES_SIGNATURE,b"|",p.PORT_TRAINER_PARTY_SIGNATURE]
+    chunks=[b"RCFIXTURE",p.BULBASAUR_STARTER_SIGNATURE,b"|",p.SQUIRTLE_STARTER_SIGNATURE,b"|",p.CHARMANDER_STARTER_SIGNATURE,b"|",p.OAK_LAB_RIVAL_PARTIES_SIGNATURE]
     for old,_ in p.VISIBLE_TEXT_REPLACEMENTS: chunks.extend((b"|",old))
     chunks.extend((b"|",p.MAP_NAME_REPLACEMENT[0],b"|",p.LAB_SIGN_REPLACEMENT[0],b"|",p.ROUTE1_WILD_SIGNATURE,b"|END")); return b"".join(chunks)
 
 def build_patched_fixture(p):
-    payload=p.patch_preview_starters(bytearray(build_preview_fixture(p))); payload,_=p.patch_oak_lab_rival_parties(payload); payload=p.patch_port_trainer_party(payload); payload,_,_,_=p.patch_visible_preview_text(payload); return p.patch_route1_wild_encounters(payload)
+    payload=p.patch_preview_starters(bytearray(build_preview_fixture(p))); payload,_=p.patch_oak_lab_rival_parties(payload); payload,_,_,_=p.patch_visible_preview_text(payload); return p.patch_route1_wild_encounters(payload)
 
 class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_wires_all_three_original_starters(self):
@@ -29,16 +29,6 @@ class ReleaseCandidatePreviewPatchTest(unittest.TestCase):
     def test_patches_oak_lab_rival_parties_to_original_species(self):
         p=load_patcher(); patched,applied=p.patch_oak_lab_rival_parties(bytearray(b"prefix"+p.OAK_LAB_RIVAL_PARTIES_SIGNATURE+b"suffix")); self.assertTrue(applied); base=len(b"prefix")
         for rel,species in zip(p.RIVAL_PARTY_SPECIES_OFFSETS,(p.FROBYTE_SPECIES_ID,p.TARTREK_SPECIES_ID,p.EMBERFOX_SPECIES_ID)): self.assertEqual(patched[base+rel:base+rel+2],species.to_bytes(2,"little"))
-
-    def test_port_trainer_party_guarantees_custom_encounter(self):
-        p=load_patcher(); payload=bytearray(b"prefix"+p.PORT_TRAINER_PARTY_SIGNATURE+b"suffix"); patched=p.patch_port_trainer_party(payload)
-        self.assertEqual(patched.count(p.PORT_TRAINER_PARTY_REPLACEMENT),1)
-        self.assertNotIn(p.PORT_TRAINER_PARTY_SIGNATURE,patched)
-        self.assertEqual(len(p.PORT_TRAINER_PARTY_REPLACEMENT),len(p.PORT_TRAINER_PARTY_SIGNATURE))
-
-    def test_port_trainer_patch_fails_closed_when_signature_is_missing(self):
-        p=load_patcher()
-        with self.assertRaisesRegex(ValueError,"trainer 89 bootstrap party"): p.patch_port_trainer_party(bytearray(b"no trainer here"))
 
     def test_visible_preview_text_replacements_are_size_preserving(self):
         p=load_patcher()
