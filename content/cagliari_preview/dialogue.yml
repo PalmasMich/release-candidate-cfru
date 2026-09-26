@@ -5,8 +5,8 @@
       "speaker": "Delivery Lead",
       "lines": [
         "Benvenuto su Release Candidate.",
-        "Il progetto è già partito. Le scadenze pure.",
-        "Io coordino la delivery. Ti spiego quello che serve e poi partiamo."
+        "Il progetto è già partito. Le scadenze pure. Ottimo tempismo.",
+        "Io coordino la delivery. Ti dico cosa sappiamo. Il resto lo scopriremo insieme agli stakeholder."
       ]
     },
     {
@@ -16,7 +16,7 @@
         "Prima di aprirti gli accessi, devo creare il tuo badge.",
         "Come vuoi comparire nel workspace?",
         "Perfetto. Badge creato.",
-        "Accessi quasi pronti. Quasi."
+        "Accessi quasi pronti. Il quasi è una dipendenza esterna."
       ]
     },
     {
@@ -25,15 +25,16 @@
       "lines": [
         "Io tengo traccia di tutto quello che può diventare un grafico.",
         "Non è una gara.",
-        "Però ho già preparato la classifica."
+        "La classifica serve solo per dare contesto ai numeri."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Lui sarà il tuo collega sul progetto.",
-        "Competente, rapido e completamente incapace di ignorare una dashboard."
+        "Lui è KPI Rival.",
+        "È bravo, veloce e considera ogni conversazione una potenziale dashboard.",
+        "Dice che non compete con nessuno. Ha già aperto il confronto."
       ]
     },
     {
@@ -41,8 +42,8 @@
       "speaker": "Delivery Lead",
       "lines": [
         "Questo è il Delivery Hub.",
-        "Qui partono task, escalation e promesse fatte prima di consultarci.",
-        "Oggi però partiamo da qualcosa di semplice."
+        "Da qui partono task, escalation e promesse fatte prima di consultarci.",
+        "Il tuo onboarding, per ragioni che nessuno saprà spiegarti, prevede una scelta importante."
       ]
     },
     {
@@ -51,7 +52,7 @@
       "lines": [
         "Tre partner sono disponibili per l'assegnazione.",
         "Tartrek, Frobyte ed Emberfox.",
-        "Scegline uno. Gli altri due finiranno su attività parallele."
+        "Scegline uno. Gli altri due verranno riallocati con una mail che li definirà entusiasti."
       ]
     },
     {
@@ -116,32 +117,35 @@
       "speaker": "KPI Rival",
       "lines": [
         "Prima scegli il tuo partner.",
-        "Poi vediamo quanto regge la tua velocity."
+        "Poi facciamo un confronto puramente informativo.",
+        "Ho già preparato il grafico."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_CHALLENGE",
       "speaker": "KPI Rival",
       "lines": [
-        "Bene. Hai fatto la tua scelta.",
-        "Facciamo un test rapido prima che qualcuno cambi i requisiti.",
-        "KPI check. Vediamo chi parte meglio."
+        "Scelta registrata.",
+        "Facciamo un test rapido prima che cambi qualcosa.",
+        "Non è una gara. Partiamo appena sei pronto."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_WIN",
       "speaker": "KPI Rival",
       "lines": [
-        "Ok. Dato interessante.",
-        "Aggiorno la dashboard e faccio finta che il campione sia statisticamente significativo."
+        "Interessante.",
+        "Aggiorno la dashboard.",
+        "Per correttezza statistica ignorerò il fatto che il campione è uno."
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_LOSE",
       "speaker": "KPI Rival",
       "lines": [
-        "Partenza efficiente.",
-        "Tranquillo, nella dashboard metterò solo il risultato."
+        "Buona partenza.",
+        "Metto il risultato in dashboard.",
+        "Le note metodologiche, per ora, non servono."
       ]
     },
     {
@@ -159,7 +163,7 @@
         "Primo incarico.",
         "Raggiungi Marina Porto passando dal Port Link.",
         "Consegna semplice, percorso semplice, nessuna sorpresa.",
-        "Sì, l'ho detto davvero."
+        "Ho appena compromesso tutto dicendolo ad alta voce."
       ]
     },
     {
@@ -174,16 +178,18 @@
       "id": "RC_DIALOGUE_HUB_NPC_ANALYST",
       "speaker": "Analista",
       "lines": [
-        "Sto traducendo un requisito scritto in tre versioni diverse.",
-        "Per ora sono tutte ufficiali."
+        "Ho tre versioni dello stesso requisito.",
+        "Una è del business, una del tecnico e una è quella che tutti ricordano.",
+        "Al momento sono tutte approvate."
       ]
     },
     {
       "id": "RC_DIALOGUE_HUB_NPC_DEVELOPER",
       "speaker": "Sviluppatore",
       "lines": [
-        "Se il requisito cambia ancora, tecnicamente non è rework.",
-        "È sviluppo iterativo."
+        "Il requisito è cambiato di nuovo.",
+        "Mi hanno detto che non è rework.",
+        "Quindi evidentemente il codice si riscrive da solo."
       ]
     },
     {
@@ -191,7 +197,8 @@
       "speaker": "Project Manager",
       "lines": [
         "La timeline è sotto controllo.",
-        "Ho solo smesso di guardarla."
+        "Le date sono tutte lì.",
+        "È il loro rapporto con la realtà che stiamo ancora validando."
       ]
     },
     {
@@ -232,7 +239,8 @@
       "speaker": "Tester",
       "lines": [
         "Ho trovato un bug.",
-        "Mi hanno chiesto se poteva diventare un comportamento atteso."
+        "Succede sempre, tranne quando provo a mostrarlo.",
+        "Mi hanno chiesto se possiamo chiamarlo comportamento intermittente."
       ]
     },
     {
@@ -275,7 +283,7 @@
       "lines": [
         "Scusa, sei tu la nuova risorsa?",
         "Mi hanno chiesto una verifica veloce prima di lasciarti passare.",
-        "Dicono cinque minuti. Sai già cosa significa."
+        "Dicono cinque minuti. Io ne ho messi trenta in calendario."
       ]
     },
     {
@@ -283,7 +291,8 @@
       "speaker": "Consulente Junior",
       "lines": [
         "Ok. Verifica chiusa.",
-        "Metto esito positivo."
+        "Direi esito positivo.",
+        "Aspetta che lo scrivo prima che qualcuno chieda un retest."
       ]
     },
     {
@@ -300,8 +309,8 @@
       "lines": [
         "Aggiornamento.",
         "Il deploy è bloccato.",
-        "Dicono che sia una cosa semplice.",
-        "È sempre così che comincia."
+        "Dicono che manchi una cosa piccola.",
+        "Non hanno specificato quanto piccola."
       ]
     },
     {
@@ -311,7 +320,7 @@
         "Cambio requisiti.",
         "La consegna non può più passare dal flusso concordato.",
         "Serve una validazione al Castello.",
-        "Il requisito è nuovo, ma risulta urgente da ieri."
+        "Il requisito è nuovo. La scadenza, curiosamente, è già vecchia."
       ]
     },
     {
@@ -345,8 +354,8 @@
       "speaker": "Stakeholder",
       "lines": [
         "Non ho cambiato requisito.",
-        "Ho solo chiarito quello che intendevo.",
-        "Dopo che avete finito."
+        "Ho chiarito quello che intendevo.",
+        "Il fatto che l'abbia chiarito dopo la consegna è solo una questione temporale."
       ]
     },
     {
@@ -354,7 +363,8 @@
       "speaker": "Architetto",
       "lines": [
         "La soluzione è semplice.",
-        "Basta ridisegnare metà del flusso senza toccare nulla."
+        "Ridisegniamo metà del flusso.",
+        "La parte importante è non chiamarlo ridisegno."
       ]
     },
     {
@@ -370,8 +380,8 @@
       "speaker": "KPI Rival",
       "lines": [
         "Ho già recepito il nuovo requisito.",
-        "La velocity resta alta se smetti di contare il lavoro rifatto.",
-        "Metodo scientifico."
+        "La velocity resta alta se separi il lavoro nuovo dal lavoro che rifai.",
+        "È una scelta di rappresentazione."
       ]
     },
     {
@@ -387,8 +397,8 @@
       "speaker": "Ops",
       "lines": [
         "In DEV funziona.",
-        "In UAT quasi.",
-        "In produzione scopriremo quanto siamo ottimisti."
+        "In UAT funziona se non guardi troppo da vicino.",
+        "In produzione avremo finalmente dati reali."
       ]
     },
     {
@@ -396,7 +406,8 @@
       "speaker": "Business",
       "lines": [
         "Per me possiamo andare.",
-        "A patto che non cambi nulla rispetto a quello che vi dirò tra cinque minuti."
+        "A patto che non cambi nulla.",
+        "Ti aggiorno tra cinque minuti su cosa intendo per nulla."
       ]
     },
     {
@@ -404,7 +415,8 @@
       "speaker": "Release Coordinator",
       "lines": [
         "Mi servono tre approvazioni.",
-        "Due persone sono offline e la terza dice di non essere owner."
+        "Due persone sono offline.",
+        "La terza è online solo per spiegare che non è owner."
       ]
     },
     {
@@ -412,7 +424,8 @@
       "speaker": "System",
       "lines": [
         "GO/NO-GO AVVIATO.",
-        "Tutti aspettano una decisione che nessuno vuole prendere."
+        "Tutti hanno un'opinione.",
+        "La decisione, invece, non ha ancora un owner."
       ]
     },
     {
@@ -420,9 +433,9 @@
       "speaker": "Release Manager",
       "lines": [
         "Quindi sei tu quello che vuole andare in produzione.",
-        "Il pacchetto è completo, i test sono verdi e lo scope è stato validato.",
-        "Ottimo.",
-        "Adesso dimostrami che regge anche sotto pressione."
+        "Pacchetto pronto, test verdi, scope validato.",
+        "Bene.",
+        "Adesso vediamo se regge quando smettiamo di chiamarlo ambiente di test."
       ]
     },
     {
@@ -431,7 +444,8 @@
       "lines": [
         "Bene.",
         "Questa passa.",
-        "Segno GO, ma non prendere l'abitudine di vedere tutto verde."
+        "Segno GO.",
+        "Goditi il verde finché dura."
       ]
     },
     {
@@ -449,7 +463,8 @@
       "lines": [
         "DEPLOY 01 COMPLETATO.",
         "Release Candidate è in produzione.",
-        "Per qualche secondo nessuno apre ticket."
+        "Nessun ticket aperto.",
+        "Sono passati undici secondi."
       ]
     },
     {
@@ -457,8 +472,9 @@
       "speaker": "Delivery Lead",
       "lines": [
         "Primo deploy completato.",
-        "Direi che ora puoi considerarti onboardato.",
-        "Domani si riparte."
+        "Ora sei ufficialmente onboardato.",
+        "Domani iniziamo con una cosa più semplice.",
+        "È quello che mi hanno detto."
       ]
     },
     {
@@ -467,6 +483,7 @@
       "lines": [
         "Bel deploy.",
         "La dashboard dice che siamo quasi pari.",
+        "Ho controllato due volte.",
         "Quasi."
       ]
     },
@@ -476,7 +493,8 @@
       "lines": [
         "Nuovo progetto assegnato.",
         "Destinazione: Milano.",
-        "Scope: da definire."
+        "Scope: da definire.",
+        "Scadenza: già definita."
       ]
     },
     {
