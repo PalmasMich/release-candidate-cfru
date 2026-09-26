@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import subprocess
 import sys
 
 MIN_PYTHON = (3, 8)
@@ -13,6 +14,17 @@ ROOT = Path(__file__).resolve().parents[1]
 def fail(message: str) -> int:
     print(f"ERROR: {message}")
     return 1
+
+
+def rom_is_tracked() -> bool:
+    result = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "BPRE0.gba"],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.returncode == 0
 
 
 def main() -> int:
@@ -42,8 +54,12 @@ def main() -> int:
     print(f"DPE:  {dpe_root}")
     print("Insertion order: DPE -> CFRU")
 
+    if rom_is_tracked():
+        print("ROM_STATUS=BLOCKED_TRACKED_ROM")
+        return fail("BPRE0.gba is tracked by Git. Remove it from the index/history before any build or push.")
+
     if rom.exists():
-        print("ROM_STATUS=LOCAL_ROM_PRESENT")
+        print("ROM_STATUS=LOCAL_ROM_PRESENT_UNTRACKED")
     else:
         print("ROM_STATUS=BLOCKED_LOCAL_ROM")
         print("A legally obtained FireRed 1.0 ROM named BPRE0.gba is required only for insertion/build testing.")
