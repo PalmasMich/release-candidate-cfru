@@ -5,6 +5,7 @@ import argparse
 from pathlib import Path
 
 from apply_release_candidate_preview_patch import encode_text
+from patch_rc_intro_bypass import verify_bypass
 
 # Keep this list limited to long, intro-specific signatures. Generic location
 # names such as PALLET or VIRIDIAN may legitimately remain in unreachable
@@ -43,15 +44,18 @@ def validate_opening(data: bytes) -> None:
         )
     if stock_text:
         raise RuntimeError("stock opening text remains: " + ", ".join(stock_text))
-    # Text replacement cannot prove that FireRed's rival naming state machine
-    # was skipped. Keep the candidate blocked until a private-ROM-derived,
-    # uniquely validated control-flow patch and its post-patch signature exist.
-    raise RuntimeError(STRUCTURAL_BYPASS_UNVERIFIED)
+    verify_bypass(data)
 
 
 def audit_rom(path: Path) -> list[str]:
-    stock_text, rival_name_prompts = audit_data(path.read_bytes())
-    return stock_text + rival_name_prompts + [STRUCTURAL_BYPASS_UNVERIFIED]
+    data = path.read_bytes()
+    stock_text, rival_name_prompts = audit_data(data)
+    issues = stock_text + rival_name_prompts
+    try:
+        verify_bypass(data)
+    except RuntimeError:
+        issues.append(STRUCTURAL_BYPASS_UNVERIFIED)
+    return issues
 
 
 def main() -> int:
@@ -72,9 +76,16 @@ def main() -> int:
             print(f"RC_OPENING_RIVAL_NAME_PROMPT={text}")
         return 1
 
-    print("RC_OPENING_AUDIT=BLOCKED:STRUCTURAL_BYPASS_UNVERIFIED")
-    print("RC_RIVAL_NAME_STRUCTURAL_BYPASS=UNVERIFIED")
-    return 2
+    try:
+        literal_offset, target = verify_bypass(args.rom.read_bytes())
+    except RuntimeError as exc:
+        print("RC_OPENING_AUDIT=BLOCKED:STRUCTURAL_BYPASS_UNVERIFIED")
+        print(f"RC_RIVAL_NAME_STRUCTURAL_BYPASS=UNVERIFIED:{exc}")
+        return 2
+
+    print("RC_OPENING_AUDIT=PASS")
+    print(f"RC_RIVAL_NAME_STRUCTURAL_BYPASS=PASS:0x{literal_offset:08X}->0x{target:08X}")
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())
