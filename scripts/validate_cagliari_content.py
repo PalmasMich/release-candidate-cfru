@@ -163,9 +163,23 @@ def validate() -> None:
         if player_starter == rival_starter:
             raise ValueError("rival cannot use the player's chosen starter")
 
-    trainer_ids = [trainers["rival"]["id"], trainers["route_trainer"]["id"]]
+    release_manager = trainers["release_manager"]
+    trainer_ids = [
+        trainers["rival"]["id"],
+        trainers["route_trainer"]["id"],
+        release_manager["id"],
+    ]
     require_unique(trainer_ids, "trainer id")
     trainer_id_set = set(trainer_ids)
+
+    desired_party = release_manager.get("desired_party", [])
+    if not desired_party:
+        raise ValueError("release manager must have a non-empty desired party")
+    for mon in desired_party:
+        if not 1 <= mon["level"] <= 100:
+            raise ValueError(
+                f"invalid release manager level for {mon['species']}: {mon['level']}"
+            )
 
     rival_intro = trainers["rival"].get("intro_dialogue")
     if rival_intro not in dialogue_id_set:
@@ -218,6 +232,13 @@ def validate() -> None:
         dialogue_id = event.get("dialogue")
         if dialogue_id is not None and dialogue_id not in dialogue_id_set:
             raise ValueError(f"event {event['id']} references unknown dialogue {dialogue_id}")
+
+        for dialogue_key in ("intro_dialogue", "defeat_dialogue"):
+            linked_dialogue = event.get(dialogue_key)
+            if linked_dialogue is not None and linked_dialogue not in dialogue_id_set:
+                raise ValueError(
+                    f"event {event['id']} references unknown {dialogue_key} {linked_dialogue}"
+                )
 
         encounter_id = event.get("encounter_table")
         if encounter_id is not None and encounter_id not in encounter_id_set:
