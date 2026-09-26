@@ -8,6 +8,8 @@ on:
       - scripts/discover_rc_intro_bypass.py
       - scripts/disassemble_rc_intro_window.py
       - tests/test_rc_intro_bypass_discovery.py
+      - scripts/patch_rc_intro_bypass.py
+      - tests/test_rc_intro_bypass_patch.py
       - .github/workflows/rc-intro-discovery.yml
   workflow_dispatch:
 
@@ -16,11 +18,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run discovery unit tests
-        run: python -m unittest tests.test_rc_intro_bypass_discovery -v
+      - name: Run intro unit tests
+        run: python -m unittest tests.test_rc_intro_bypass_discovery tests.test_rc_intro_bypass_patch -v
       - name: Inspect rival naming flow
         run: python scripts/discover_rc_intro_bypass.py BPRE0.gba
       - name: Install Thumb disassembler
         run: python -m pip install --quiet capstone
       - name: Disassemble rival naming control flow
         run: python scripts/disassemble_rc_intro_window.py BPRE0.gba --radius 0x180
+      - name: Apply structural bypass to disposable copy
+        run: |
+          python scripts/patch_rc_intro_bypass.py BPRE0.gba /tmp/rc_intro_bypass.gba
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'scripts')
+          from patch_rc_intro_bypass import verify_bypass
+          data = open('/tmp/rc_intro_bypass.gba', 'rb').read()
+          offset, target = verify_bypass(data)
+          print(f'RC_INTRO_BYPASS_VERIFY=PASS:0x{offset:08X}->0x{target:08X}')
+          PY
