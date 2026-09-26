@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from discover_rc_intro_bypass import ROM_BASE, discover_prompt_pointer_refs
+from discover_rc_intro_bypass import PROMPT, ROM_BASE, discover_prompt_pointer_refs, encode_text
 
 SOURCE_LITERAL_DELTA = -0xE4
 RESHOW_LITERAL_DELTA = -0xA4
