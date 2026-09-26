@@ -65,7 +65,7 @@ VISIBLE_TEXT_REPLACEMENTS = (
     (encode_text("Let's begin with your name."), encode_text("Cominciamo dal tuo nome.")),
     (encode_text("What is it?"), encode_text("Nome?")),
     (encode_text("This is my grandson."), encode_text("È il collega.")),
-    (encode_text("What was his name now?"), encode_text("Lui è KPI Rival.")),
+    (encode_text("what was his name now?"), encode_text("KPI Rival è già assegnato.")),
     (encode_text("He's been your rival since you both"), encode_text("Tiene i KPI da prima del kickoff")),
     (encode_text("were babies."), encode_text("ama i KPI.")),
     (encode_text("That's right! I remember now!"), encode_text("Perfetto. Accesso registrato.")),
