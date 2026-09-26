@@ -8,7 +8,7 @@ from pathlib import Path
 from apply_release_candidate_preview_patch import encode_text
 
 ROM_BASE = 0x08000000
-PROMPT = "what was his name now?"
+PROMPT = "This is my grandson."
 SEARCH_RADIUS = 0x140
 
 
@@ -72,7 +72,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Discover the FireRed rival-naming control-flow neighborhood "
-            "without writing to the ROM."
+            "from the start of the rival-intro text without writing to the ROM."
         )
     )
     parser.add_argument("rom", type=Path)
@@ -90,12 +90,12 @@ def main() -> int:
         return 2
 
     print("RC_INTRO_BYPASS_DISCOVERY=READY")
-    print(f"RC_RIVAL_PROMPT_OFFSET=0x{prompt_offset:08X}")
-    print(f"RC_RIVAL_PROMPT_ADDRESS=0x{ROM_BASE + prompt_offset:08X}")
-    print(f"RC_RIVAL_PROMPT_POINTER_REFS={len(refs)}")
+    print(f"RC_RIVAL_INTRO_TEXT_OFFSET=0x{prompt_offset:08X}")
+    print(f"RC_RIVAL_INTRO_TEXT_ADDRESS=0x{ROM_BASE + prompt_offset:08X}")
+    print(f"RC_RIVAL_INTRO_POINTER_REFS={len(refs)}")
 
     for index, ref in enumerate(refs):
-        print(f"RC_RIVAL_PROMPT_PTR_{index}=0x{ref.literal_offset:08X}")
+        print(f"RC_RIVAL_INTRO_PTR_{index}=0x{ref.literal_offset:08X}")
         candidates = nearby_thumb_literals(data, ref.literal_offset)
         print(f"RC_RIVAL_NEARBY_THUMB_PTRS_{index}={len(candidates)}")
         for candidate_index, (offset, value) in enumerate(candidates[:16]):
