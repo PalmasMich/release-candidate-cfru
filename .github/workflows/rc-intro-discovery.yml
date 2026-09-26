@@ -10,6 +10,10 @@ on:
       - tests/test_rc_intro_bypass_discovery.py
       - scripts/patch_rc_intro_bypass.py
       - tests/test_rc_intro_bypass_patch.py
+      - scripts/apply_release_candidate_preview_patch.py
+      - scripts/audit_rc_opening.py
+      - scripts/build_release_candidate.py
+      - tests/test_release_candidate_preview_patch.py
       - .github/workflows/rc-intro-discovery.yml
   workflow_dispatch:
 
@@ -19,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run intro unit tests
-        run: python -m unittest tests.test_rc_intro_bypass_discovery tests.test_rc_intro_bypass_patch -v
+        run: python -m unittest tests.test_rc_intro_bypass_discovery tests.test_rc_intro_bypass_patch tests.test_release_candidate_preview_patch -v
       - name: Inspect rival naming flow
         run: python scripts/discover_rc_intro_bypass.py BPRE0.gba
       - name: Install Thumb disassembler
@@ -37,3 +41,7 @@ jobs:
           offset, target = verify_bypass(data)
           print(f'RC_INTRO_BYPASS_VERIFY=PASS:0x{offset:08X}->0x{target:08X}')
           PY
+      - name: Verify full intro rewrite on disposable copy
+        run: |
+          python scripts/apply_release_candidate_preview_patch.py /tmp/rc_intro_bypass.gba /tmp/rc_intro_preview.gba
+          python scripts/audit_rc_opening.py /tmp/rc_intro_preview.gba
