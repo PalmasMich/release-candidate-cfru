@@ -63,7 +63,7 @@ class IntroBypassPatchTest(unittest.TestCase):
     def test_verify_rejects_unpatched_fixture(self):
         module = load_module()
         data, _, _ = fixture(module)
-        with self.assertRaisesRegex(RuntimeError, "not structurally active"):
+        with self.assertRaisesRegex(RuntimeError, "structural rival-name bypass"):
             module.verify_bypass(data)
 
 
