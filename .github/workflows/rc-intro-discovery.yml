@@ -1,0 +1,21 @@
+name: RC intro discovery
+
+on:
+  push:
+    branches:
+      - feature/cagliari-preview-0.2-rebuild
+    paths:
+      - scripts/discover_rc_intro_bypass.py
+      - tests/test_rc_intro_bypass_discovery.py
+      - .github/workflows/rc-intro-discovery.yml
+  workflow_dispatch:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run discovery unit tests
+        run: python -m unittest tests.test_rc_intro_bypass_discovery -v
+      - name: Inspect rival naming flow
+        run: python scripts/discover_rc_intro_bypass.py BPRE0.gba
