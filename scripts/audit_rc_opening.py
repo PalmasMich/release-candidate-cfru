@@ -21,7 +21,7 @@ FORBIDDEN_OPENING_TEXT = (
 )
 
 RIVAL_NAME_PROMPTS = (
-    "What was his name now?",
+    "what was his name now?",
     "Come si chiama?",
 )
 
