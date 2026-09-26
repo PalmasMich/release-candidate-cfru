@@ -8,7 +8,7 @@ from pathlib import Path
 from apply_release_candidate_preview_patch import encode_text
 
 ROM_BASE = 0x08000000
-PROMPT = "What was his name now?"
+PROMPT = "what was his name now?"
 SEARCH_RADIUS = 0x140
 
 
