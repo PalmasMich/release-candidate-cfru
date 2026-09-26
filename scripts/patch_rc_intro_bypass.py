@@ -56,7 +56,7 @@ def verify_bypass(data: bytes) -> tuple[int, int]:
     )
     if source_value != EXPECTED_RESHOW_POINTER or target_value != EXPECTED_RESHOW_POINTER:
         raise RuntimeError(
-            "rival-name bypass is not structurally active "
+            "structural rival-name bypass is not active "
             f"(source=0x{source_value:08X}, reshow=0x{target_value:08X})"
         )
     return SOURCE_LITERAL_OFFSET, EXPECTED_RESHOW_POINTER
