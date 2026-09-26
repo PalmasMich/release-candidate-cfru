@@ -133,7 +133,8 @@
       "scope": "chapter_01",
       "implementation_status": "custom_deploy_room_pending_smoke",
       "intro_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
-      "defeat_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT"
+      "defeat_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT",
+      "trainer": "RC_TRAINER_RELEASE_MANAGER"
     },
     {
       "id": "RC_EVENT_DEPLOY_01_COMPLETE",
