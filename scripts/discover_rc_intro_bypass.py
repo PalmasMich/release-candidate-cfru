@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from typing import NamedTuple
 from pathlib import Path
 
 from apply_release_candidate_preview_patch import encode_text
@@ -12,8 +12,7 @@ PROMPT = "What was his name now?"
 SEARCH_RADIUS = 0x140
 
 
-@dataclass(frozen=True)
-class PointerRef:
+class PointerRef(NamedTuple):
     literal_offset: int
     target_offset: int
 
