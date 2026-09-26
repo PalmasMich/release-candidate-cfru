@@ -6,6 +6,7 @@ on:
       - feature/cagliari-preview-0.2-rebuild
     paths:
       - scripts/discover_rc_intro_bypass.py
+      - scripts/disassemble_rc_intro_window.py
       - tests/test_rc_intro_bypass_discovery.py
       - .github/workflows/rc-intro-discovery.yml
   workflow_dispatch:
@@ -19,3 +20,7 @@ jobs:
         run: python -m unittest tests.test_rc_intro_bypass_discovery -v
       - name: Inspect rival naming flow
         run: python scripts/discover_rc_intro_bypass.py BPRE0.gba
+      - name: Install Thumb disassembler
+        run: python -m pip install --quiet capstone
+      - name: Disassemble rival naming control flow
+        run: python scripts/disassemble_rc_intro_window.py BPRE0.gba --radius 0x180
