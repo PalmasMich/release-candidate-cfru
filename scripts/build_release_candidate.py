@@ -25,6 +25,18 @@ def sha1_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_private_rom_untracked(cfru_root: Path) -> None:
+    result = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "BPRE0.gba"],
+        cwd=cfru_root,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    if result.returncode == 0:
+        raise RuntimeError("BPRE0.gba is tracked by Git; refusing to build from an unsafe workspace.")
+
+
 def verify_pristine_rom(path: Path) -> str:
     if not path.is_file():
         raise FileNotFoundError(f"Private base ROM not found: {path}")
@@ -155,6 +167,7 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
                  apply_custom_maps=default_apply_custom_maps) -> Path:
     cfru_root, dpe_root, output_path = Path(cfru_root).resolve(), Path(dpe_root).resolve(), Path(output_path).resolve()
     run_preflight()
+    verify_private_rom_untracked(cfru_root)
     cfru_rom, dpe_rom = cfru_root / "BPRE0.gba", dpe_root / "BPRE0.gba"
     dpe_output, cfru_output = dpe_root / "test.gba", cfru_root / "test.gba"
     learnset_table = cfru_root / RC_LEARNSET_TABLE
