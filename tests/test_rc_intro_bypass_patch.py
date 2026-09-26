@@ -21,9 +21,9 @@ def load_module():
 
 def fixture(module):
     prompt = module.encode_text(module.PROMPT)
-    anchor = 0x400
-    prompt_offset = 0x700
-    data = bytearray(b"\x00" * 0x1000)
+    anchor = 0x00130774
+    prompt_offset = 0x001C5E2E
+    data = bytearray(b"\x00" * (prompt_offset + len(prompt) + 0x100))
     data[prompt_offset:prompt_offset + len(prompt)] = prompt
     data[anchor:anchor + 4] = (module.ROM_BASE + prompt_offset).to_bytes(4, "little")
 
