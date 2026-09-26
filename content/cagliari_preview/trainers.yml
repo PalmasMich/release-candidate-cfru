@@ -1,0 +1,30 @@
+{
+  "rival": {
+    "id": "RC_RIVAL_KPI",
+    "display_name": "Rivale KPI",
+    "theme": "competitive_colleague_metrics_obsessed",
+    "starter_matrix": {"SPECIES_RC_TURTLE_01":"SPECIES_RC_FIREFOX_01","SPECIES_RC_FROG_01":"SPECIES_RC_TURTLE_01","SPECIES_RC_FIREFOX_01":"SPECIES_RC_FROG_01"},
+    "preview_level": 5,
+    "intro_dialogue": "RC_DIALOGUE_RIVAL_INTRO"
+  },
+  "route_trainer": {
+    "id": "RC_TRAINER_PORT_01",
+    "display_name": "Consulente Junior",
+    "role": "optional_bootstrap_party_reserved_for_later_port_link_event",
+    "implementation_status": "trainer_89_party_patch_implemented_but_event_remains_vanilla_route3_until_explicit_event_relocation",
+    "bootstrap_trainer_id": 89,
+    "patch_contract": "Party data may be patched size-safely, but it must not be described as a Port Link encounter until a real Port Link event/script points to trainer 89.",
+    "intro_dialogue": "RC_DIALOGUE_PORT_TRAINER_INTRO",
+    "outro_dialogue": "RC_DIALOGUE_PORT_TRAINER_OUTRO",
+    "party": [{"species":"SPECIES_RC_CAGLIARI_WILD_01","level":4},{"species":"SPECIES_MEOWTH","level":4}],
+    "preview_contract": "Not required for Preview 0.1 acceptance. Port Link is the first custom encounter opportunity outside Delivery Hub: Mistrillo occupies 60% of the grass encounter weight, with Wingull 25% and Meowth 15%. This is intentionally not described as a guaranteed first roll."
+  },
+  "release_manager": {
+    "id": "RC_TRAINER_RELEASE_MANAGER",
+    "display_name": "Release Manager",
+    "role": "chapter_1_deploy_boss",
+    "implementation_status": "bootstrap_trainer_id_pending_final_party_patch",
+    "bootstrap_trainer_id": 38,
+    "desired_party": [{"species":"SPECIES_MEOWTH","level":7},{"species":"SPECIES_RC_CAGLIARI_WILD_01","level":8}]
+  }
+}

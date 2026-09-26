@@ -1,0 +1,65 @@
+{
+  "map": "RC_DEPLOY_ROOM",
+  "scripts": [
+    {
+      "id": "RC_SCRIPT_RELEASE_MANAGER",
+      "ops": [
+        {
+          "op": "lock"
+        },
+        {
+          "op": "faceplayer"
+        },
+        {
+          "op": "checkflag",
+          "flag": "RC_FLAG_RELEASE_MANAGER_DEFEATED"
+        },
+        {
+          "op": "goto_if",
+          "condition": true,
+          "label": "already_done"
+        },
+        {
+          "op": "trainerbattle_single",
+          "trainer_id": 38,
+          "local_id": 0,
+          "intro_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_INTRO",
+          "defeat_dialogue": "RC_DIALOGUE_RELEASE_MANAGER_DEFEAT"
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_RELEASE_MANAGER_DEFEATED"
+        },
+        {
+          "op": "setflag",
+          "flag": "RC_FLAG_DEPLOY_01_COMPLETE"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DEPLOY_COMPLETE",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        },
+        {
+          "label": "already_done"
+        },
+        {
+          "op": "msgbox",
+          "dialogue": "RC_DIALOGUE_DEPLOY_COMPLETE",
+          "type": 4
+        },
+        {
+          "op": "release"
+        },
+        {
+          "op": "end"
+        }
+      ]
+    }
+  ]
+}

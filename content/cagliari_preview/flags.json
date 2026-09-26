@@ -1,0 +1,21 @@
+{
+  "source_contract": {
+    "file": "include/constants/flags.h",
+    "reserved_from": "0x0AF",
+    "reserved_to": "0x0B9",
+    "upstream_status": "unused_range"
+  },
+  "flags": {
+    "RC_FLAG_ARRIVAL_DONE": "0x0AF",
+    "RC_FLAG_STARTER_CHOSEN": "0x0B0",
+    "RC_FLAG_RIVAL_INTRO_DONE": "0x0B1",
+    "RC_FLAG_WILD_TUTORIAL_DONE": "0x0B2",
+    "RC_FLAG_PORT_TRAINER_DONE": "0x0B3",
+    "RC_FLAG_DEPLOY_TEASER_SEEN": "0x0B4",
+    "RC_FLAG_SCOPE_CHANGE_REVEALED": "0x0B5",
+    "RC_FLAG_CASTELLO_UNLOCKED": "0x0B6",
+    "RC_FLAG_GO_NO_GO_STARTED": "0x0B7",
+    "RC_FLAG_RELEASE_MANAGER_DEFEATED": "0x0B8",
+    "RC_FLAG_DEPLOY_01_COMPLETE": "0x0B9"
+  }
+}

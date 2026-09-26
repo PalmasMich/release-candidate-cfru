@@ -367,6 +367,38 @@ def ProcessAudio(audioFile: str) -> str:
                                MakeOutputAudioFile, Master.printCompilingAudio, False)
 
 
+def AdaptMidi2AgbFlagsForLinux(flags: [str]) -> [str]:
+    """Translate legacy Nintendo mid2agb flags for the open-source Linux midi2agb.
+
+    CFRU's historical flag files use -V for master volume and -G for a raw
+    voicegroup address. The open-source midi2agb uses -m for volume and -g for
+    a voicegroup symbol. CFRU already patches the generated assembly's
+    voicegroup line from the original -G value below, so the raw -G pair must
+    not be passed to the Linux converter.
+    """
+    if sys.platform.startswith('win') or on_wsl:
+        return list(flags)
+
+    adapted = []
+    i = 0
+    while i < len(flags):
+        flag = flags[i]
+        if flag == '-V':
+            if i + 1 >= len(flags):
+                raise ValueError("legacy -V flag is missing its value")
+            adapted.extend(['-m', flags[i + 1]])
+            i += 2
+            continue
+        if flag == '-G':
+            if i + 1 >= len(flags):
+                raise ValueError("legacy -G flag is missing its value")
+            i += 2
+            continue
+        adapted.append(flag)
+        i += 1
+    return adapted
+
+
 def ProcessMusic(midiFile: str) -> str:
     """Compile audio."""
     assemblyFile = midiFile.split('.mid')[0] + '.s'
@@ -381,7 +413,8 @@ def ProcessMusic(midiFile: str) -> str:
     except FileNotFoundError:
         pass
 
-    cmd = [MID2AGB, midiFile, assemblyFile] + flags
+    cmd_flags = AdaptMidi2AgbFlagsForLinux(flags)
+    cmd = [MID2AGB, midiFile, assemblyFile] + cmd_flags
 
     return DoMiddleManAssembly(midiFile, assemblyFile, flagFile, flags, cmd,
                                MakeOutputMusicFile, Master.printCompilingMusic, True)

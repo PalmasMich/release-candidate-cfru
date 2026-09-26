@@ -1,0 +1,172 @@
+{
+  "slots": [
+    {
+      "rc_map": "RC_DELIVERY_HUB",
+      "strategy": "repoint_unused_map_header",
+      "vanilla_map": "MAP_ROUTE19_UNUSED_HOUSE",
+      "vanilla_name": "Route19_UnusedHouse",
+      "map_group": 27,
+      "map_num": 0,
+      "vanilla_contract": {
+        "layout": "LAYOUT_HOUSE2",
+        "music_id": 293,
+        "region_map_section_id": 119,
+        "map_type": 8,
+        "weather": 0,
+        "allow_cycling": false,
+        "allow_escaping": false,
+        "allow_running": false,
+        "show_map_name": false,
+        "battle_scene": 0,
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_IndoorRoute19[0]",
+        "usage": "unused_house_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    },
+    {
+      "rc_map": "RC_CAGLIARI_MARINA",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_8",
+      "vanilla_name": "Prototype_SeviiIsle_8",
+      "map_group": 3,
+      "map_num": 52,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[52]",
+        "usage": "prototype_map_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    },
+    {
+      "rc_map": "RC_PORT_CONNECTION",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_9",
+      "vanilla_name": "Prototype_SeviiIsle_9",
+      "map_group": 3,
+      "map_num": 53,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[53]",
+        "usage": "prototype_map_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    },
+    {
+      "rc_map": "RC_CASTELLO_ASCENT",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_6",
+      "vanilla_name": "Prototype_SeviiIsle_6",
+      "map_group": 3,
+      "map_num": 50,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": "non_null",
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[50]",
+        "usage": "1x1 prototype route with no events"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "clear_connections_pointer": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    },
+    {
+      "rc_map": "RC_DEPLOY_DISTRICT",
+      "strategy": "repoint_unused_prototype_map_header",
+      "vanilla_map": "MAP_PROTOTYPE_SEVII_ISLE_7",
+      "vanilla_name": "Prototype_SeviiIsle_7",
+      "map_group": 3,
+      "map_num": 51,
+      "vanilla_contract": {
+        "map_type": "MAP_TYPE_ROUTE",
+        "connections": "non_null",
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_TownsAndRoutes[51]",
+        "usage": "1x1 prototype route with no events"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "clear_connections_pointer": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    },
+    {
+      "rc_map": "RC_DEPLOY_ROOM",
+      "strategy": "repoint_unused_map_header",
+      "vanilla_map": "MAP_ROUTE6_UNUSED_HOUSE",
+      "vanilla_name": "Route6_UnusedHouse",
+      "map_group": 18,
+      "map_num": 1,
+      "vanilla_contract": {
+        "layout": "LAYOUT_HOUSE2",
+        "map_type": "MAP_TYPE_INDOOR",
+        "connections": null,
+        "object_events": 0,
+        "warp_events": 0,
+        "coord_events": 0,
+        "bg_events": 0
+      },
+      "evidence": {
+        "source": "pret/pokefirered",
+        "map_groups": "gMapGroup_IndoorRoute6[1]",
+        "usage": "unused_house_no_gameplay_references"
+      },
+      "mutation_policy": {
+        "requires_unique_header_discovery": true,
+        "requires_private_rom": true,
+        "keep_bootstrap_until_smoke_test": true
+      }
+    }
+  ]
+}

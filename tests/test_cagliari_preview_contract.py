@@ -1,0 +1,126 @@
+from pathlib import Path
+import importlib.util
+import json
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTENT = ROOT / "content" / "cagliari_preview"
+
+
+def load(name):
+    return json.loads((CONTENT / name).read_text(encoding="utf-8"))
+
+
+def load_module(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_patcher():
+    return load_module(ROOT / "scripts" / "apply_release_candidate_preview_patch.py", "rc_preview_patcher")
+
+
+class CagliariPreviewContractTest(unittest.TestCase):
+    def test_preview_flow_references_existing_maps_and_dialogue(self):
+        maps = {item["id"] for item in load("maps.yml")["maps"]}
+        dialogue = {item["id"] for item in load("dialogue.yml")["scenes"]}
+        events = load("events.yml")
+        flags = set(events["flags"])
+        for event in events["flow"]:
+            self.assertIn(event["map"], maps, event["id"])
+            if "dialogue" in event:
+                self.assertIn(event["dialogue"], dialogue, event["id"])
+            for flag in event.get("requires", []) + event.get("sets", []):
+                self.assertIn(flag, flags, event["id"])
+
+    def test_thick_preview_acceptance_path_is_contiguous_and_playable(self):
+        events = load("events.yml")
+        by_id = {item["id"]: item for item in events["flow"]}
+        path = events["preview_acceptance_path"]
+        self.assertEqual(path, ["RC_EVENT_ARRIVAL", "RC_EVENT_STARTER_ASSIGNMENT", "RC_EVENT_RIVAL_INTRO", "RC_EVENT_FIRST_WILD", "RC_EVENT_DEPLOY_TEASER"])
+        self.assertNotIn("RC_EVENT_PORT_TRAINER", path)
+        produced = set()
+        for event_id in path:
+            event = by_id[event_id]
+            self.assertEqual(event["scope"], "preview")
+            self.assertTrue(set(event.get("requires", ())).issubset(produced), event_id)
+            produced.update(event.get("sets", ()))
+        self.assertIn("RC_FLAG_DEPLOY_TEASER_SEEN", produced)
+
+    def test_reserved_port_trainer_cannot_block_preview_teaser(self):
+        events = {item["id"]: item for item in load("events.yml")["flow"]}
+        trainer = events["RC_EVENT_PORT_TRAINER"]
+        teaser = events["RC_EVENT_DEPLOY_TEASER"]
+        self.assertEqual(trainer["scope"], "post_preview")
+        self.assertEqual(trainer["implementation_status"], "reserved_not_relocated")
+        self.assertEqual(teaser["requires"], ["RC_FLAG_WILD_TUTORIAL_DONE"])
+
+    def test_rival_matrix_covers_each_preview_starter_once(self):
+        matrix = load("trainers.yml")["rival"]["starter_matrix"]
+        starters = {"SPECIES_RC_TURTLE_01", "SPECIES_RC_FROG_01", "SPECIES_RC_FIREFOX_01"}
+        self.assertEqual(set(matrix), starters)
+        self.assertEqual(set(matrix.values()), starters)
+        for player, rival in matrix.items():
+            self.assertNotEqual(player, rival)
+
+    def test_rival_matrix_matches_rom_patch_species_ids(self):
+        patcher = load_patcher()
+        self.assertEqual((patcher.TARTREK_SPECIES_ID, patcher.FROBYTE_SPECIES_ID, patcher.EMBERFOX_SPECIES_ID), (0x050E, 0x050F, 0x0510))
+        matrix = load("trainers.yml")["rival"]["starter_matrix"]
+        self.assertEqual(matrix["SPECIES_RC_TURTLE_01"], "SPECIES_RC_FIREFOX_01")
+        self.assertEqual(matrix["SPECIES_RC_FROG_01"], "SPECIES_RC_TURTLE_01")
+        self.assertEqual(matrix["SPECIES_RC_FIREFOX_01"], "SPECIES_RC_FROG_01")
+
+    def test_first_wild_contract_keeps_mistrillo_primary(self):
+        first_wild = next(item for item in load("events.yml")["flow"] if item["id"] == "RC_EVENT_FIRST_WILD")
+        self.assertEqual(first_wild["map"], "RC_PORT_CONNECTION")
+        self.assertIn("60% Mistrillo", first_wild["preview_contract"])
+
+    def test_port_link_rom_weights_are_exactly_60_25_15(self):
+        patcher = load_patcher()
+        totals = {}
+        for species, weight in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.GRASS_SLOT_WEIGHTS):
+            totals[species] = totals.get(species, 0) + weight
+        self.assertEqual(totals[patcher.MISTRILLO_SPECIES_ID], 60)
+        self.assertEqual(totals[patcher.WINGULL_SPECIES_ID], 25)
+        self.assertEqual(totals[patcher.MEOWTH_SPECIES_ID], 15)
+        self.assertEqual(sum(totals.values()), 100)
+
+    def test_port_link_manifest_matches_binary_patch_weights_and_levels(self):
+        patcher = load_patcher()
+        table = next(t for t in load("encounters.yml")["tables"] if t["id"] == "RC_PORT_CONNECTION_GRASS")
+        expected = {"SPECIES_RC_CAGLIARI_WILD_01": patcher.MISTRILLO_SPECIES_ID, "SPECIES_WINGULL": patcher.WINGULL_SPECIES_ID, "SPECIES_MEOWTH": patcher.MEOWTH_SPECIES_ID}
+        self.assertEqual(table["map"], "RC_PORT_CONNECTION")
+        self.assertEqual(table["method"], "grass")
+        self.assertEqual(sum(slot["weight"] for slot in table["slots"]), 100)
+        for slot in table["slots"]:
+            species = expected[slot["species"]]
+            weighted_slots = [(weight, levels) for patched_species, weight, levels in zip(patcher.ROUTE1_PREVIEW_SPECIES, patcher.GRASS_SLOT_WEIGHTS, patcher.ROUTE1_PREVIEW_LEVELS) if patched_species == species]
+            self.assertEqual(sum(weight for weight, _ in weighted_slots), slot["weight"])
+            self.assertGreaterEqual(min(levels[0] for _, levels in weighted_slots), slot["min_level"])
+            self.assertLessEqual(max(levels[1] for _, levels in weighted_slots), slot["max_level"])
+
+    def test_route_trainer_is_reserved_for_later_relocation(self):
+        trainer = load("trainers.yml")["route_trainer"]
+        dialogue_ids = {scene["id"] for scene in load("dialogue.yml")["scenes"]}
+        self.assertEqual(trainer["role"], "optional_bootstrap_party_reserved_for_later_port_link_event")
+        self.assertIn(trainer["intro_dialogue"], dialogue_ids)
+        self.assertIn(trainer["outro_dialogue"], dialogue_ids)
+        self.assertIn("Not required for Preview 0.1", trainer["preview_contract"])
+
+    def test_visible_rom_identity_contains_required_preview_beats(self):
+        patcher = load_patcher()
+        replacements = [new for _, new in patcher.VISIBLE_TEXT_REPLACEMENTS]
+        for phrase in ("Welcome to Release Candidate!", "Three resources are ready.", "KPI check: show velocity!", "PORT LINK\nCAGLIARI - MARINA PORTO", "MARINA PORTO \nDEPLOY BLOCKED - CHECK SCOPE"):
+            self.assertIn(patcher.encode_text(phrase), replacements)
+
+    def test_acceptance_verifier_passes_current_source_contract(self):
+        verifier = load_module(ROOT / "scripts" / "verify_cagliari_preview_contract.py", "rc_preview_contract")
+        self.assertEqual(verifier.main(), 0)
+
+
+if __name__ == "__main__":
+    unittest.main()

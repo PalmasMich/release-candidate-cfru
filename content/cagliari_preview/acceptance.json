@@ -1,0 +1,68 @@
+{
+  "preview": "Cagliari Preview 0.1",
+  "status": "automated_contract_complete_private_build_pending",
+  "manual_test_gate": "Do not request a new device test until the private-ROM pipeline completes successfully from a legally obtained FireRed 1.0 input. Then execute manual_smoke_checklist.md; do not distribute the ROM.",
+  "pillars": {
+    "opening_identity": {
+      "required": true,
+      "checks": [
+        "Release Candidate onboarding is visible before free movement",
+        "CAGLIARI replaces the Pallet Town presentation",
+        "Delivery Hub identity is visible in the opening area",
+        "vanilla Oak exposition is substantially replaced by Delivery Lead/corporate dialogue"
+      ]
+    },
+    "starter": {
+      "required": true,
+      "checks": [
+        "Tartrek occupies the original Bulbasaur choice",
+        "Frobyte occupies the original Squirtle choice",
+        "Emberfox occupies the original Charmander choice",
+        "all three starter scripts set the matching RC species",
+        "Oak Lab rival parties use the RC starter matrix",
+        "all three RC starters have CFRU level-up learnsets",
+        "canonical Tartrek smoke path exposes usable starting moves and never an empty battle menu"
+      ]
+    },
+    "rival_flavor": {
+      "required": true,
+      "checks": [
+        "rival introduction is KPI/corporate themed",
+        "starter battle uses benchmark/KPI language",
+        "win/loss/exit dialogue no longer reads as vanilla FireRed rival copy"
+      ]
+    },
+    "first_outdoor_encounter": {
+      "required": true,
+      "checks": [
+        "former Route 1 is presented as PORT LINK toward MARINA PORTO",
+        "Mistrillo is the dominant custom wild encounter at 60 percent encounter weight",
+        "remaining preview encounter weight is Wingull 25 percent and Meowth 15 percent",
+        "Delivery NPC explicitly points the player toward Mistrillo field testing"
+      ],
+      "note": "The first random roll is not guaranteed to be Mistrillo; the contract is a dominant first custom encounter opportunity, not a scripted encounter."
+    },
+    "preview_endpoint": {
+      "required": true,
+      "checks": [
+        "Marina Porto identity is visible after Port Link",
+        "the preview endpoint exposes DEPLOY BLOCKED - CHECK SCOPE / deploy-gate flavor",
+        "optional future trainer or scripted encounter work cannot block the Preview 0.1 acceptance path"
+      ]
+    },
+    "safety": {
+      "required": true,
+      "checks": [
+        "no full ROM binary is committed",
+        "master/main remains untouched",
+        "PR remains Draft",
+        "private build restores pristine CFRU input and removes temporary ROM intermediates"
+      ]
+    }
+  },
+  "handoff": {
+    "checklist": "content/cagliari_preview/manual_smoke_checklist.md",
+    "canonical_path": "opening -> Delivery Hub -> Tartrek -> KPI rival -> Port Link -> Mistrillo -> Marina Porto teaser",
+    "private_only": true
+  }
+}
