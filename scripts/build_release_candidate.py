@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SHA1 = "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"
 DEFAULT_OUTPUT_NAME = "release_candidate_test.gba"
 DPE_BRANCH = "feature/cagliari-preview-0.1"
-PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "RC_STARTER_RUNTIME", "CFRU", "RC_PREVIEW_PATCH", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
+PIPELINE = ("CHAPTER1_PREFLIGHT", "DPE", "RC_STARTER_RUNTIME", "CFRU", "RC_PREVIEW_PATCH", "RC_INTRO_BYPASS_DISCOVERY", "RC_OPENING_AUDIT", "PORT_LINK_DISCOVERY", "PORT_LINK_TRAINER_PATCH", "DELIVERY_HUB_MAP_PLAN", "RC_CUSTOM_MAPS_PATCH")
 RC_LEARNSET_TABLE = Path("src/Tables/level_up_learnsets.c")
 
 
@@ -113,6 +113,15 @@ def default_apply_preview_patch(source: Path, output: Path) -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "apply_release_candidate_preview_patch.py"), str(source), str(output)], cwd=ROOT, check=True)
 
 
+def default_discover_intro_bypass(output_path: Path) -> int:
+    print("\n== Release Candidate intro bypass discovery ==")
+    return subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "discover_rc_intro_bypass.py"), str(output_path)],
+        cwd=ROOT,
+        check=False,
+    ).returncode
+
+
 def default_audit_opening(output_path: Path) -> None:
     print("\n== Release Candidate opening audit ==")
     subprocess.run(
@@ -150,7 +159,8 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
                  run_preflight=default_run_preflight, run_build=default_run_build,
                  verify_rom=verify_pristine_rom, sync_dpe=sync_dpe_checkout,
                  verify_dpe_symbols=verify_dpe_tartrek_symbols, validate_starter_runtime=default_validate_starter_runtime, apply_preview_patch=default_apply_preview_patch,
-                 audit_opening=default_audit_opening, discover_port_link=default_discover_port_link, apply_port_link_trainer=default_apply_port_link_trainer,
+                 discover_intro_bypass=default_discover_intro_bypass, audit_opening=default_audit_opening,
+                 discover_port_link=default_discover_port_link, apply_port_link_trainer=default_apply_port_link_trainer,
                  prepare_delivery_hub_map=default_prepare_delivery_hub_map,
                  apply_custom_maps=default_apply_custom_maps) -> Path:
     cfru_root, dpe_root, output_path = Path(cfru_root).resolve(), Path(dpe_root).resolve(), Path(output_path).resolve()
@@ -190,6 +200,11 @@ def run_pipeline(*, cfru_root: Path, dpe_root: Path, output_path: Path,
         if not output_path.exists(): raise RuntimeError("Release Candidate preview patch did not produce an output ROM")
         output_hash = sha1_file(output_path)
         if output_hash == cfru_hash: raise RuntimeError("Preview output is identical to the CFRU input")
+        intro_discovery_status = discover_intro_bypass(output_path)
+        if intro_discovery_status == 0:
+            print("RC_INTRO_BYPASS_DISCOVERY_STATUS=READY")
+        else:
+            print(f"RC_INTRO_BYPASS_DISCOVERY_STATUS=BLOCKED:{intro_discovery_status}")
         audit_opening(output_path)
         discovery_status = discover_port_link(output_path)
         if discovery_status == 0:
