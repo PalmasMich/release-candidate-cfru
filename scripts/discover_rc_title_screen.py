@@ -110,7 +110,7 @@ def main() -> int:
                 refs = ptr_refs(data, i)
                 candidates.append((i, dec[:32].hex(), len(refs)))
         print(f"RC_TITLE_1280_CANDIDATES={len(candidates)}")
-        for idx,(off,prefix,refs_count) in enumerate(candidates[:64]):
+        for idx,(off,prefix,refs_count) in enumerate(candidates):
             print(f"RC_TITLE_1280_{idx}=0x{off:08X}:refs={refs_count}:prefix={prefix}")
         return 2
     off = hits[0]
