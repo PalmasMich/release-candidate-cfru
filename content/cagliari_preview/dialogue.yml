@@ -1,6 +1,48 @@
 {
   "scenes": [
     {
+      "id": "RC_DIALOGUE_CAGLIARI_ASSIGNMENT",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Primo incarico: Cagliari.",
+        "Il Delivery Hub è già operativo.",
+        "Naturalmente nessuno ti ha ancora spiegato dove sia.",
+        "Andiamo."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_PLAYER_BADGE_CONFIRM",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Perfetto, {PLAYER}.",
+        "Badge creato. Accessi quasi pronti.",
+        "Quasi.",
+        "Nel nostro settore è una parola molto importante."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_OPENING_LEAD",
+      "speaker": "Delivery Lead",
+      "lines": [
+        "Ciao. Io coordino la delivery per Asterion Digital Partners.",
+        "Il progetto è già partito. Le scadenze pure.",
+        "Ti spiego quello che serve. Il resto arriverà tramite escalation.",
+        "Prima, però, dobbiamo registrarti nel workspace."
+      ]
+    },
+    {
+      "id": "RC_DIALOGUE_OPENING_WORLD",
+      "speaker": "System",
+      "lines": [
+        "Benvenuto in Release Candidate.",
+        "Un mondo fatto di progetti, scadenze e richieste urgenti.",
+        "Qui si cresce affrontando bug, revisioni, stakeholder e deploy.",
+        "Alcuni cercano stabilità. Altri riconoscimento.",
+        "Qualcuno continua a inseguire il rilascio perfetto.",
+        "O almeno un deploy che non generi ticket nei primi trenta secondi."
+      ]
+    },
+    {
       "id": "RC_DIALOGUE_OPENING",
       "speaker": "Delivery Lead",
       "lines": [
@@ -13,17 +55,16 @@
       "id": "RC_DIALOGUE_PLAYER_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Prima di aprirti gli accessi, devo creare il tuo badge.",
-        "Come vuoi comparire nel workspace?",
-        "Perfetto. Badge creato.",
-        "Accessi quasi pronti. Il quasi è una dipendenza esterna."
+        "Mi serve il nome da associare al tuo badge operativo.",
+        "Come vuoi comparire nel progetto?"
       ]
     },
     {
       "id": "RC_DIALOGUE_RIVAL_INTRO",
       "speaker": "KPI Rival",
       "lines": [
-        "Io tengo traccia di tutto quello che può diventare un grafico.",
+        "Solo le cose utili.",
+        "Purtroppo sono quasi tutte.",
         "Non è una gara.",
         "La classifica serve solo per dare contesto ai numeri."
       ]
@@ -32,9 +73,10 @@
       "id": "RC_DIALOGUE_RIVAL_NAME",
       "speaker": "Delivery Lead",
       "lines": [
-        "Lui è KPI Rival.",
-        "È bravo, veloce e considera ogni conversazione una potenziale dashboard.",
-        "Dice che non compete con nessuno. Ha già aperto il confronto."
+        "Non sarai l'unico nuovo ingresso.",
+        "Quello è il collega che misura qualsiasi cosa possa diventare un grafico.",
+        "Qui lo chiamano KPI Rival.",
+        "Non chiedermi chi abbia iniziato."
       ]
     },
     {
@@ -43,16 +85,16 @@
       "lines": [
         "Questo è il Delivery Hub.",
         "Da qui partono task, escalation e promesse fatte prima di consultarci.",
-        "Il tuo onboarding, per ragioni che nessuno saprà spiegarti, prevede una scelta importante."
+        "Il tuo onboarding prevede ora una scelta importante."
       ]
     },
     {
       "id": "RC_DIALOGUE_STARTER",
       "speaker": "Delivery Lead",
       "lines": [
-        "Tre partner sono disponibili per l'assegnazione.",
-        "Tartrek, Frobyte ed Emberfox.",
-        "Scegline uno. Gli altri due verranno riallocati con una mail che li definirà entusiasti."
+        "Ogni professionista inizia con un partner operativo.",
+        "Per te ne sono disponibili tre: Tartrek, Frobyte ed Emberfox.",
+        "Scegli bene. Il tuo primo deploy comincia da qui."
       ]
     },
     {
@@ -126,8 +168,10 @@
       "speaker": "KPI Rival",
       "lines": [
         "Scelta registrata.",
-        "Facciamo un test rapido prima che cambi qualcosa.",
-        "Non è una gara. Partiamo appena sei pronto."
+        "Anch'io ho assegnato il mio partner.",
+        "Facciamo un confronto iniziale.",
+        "Solo per stabilire una baseline.",
+        "Ho già preparato il grafico."
       ]
     },
     {
@@ -160,10 +204,11 @@
       "id": "RC_DIALOGUE_FIRST_ASSIGNMENT",
       "speaker": "Delivery Lead",
       "lines": [
-        "Primo incarico.",
-        "Raggiungi Marina Porto passando dal Port Link.",
-        "Consegna semplice, percorso semplice, nessuna sorpresa.",
-        "Ho appena compromesso tutto dicendolo ad alta voce."
+        "Bene. Test completato.",
+        "Adesso raggiungi Port Link.",
+        "Da lì partirà una semplice consegna verso Marina Porto.",
+        "Sulla carta è una formalità.",
+        "Nella pratica, qui le formalità tendono a complicarsi."
       ]
     },
     {
