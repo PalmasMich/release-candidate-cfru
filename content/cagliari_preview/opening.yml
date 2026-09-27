@@ -1,0 +1,134 @@
+{
+  "version": "0.3",
+  "id": "RC_OPENING_CAGLIARI",
+  "objective": "Zero visible vanilla FireRed dialogue before player control.",
+  "corporate_identity": {
+    "organization": "Asterion Digital Partners",
+    "program": "Release Candidate",
+    "delivery_lead_title": "Delivery Lead",
+    "player_badge_example": "ADRIAN VALE",
+    "rival_display_name": "KPI Rival"
+  },
+  "title_screen": {
+    "logo": "RELEASE CANDIDATE",
+    "subtitle": "Cagliari Vertical Slice",
+    "version_label": "Preview 0.2",
+    "prompt": "PRESS START",
+    "menu": [
+      "NEW GAME",
+      "CONTINUE",
+      "OPTIONS"
+    ],
+    "visual_motifs": [
+      "Cagliari skyline",
+      "Mediterranean sea",
+      "release board",
+      "access badge"
+    ],
+    "acceptance": [
+      "No FireRed/Pokémon title copy is visible.",
+      "No vanilla professor/lab presentation is visible."
+    ]
+  },
+  "sequence": [
+    {
+      "order": 10,
+      "id": "RC_OPENING_NARRATION",
+      "type": "dialogue_sequence",
+      "dialogue_ids": [
+        "RC_DIALOGUE_OPENING_WORLD"
+      ],
+      "transition": "fade_in"
+    },
+    {
+      "order": 20,
+      "id": "RC_OPENING_DELIVERY_LEAD",
+      "type": "character_intro",
+      "actor": "Delivery Lead",
+      "dialogue_ids": [
+        "RC_DIALOGUE_OPENING_LEAD"
+      ]
+    },
+    {
+      "order": 30,
+      "id": "RC_OPENING_PLAYER_BADGE",
+      "type": "name_entry",
+      "actor": "Delivery Lead",
+      "pre_dialogue": "RC_DIALOGUE_PLAYER_NAME",
+      "input": "PLAYER_NAME",
+      "post_dialogue": "RC_DIALOGUE_PLAYER_BADGE_CONFIRM",
+      "mechanics": "reuse_existing_player_name_entry"
+    },
+    {
+      "order": 40,
+      "id": "RC_OPENING_KPI_RIVAL",
+      "type": "character_intro",
+      "actor": "KPI Rival",
+      "dialogue_ids": [
+        "RC_DIALOGUE_RIVAL_NAME",
+        "RC_DIALOGUE_RIVAL_INTRO"
+      ],
+      "rival_name_entry": false
+    },
+    {
+      "order": 50,
+      "id": "RC_OPENING_ARRIVAL_CAGLIARI",
+      "type": "location_transition",
+      "dialogue_ids": [
+        "RC_DIALOGUE_CAGLIARI_ASSIGNMENT"
+      ],
+      "destination": "RC_DELIVERY_HUB",
+      "transition": "city_reveal"
+    },
+    {
+      "order": 60,
+      "id": "RC_OPENING_STARTER_ASSIGNMENT",
+      "type": "starter_choice",
+      "dialogue_ids": [
+        "RC_DIALOGUE_DELIVERY_HUB_WELCOME",
+        "RC_DIALOGUE_STARTER",
+        "RC_DIALOGUE_STARTER_TARTREK_INFO",
+        "RC_DIALOGUE_STARTER_FROBYTE_INFO",
+        "RC_DIALOGUE_STARTER_EMBERFOX_INFO"
+      ]
+    },
+    {
+      "order": 70,
+      "id": "RC_OPENING_RIVAL_CHALLENGE",
+      "type": "battle",
+      "trainer": "RC_RIVAL_KPI",
+      "dialogue_ids": [
+        "RC_DIALOGUE_RIVAL_CHALLENGE",
+        "RC_DIALOGUE_RIVAL_WIN",
+        "RC_DIALOGUE_RIVAL_LOSE"
+      ]
+    },
+    {
+      "order": 80,
+      "id": "RC_OPENING_FIRST_ASSIGNMENT",
+      "type": "quest_handoff",
+      "dialogue_ids": [
+        "RC_DIALOGUE_FIRST_ASSIGNMENT"
+      ],
+      "destination": "RC_PORT_CONNECTION"
+    }
+  ],
+  "forbidden_visible_text_fragments": [
+    "Professor Oak",
+    "POKéMON PROFESSOR",
+    "Welcome to the world of POKéMON",
+    "This is my grandson",
+    "what was his name now",
+    "Your rival's name",
+    "Pallet Town"
+  ],
+  "done_when": [
+    "Title screen is Release Candidate branded.",
+    "Every visible opening dialogue is RC-authored.",
+    "Player naming is framed as corporate badge creation.",
+    "KPI Rival is fixed and never player-named.",
+    "Opening transitions directly into Cagliari/Delivery Hub.",
+    "Starter choice and first battle are narratively integrated.",
+    "No vanilla FireRed opening dialogue remains visible."
+  ]
+}
