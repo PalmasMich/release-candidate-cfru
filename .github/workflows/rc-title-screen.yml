@@ -6,6 +6,7 @@ on:
       - feature/cagliari-preview-0.2-rebuild
     paths:
       - scripts/discover_rc_title_screen.py
+      - scripts/patch_rc_title_screen.py
       - .github/workflows/rc-title-screen.yml
   workflow_dispatch:
 
@@ -16,3 +17,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Discover FireRed title-screen assets
         run: python scripts/discover_rc_title_screen.py BPRE0.gba
+      - name: Patch Release Candidate title screen on disposable ROM
+        run: python scripts/patch_rc_title_screen.py BPRE0.gba /tmp/rc_title.gba
+      - name: Verify patched title pointers
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'scripts')
+          from patch_rc_title_screen import verify_patched
+          data=open('/tmp/rc_title.gba','rb').read()
+          report=verify_patched(data)
+          print('RC_TITLE_VERIFY=PASS:' + ','.join(f'{k}=0x{v:08X}' for k,v in report.items()))
+          PY
