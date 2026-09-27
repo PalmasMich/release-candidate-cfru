@@ -108,11 +108,17 @@ def main() -> int:
             dec = gba_lz77_decompress(data, i)
             if dec is not None and len(dec) == 1280:
                 refs = ptr_refs(data, i)
-                candidates.append((i, dec[:32].hex(), len(refs)))
+                similarity = sum(a == b for a,b in zip(dec, TITLE_MAP_RAW))
+                candidates.append((similarity, i, dec[:32].hex(), len(refs)))
+        candidates.sort(reverse=True)
         print(f"RC_TITLE_1280_CANDIDATES={len(candidates)}")
-        for idx,(off,prefix,refs_count) in enumerate(candidates):
-            print(f"RC_TITLE_1280_{idx}=0x{off:08X}:refs={refs_count}:prefix={prefix}")
-        return 2
+        for idx,(similarity,off,prefix,refs_count) in enumerate(candidates[:12]):
+            print(f"RC_TITLE_1280_{idx}=0x{off:08X}:similar={similarity}:refs={refs_count}:prefix={prefix}")
+        if candidates and candidates[0][0] >= 1200 and (len(candidates) == 1 or candidates[0][0] > candidates[1][0]):
+            hits = [candidates[0][1]]
+            print(f"RC_TITLE_MAP_FUZZY_MATCH=0x{hits[0]:08X}:similar={candidates[0][0]}")
+        else:
+            return 2
     off = hits[0]
     refs = ptr_refs(data, off)
     print(f"RC_TITLE_MAP_OFFSET=0x{off:08X}")
