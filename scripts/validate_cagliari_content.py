@@ -14,6 +14,7 @@ REQUIRED_FILES = [
     "dialogue.yml",
     "encounters.yml",
     "trainers.yml",
+    "opening.yml",
 ]
 
 REQUIRED_MAPS = {
@@ -127,9 +128,30 @@ def validate() -> None:
     require_unique(dialogue_ids, "dialogue id")
     dialogue_id_set = set(dialogue_ids)
     all_lines = [line for scene in dialogue["scenes"] for line in scene["lines"]]
-    opening = "Benvenuto su Release Candidate."
+    opening = "Benvenuto in Release Candidate."
     if opening not in all_lines:
         raise ValueError("approved opening line is missing")
+
+    opening_spec = load("opening.yml")
+    sequence = opening_spec.get("sequence", [])
+    if not sequence:
+        raise ValueError("opening flow must define a non-empty sequence")
+    opening_ids = [step["id"] for step in sequence]
+    require_unique(opening_ids, "opening step id")
+    for step in sequence:
+        for dialogue_id in step.get("dialogue_ids", []):
+            if dialogue_id not in dialogue_id_set:
+                raise ValueError(
+                    f"opening step {step['id']} references unknown dialogue {dialogue_id}"
+                )
+        for dialogue_key in ("pre_dialogue", "post_dialogue"):
+            dialogue_id = step.get(dialogue_key)
+            if dialogue_id is not None and dialogue_id not in dialogue_id_set:
+                raise ValueError(
+                    f"opening step {step['id']} references unknown {dialogue_key} {dialogue_id}"
+                )
+    if opening_spec.get("corporate_identity", {}).get("rival_display_name") != "KPI Rival":
+        raise ValueError("opening rival identity must remain KPI Rival")
 
     encounters = load("encounters.yml")
     encounter_ids = [table["id"] for table in encounters["tables"]]
