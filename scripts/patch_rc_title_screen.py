@@ -101,6 +101,7 @@ def build_canvas()->list[bytearray]:
     # understated project status stripe
     rect(img,0,0,VISIBLE_W,4,4)
     rect(img,0,4,VISIBLE_W,6,3)
+    draw_text(img,"ASTERION DIGITAL PARTNERS",11,1,3)
     # title
     draw_text(img,"RELEASE",28,3,8)
     draw_text(img,"CANDIDATE",54,3,2)
@@ -121,6 +122,7 @@ def build_canvas()->list[bytearray]:
     for x in range(0,VISIBLE_W,24):
         rect(img,x+3,132,x+15,134,6)
         rect(img,x+10,144,x+22,146,3)
+    draw_text(img,"PRESS START",149,1,8)
     return img
 
 def tiles_and_map(img:list[bytearray])->tuple[bytes,bytes,int]:
