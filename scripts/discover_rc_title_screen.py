@@ -101,6 +101,17 @@ def main() -> int:
     hits = find_title_map(data)
     print(f"RC_TITLE_MAP_HITS={len(hits)}")
     if len(hits) != 1:
+        candidates = []
+        for i, b in enumerate(data):
+            if b != 0x10:
+                continue
+            dec = gba_lz77_decompress(data, i)
+            if dec is not None and len(dec) == 1280:
+                refs = ptr_refs(data, i)
+                candidates.append((i, dec[:32].hex(), len(refs)))
+        print(f"RC_TITLE_1280_CANDIDATES={len(candidates)}")
+        for idx,(off,prefix,refs_count) in enumerate(candidates[:64]):
+            print(f"RC_TITLE_1280_{idx}=0x{off:08X}:refs={refs_count}:prefix={prefix}")
         return 2
     off = hits[0]
     refs = ptr_refs(data, off)
