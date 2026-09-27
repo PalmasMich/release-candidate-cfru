@@ -114,7 +114,7 @@ def main() -> int:
         print(f"RC_TITLE_1280_CANDIDATES={len(candidates)}")
         for idx,(similarity,off,prefix,refs_count) in enumerate(candidates[:12]):
             print(f"RC_TITLE_1280_{idx}=0x{off:08X}:similar={similarity}:refs={refs_count}:prefix={prefix}")
-        if candidates and candidates[0][0] >= 1200 and (len(candidates) == 1 or candidates[0][0] > candidates[1][0]):
+        if candidates and candidates[0][0] >= 1180 and (len(candidates) == 1 or candidates[0][0] > candidates[1][0]):
             hits = [candidates[0][1]]
             print(f"RC_TITLE_MAP_FUZZY_MATCH=0x{hits[0]:08X}:similar={candidates[0][0]}")
         else:
